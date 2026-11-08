@@ -6,7 +6,7 @@ A console-style front end for your PC. Steam, Epic, GOG, Ubisoft, Game Pass, emu
 
 It is one `.exe`. Double-click it. No installer, no account, no background services.
 
-> **Beta.** Hollywood Arcade is early software that has been tested by a handful of friends. Expect rough edges, and please report them.
+> **Version 3.0 is the first official release.** It is free, open source and made by one person, so if something breaks, use **Settings > Health check > Copy report** and open an issue.
 
 ## Features
 - **Home, Games, Apps** with covers, descriptions and play time, pulled from free sources.

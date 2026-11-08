@@ -1,10 +1,20 @@
 // Hollywood Arcade 2.0 features: patch notes, and (added below) Guide, sounds, keyboard, backup and more.
 'use strict';
-window.APP_VERSION = '2.3.1';
+window.APP_VERSION = '3.0.0';
 
 // ---------- patch notes ----------
 // Add a new entry at the TOP for every release. The What's New screen shows automatically once per version.
 const PATCH_NOTES = [
+  {
+    v: '3.0.0', date: 'November 2026', title: 'Hollywood Arcade 3.0: the first official release',
+    groups: [
+      ['New', [
+        'Hollywood Arcade is out of beta. Everything from the 2.x series is here: the console home screen, the in-game Guide, profiles, achievements, the Store, Watch, the System menu, shell mode and the self-updater.',
+        'A guided first-run setup, which you can run again from Settings.'
+      ]],
+      ['Improved', ['Safer saving with automatic backup recovery, a steadier updater, and a Guide that gets ready off-screen instead of flashing at start-up.']]
+    ]
+  },
   {
     v: '2.3.1', date: 'November 2026', title: 'Start-up fix',
     groups: [['Fixed', ['The Guide no longer flashes on screen for a moment a few seconds after Arcade opens. It now gets ready off-screen.']]]
