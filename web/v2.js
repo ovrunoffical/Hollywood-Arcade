@@ -1,10 +1,16 @@
 // Hollywood Arcade 2.0 features: patch notes, and (added below) Guide, sounds, keyboard, backup and more.
 'use strict';
-window.APP_VERSION = '2.2.2';
+window.APP_VERSION = '2.2.3';
 
 // ---------- patch notes ----------
 // Add a new entry at the TOP for every release. The What's New screen shows automatically once per version.
 const PATCH_NOTES = [
+  {
+    v: '2.2.3', date: 'November 2026', title: 'Update test',
+    groups: [
+      ['Improved', ['This release changes nothing. It only exists to check that updating from inside Arcade works.']]
+    ]
+  },
   {
     v: '2.2.2', date: 'November 2026', title: 'Guide diagnostics',
     groups: [
