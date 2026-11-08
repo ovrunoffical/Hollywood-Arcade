@@ -456,7 +456,7 @@ func startPadChord(onChord func()) {
 		scanSony()
 		tick := 0
 		var last time.Time
-		var heldSince time.Time
+		var heldSince, lastSeen time.Time
 		fired := false
 		for {
 			time.Sleep(40 * time.Millisecond)
@@ -500,6 +500,10 @@ func startPadChord(onChord func()) {
 				hit, hold = chord || touch, 450*time.Millisecond // the PS button is left out: Steam grabs it and opens Big Picture
 			default:
 				hit, hold = chord, 320*time.Millisecond
+			}
+			if rawX|rawJ != 0 && time.Since(lastSeen) > 4*time.Second && !arcadeInFront() { // for the log: what a game in front leaves us to read
+				lastSeen = time.Now()
+				arcLog(fmt.Sprintf("Buttons seen outside Arcade: xinput=%d joy=%d, Guide mode %s, window: %s", rawX, rawJ, mode, fgTitle()))
 			}
 			if !hit {
 				heldSince, fired = time.Time{}, false
