@@ -41,7 +41,7 @@ Arcade runs a small web server that only listens on your own PC (127.0.0.1) and 
 | Achievements | Steam, RetroAchievements, OpenXBL (only if you add the details) |
 | Watch | your own Jellyfin server; streaming sites you open |
 | Emulator install | GitHub releases of the emulator you choose |
-| Update check | the address you paste in Settings (off by default) |
+| Updates | `api.github.com` and `github.com` release downloads for this project. Checked a few seconds after start-up (turn off in Settings); an update is only installed when you press **Update now**, and only if its SHA-256 matches the published checksum |
 
 API keys are stored in `library.json` on your PC. Backups made with the normal **Back up** button leave keys out; **Back up with keys** includes them. Bug-report text hides your Windows user name and folders.
 
@@ -65,7 +65,7 @@ GOOS=windows GOARCH=amd64 go build -ldflags "-s -w -H=windowsgui" -o HollywoodAr
 See [CONTRIBUTING.md](CONTRIBUTING.md). On Linux or macOS you can run the web side for development with `HA_NOWINDOW=1 go run .`.
 
 ## Update check
-Settings can check a `version.json` file for new versions. Each release publishes one, so you can paste `https://github.com/ovrunoffical/Hollywood-Arcade/releases/latest/download/version.json`. It never installs anything by itself.
+Arcade updates itself from this project's GitHub releases (Settings → Updates). Every release publishes `HollywoodArcade.exe` and a `HollywoodArcade.exe.sha256` checksum; an update is installed only if the two match, and the previous version is put back automatically if the new one fails to start.
 
 ## Disclaimer
 Hollywood Arcade is an independent project. It is not made by, or connected to, Microsoft, Sony, Nintendo, Valve, Epic Games, Apple or any service it can open. Names and pictures belong to their owners. Arcade does not download or provide games, ROMs or BIOS files; you supply your own.

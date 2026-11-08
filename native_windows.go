@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -381,6 +382,7 @@ var (
 		sync.Mutex
 		name string
 		h    uintptr
+		pid  uint32
 	}
 	padRawX atomic.Uint32
 	padRawJ atomic.Uint32
@@ -388,7 +390,7 @@ var (
 
 func setLastGame(name string, h uintptr, pid uint32) {
 	lastGame.Lock()
-	lastGame.name, lastGame.h = name, h
+	lastGame.name, lastGame.h, lastGame.pid = name, h, pid
 	lastGame.Unlock()
 }
 
@@ -525,4 +527,73 @@ func fgTitle() string {
 	buf := make([]uint16, 256)
 	n, _, _ := pGetText.Call(h, uintptr(unsafe.Pointer(&buf[0])), 256)
 	return strings.TrimSpace(string(utf16.Decode(buf[:n])))
+}
+
+// closeGame ends the program Arcade last launched, for a game that has frozen. It asks politely first
+// and then forces the whole process tree to stop.
+func closeGame() bool {
+	lastGame.Lock()
+	h, pid := lastGame.h, lastGame.pid
+	lastGame.Unlock()
+	if h == 0 {
+		return false
+	}
+	if r, _, _ := pIsWin.Call(h); r == 0 {
+		return false
+	}
+	if pid == 0 {
+		pGetPid.Call(h, uintptr(unsafe.Pointer(&pid)))
+	}
+	if pid == 0 {
+		return false
+	}
+	c := exec.Command("taskkill", "/PID", fmt.Sprint(pid), "/T", "/F")
+	hide(c)
+	err := c.Run()
+	arcLog(fmt.Sprintf("Close game: pid %d, error: %v", pid, err))
+	return err == nil
+}
+
+// closeMainWindows asks every Hollywood Arcade window to close (used before restarting for an update).
+func closeMainWindows() {
+	p := user32.NewProc("PostMessageW")
+	for _, w := range topWindows() {
+		if strings.HasPrefix(w.title, "Hollywood Arcade") {
+			p.Call(w.h, 0x0010, 0, 0) // WM_CLOSE
+		}
+	}
+}
+
+// releaseSingleton lets a new copy of Arcade start while this one is still finishing.
+func releaseSingleton() {
+	if mutexHandle != 0 {
+		syscall.CloseHandle(syscall.Handle(mutexHandle))
+		mutexHandle = 0
+	}
+}
+
+var pSetLong = user32.NewProc("SetWindowLongW")
+
+// toastPrepare turns the pop-up window into a frameless tool window that never takes focus.
+func toastPrepare(h uintptr) {
+	defer func() { recover() }()
+	const gwlStyle, gwlEx = ^uintptr(15), ^uintptr(19) // -16, -20
+	st, _, _ := pGetExStyle.Call(h, gwlStyle)
+	pSetLong.Call(h, gwlStyle, st&^(0x00C00000|0x00040000)) // no title bar, no resize border
+	ex, _, _ := pGetExStyle.Call(h, gwlEx)
+	pSetLong.Call(h, gwlEx, ex|0x80|0x08000000) // tool window (no taskbar button), never activated
+}
+
+// showToastWindow puts the pop-up in the bottom-right corner above everything, without stealing focus, or hides it.
+func showToastWindow(h uintptr, on bool) {
+	defer func() { recover() }()
+	if !on {
+		hideWindow(h)
+		return
+	}
+	w, _, _ := pMetrics.Call(0)
+	hh, _, _ := pMetrics.Call(1)
+	const sw, sh = 400, 108
+	// HWND_TOPMOST, SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_FRAMECHANGED
+	pSetPos.Call(h, ^uintptr(0), w-sw-24, hh-sh-90, sw, sh, 0x10|0x40|0x20)
 }

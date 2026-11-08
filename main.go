@@ -23,7 +23,7 @@ import (
 	"time"
 )
 
-const appVersion = "2.1.0"
+const appVersion = "2.2.0"
 
 //go:embed web
 var webFS embed.FS
@@ -364,7 +364,7 @@ func guard(next http.Handler) http.Handler {
 			http.Error(w, "forbidden", http.StatusForbidden)
 			return
 		}
-		if (r.URL.Path == "/" || r.URL.Path == "/overlay.html") && r.URL.Query().Get("k") == token {
+		if (r.URL.Path == "/" || r.URL.Path == "/overlay.html" || r.URL.Path == "/toast.html") && r.URL.Query().Get("k") == token {
 			http.SetCookie(w, &http.Cookie{Name: "ha", Value: token, Path: "/", HttpOnly: true, SameSite: http.SameSiteStrictMode})
 			http.Redirect(w, r, r.URL.Path, http.StatusFound)
 			return
@@ -540,6 +540,7 @@ func killOverlay() {
 	if overlayCmd != nil && overlayCmd.Process != nil {
 		overlayCmd.Process.Kill()
 	}
+	go killToast()
 }
 
 func toggleOverlay(closeOnly bool) {
@@ -559,6 +560,12 @@ func toggleOverlay(closeOnly bool) {
 	if closeOnly || overlaySpawning {
 		return
 	}
+	spawnOverlay(true)
+}
+
+// spawnOverlay starts the Guide window. With show false it is hidden again as soon as it exists, so the
+// first button press later is instant (starting a browser takes a few seconds).
+func spawnOverlay(show bool) {
 	br := findBrowser()
 	if br == "" {
 		arcLog("Guide: no Edge or Chrome found to draw it")
@@ -578,13 +585,28 @@ func toggleOverlay(closeOnly bool) {
 		for i := 0; i < 80; i++ { // wait for the window to exist, then show it on top
 			time.Sleep(250 * time.Millisecond)
 			if h := findWindow(overlayTitle, true); h != 0 {
-				showOnTop(h)
-				arcLog("Guide: window opened")
+				if show {
+					showOnTop(h)
+					arcLog("Guide: window opened")
+				} else {
+					hideWindow(h)
+				}
 				return
 			}
 		}
 		arcLog("Guide: the window never appeared after 20 seconds")
 	}()
+}
+
+// prewarmOverlay readies the Guide window in the background a few seconds after start-up.
+func prewarmOverlay() {
+	time.Sleep(6 * time.Second)
+	overlayMu.Lock()
+	defer overlayMu.Unlock()
+	if findWindow(overlayTitle, true) != 0 || overlaySpawning {
+		return
+	}
+	spawnOverlay(false)
 }
 
 var tagRe = regexp.MustCompile(`\s*[\(\[][^\)\]]*[\)\]]`)
@@ -668,8 +690,20 @@ func main() {
 	}
 
 	if !singleInstance() {
-		return // already running: never open a second copy
+		ok := false
+		for _, a := range os.Args[1:] {
+			if a == "--updated" { // the old copy is still shutting down: give it a moment
+				for i := 0; i < 30 && !ok; i++ {
+					time.Sleep(500 * time.Millisecond)
+					ok = singleInstance()
+				}
+			}
+		}
+		if !ok {
+			return // already running: never open a second copy
+		}
 	}
+	updateStartup()
 
 	raw := make([]byte, 16)
 	rand.Read(raw)
@@ -688,6 +722,9 @@ func main() {
 	startHotkey(func() { toggleOverlay(false) })
 	startPadChord(func() { toggleOverlay(false) })
 	startPadKeys()
+	if os.Getenv("HA_NOWINDOW") == "" {
+		go prewarmOverlay()
+	}
 
 	u := fmt.Sprintf("http://127.0.0.1:%d/?k=%s", port, token)
 	if os.Getenv("HA_NOWINDOW") != "" {

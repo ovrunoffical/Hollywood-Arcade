@@ -15,6 +15,11 @@ func raiseLaunched(b map[uintptr]bool, name, target string) {}
 func startPadChord(f func())                                {}
 func gameState() (string, bool)                             { return "", false }
 func resumeGame() bool                                      { return false }
+func closeGame() bool                                       { return false }
+func closeMainWindows()                                     {}
+func releaseSingleton()                                     {}
+func toastPrepare(h uintptr)                                {}
+func showToastWindow(h uintptr, on bool)                    {}
 func raiseArcade()                                          {}
 func padRaw() (uint32, uint32)                              { return 0, 0 }
 func centerWindow(h uintptr)                                {}

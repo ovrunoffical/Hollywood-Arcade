@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Hollywood Toast</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  html, body { margin: 0; height: 100%; background: #0d130d; overflow: hidden; user-select: none; font-family: "Segoe UI", "Segoe UI Variable Display", system-ui, sans-serif; color: #fff; }
+  .card { height: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 14px; padding: 0 18px; border-left: 6px solid #9bf00b; background: linear-gradient(90deg, #17321a, #0d130d 70%); }
+  .ic { width: 56px; height: 56px; border-radius: 12px; background: #1f2a1f center/cover no-repeat; display: grid; place-items: center; font-size: 30px; flex: none; }
+  .t { min-width: 0; }
+  .k { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #9bf00b; font-weight: 600; }
+  .n { font-size: 19px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .d { font-size: 14px; color: #b9c4ba; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+</style></head>
+<body>
+<div class="card"><div class="ic" id="ic">&#127942;</div><div class="t"><div class="k" id="k">Achievement unlocked</div><div class="n" id="n"></div><div class="d" id="d"></div></div></div>
+<script src="shared.js"></script>
+<script>
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+  const post = (p, b) => fetch(p, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b || {}) }).catch(() => {});
+  async function show(m) {
+    document.getElementById('n').textContent = m.title || '';
+    document.getElementById('d').textContent = m.text || '';
+    const ic = document.getElementById('ic');
+    if (m.icon && /^https?:\/\//.test(m.icon)) { ic.style.backgroundImage = 'url("' + m.icon.replace(/"/g, '') + '")'; ic.textContent = ''; } else { ic.style.backgroundImage = ''; ic.textContent = '\u{1F3C6}'; }
+    await post('/api/toast/show', { on: true });
+    try { SFX.config({ on: true, vol: 0.7, theme: 'classic' }); SFX.play('achieve'); } catch (e) { /* no audio */ }
+    await sleep(6000);
+  }
+  (async function loop() {
+    for (;;) {
+      try {
+        let m = await fetch('/api/toast/next').then(r => r.json());
+        if (!m || !m.title) continue;
+        while (m && m.title) { await show(m); m = await fetch('/api/toast/next?wait=0').then(r => r.json()); }
+        await post('/api/toast/show', { on: false });
+      } catch (e) { await sleep(2500); }
+    }
+  })();
+</script></body></html>

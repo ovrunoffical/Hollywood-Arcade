@@ -29,6 +29,7 @@
     back() { blip(900, 560, 0.1, 'triangle', 0.2); },
     open() { whoosh(0.32, 500, 2600, 0.5); blip(520, 880, 0.2, 'sine', 0.12, 0.04); },
     close() { whoosh(0.28, 2400, 450, 0.45); },
+    achieve() { [784, 988, 1319].forEach((f, i) => blip(f, f * 1.005, 0.24, 'triangle', 0.2, i * 0.1)); blip(1976, 1976, 0.55, 'sine', 0.1, 0.34); },
     toast() { blip(1175, 1175, 0.08, 'sine', 0.2); blip(1568, 1568, 0.12, 'sine', 0.18, 0.09); },
     startup() { [523, 659, 784, 1046].forEach((f, i) => blip(f, f * 1.01, 0.5 - i * 0.04, 'sine', 0.16, i * 0.11)); whoosh(0.7, 300, 3000, 0.25); }
   };
@@ -39,7 +40,7 @@
   };
 
   // Which controller button opens the Guide for a given game.
-  // Steam games (Steam Input hides the touchpad) and games tagged as native PS5 use L3+R3; everything else uses the touchpad.
+  // Steam games (Steam Input hides the touchpad) and games tagged as native PS5 use L3+R3; everything else accepts any of the three.
   window.guideBindFor = function (it, s) {
     s = s || {};
     const pick = it && it.guideBind && it.guideBind !== 'auto' ? it.guideBind : (s.guideDefault && s.guideDefault !== 'auto' ? s.guideDefault : 'auto');
@@ -47,6 +48,6 @@
     if (!it) return 'any';
     const steam = it.appid || /steam/i.test(it.source || '') || /^steam:/i.test(it.target || '');
     if (steam || it.nativePS5) return 'chord';
-    return it.category === 'game' ? 'touch' : 'any';
+    return 'any'; // non-Steam games: L3+R3, the touchpad or the PS button all work
   };
 })();

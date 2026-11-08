@@ -96,7 +96,7 @@ document.addEventListener('mouseover', homeHover);
 function home() {
   const games = S.items.filter(i => i.category === 'game'), apps = S.items.filter(i => i.category === 'app');
   const head = `<div class="xhead"><button class="xprofile" data-act="guide" aria-label="Menu">${typeof v21Avatar === 'function' ? v21Avatar() : '<img src="logo.png" alt="">'}<span><b>${esc(typeof v21Name === 'function' ? v21Name() : 'Hollywood')}</b><small><i class="g">G</i> ${games.length} games · ${apps.length} apps</small></span></button>
-    <div class="xright"><button class="xsearch" data-act="gsearch">${SVG.search}<span>Search</span></button><button class="xgear" data-act="gsettings" aria-label="Settings">${SVG.gear}</button><span class="xclock" id="xclock">${clockText()}</span></div></div>`;
+    <div class="xright"><button class="xsearch" data-act="gsearch">${SVG.search}<span>Search</span></button><button class="xgear xbell" data-v22="notes" aria-label="Notifications" title="Notifications"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 22a2.4 2.4 0 0 0 2.4-2.4h-4.8A2.4 2.4 0 0 0 12 22zm7-6.4V11a7 7 0 0 0-5.5-6.8V3.5a1.5 1.5 0 0 0-3 0v.7A7 7 0 0 0 5 11v4.6l-2 2v1h18v-1z"/></svg><i></i></button><button class="xgear" data-act="gsettings" aria-label="Settings">${SVG.gear}</button><span class="xclock" id="xclock">${clockText()}</span></div></div>`;
   if (!S.items.length) return head + `<div class="welcome"><h2>Your games, apps and music in one place.</h2><p>Start by pulling in what's already installed.</p><div class="toolbar"><button class="btn primary" data-act="scanAll">Scan my games</button><button class="btn" data-act="startMenu">Import Game Pass / Start menu</button><button class="btn" data-act="add-game">Add a game</button></div></div>`;
   const played = S.items.filter(i => i.lastPlayed).sort((a, b) => b.lastPlayed - a.lastPlayed);
   // the running game has its own Resume tile, so it isn't repeated, and the row never grows past one line
@@ -644,7 +644,7 @@ function focusMove(els, dir) {
 function move(dir) {
   const dlg = document.querySelector('dialog[open]');
   if (dlg) return focusMove($$('button, input:not([type=hidden]), select', dlg).filter(e => e.offsetParent !== null && !e.disabled), dir);
-  focusMove($$('.side button, .stage button, .player button, .top input, .stage input[type=search], .stage input[type=text], .stage input[type=password], .stage input[type=url], .stage input:not([type])').filter(e => e.offsetParent !== null && !e.disabled), dir);
+  focusMove($$('.side button, .stage button, .player button, .top input, .top button, .stage input[type=search], .stage input[type=text], .stage input[type=password], .stage input[type=url], .stage input:not([type])').filter(e => e.offsetParent !== null && !e.disabled), dir);
 }
 function editFocused() {
   const t = document.activeElement?.closest?.('.tile[data-id]');

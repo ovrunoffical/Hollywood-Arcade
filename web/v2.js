@@ -1,10 +1,32 @@
 // Hollywood Arcade 2.0 features: patch notes, and (added below) Guide, sounds, keyboard, backup and more.
 'use strict';
-window.APP_VERSION = '2.1.0';
+window.APP_VERSION = '2.2.0';
 
 // ---------- patch notes ----------
 // Add a new entry at the TOP for every release. The What's New screen shows automatically once per version.
 const PATCH_NOTES = [
+  {
+    v: '2.2.0', date: 'November 2026', title: 'Updates, notifications and a sturdier Guide',
+    groups: [
+      ['New', [
+        'Updates inside Arcade: it checks the project\u2019s releases on GitHub after start-up and shows what changed. Press Update now and it downloads the new version, checks it against the published checksum, restarts itself, and puts the old version back if the new one will not start. It never installs anything without asking, and you can turn the check off in Settings.',
+        'Live achievement pop-ups: while a game you started from Arcade is running, its achievements are checked every 30 seconds (Steam, RetroAchievements and Xbox titles you have set up). A new unlock shows a pop-up over the game with its own chime.',
+        'Notification Center: the bell on Home and in the top bar (and a row in the Guide) lists achievements, updates and downloads, with a count of what is new.',
+        'Close game: if a game freezes, the Guide has a Close game row. The System page also opens File Explorer and Task Manager.',
+        'Controller test now has Open the Guide now (to tell a drawing problem from a button problem) and Copy report, which gathers what is needed to debug a controller.'
+      ]],
+      ['Improved', [
+        'The Guide window is prepared in the background at start-up, so the first press opens it at once.',
+        'Games that are not from Steam now accept any of L3 + R3, the touchpad or the PS button to open the Guide. Xbox controllers use L3 + R3 in every game.',
+        'Arcade notices controllers that are switched on after it starts, instead of only the ones connected at launch.'
+      ]],
+      ['Fixed', [
+        'The search box could not be reached with a controller, so the on-screen keyboard never opened. Pressing up from the games now lands on it.',
+        'Home no longer wraps onto a second row while a game is running, and the Watch page\u2019s streaming tiles are no longer cut off.',
+        'The Guide now matches the rest of Arcade: dark panels with the green highlight instead of the old silver look.'
+      ]]
+    ]
+  },
   {
     v: '2.1.0', date: 'November 2026', title: 'Profiles, achievements and the living room',
     groups: [
@@ -81,7 +103,7 @@ async function v2boot() {
   SFX.config(sndCfg());
   maybeWizard();
   if (S.settings.autoScan && S.settings.setupDone && typeof runScanAll === 'function') setTimeout(() => runScanAll().catch(() => {}), 6000);
-  if (S.settings.updateUrl) setTimeout(() => checkUpdate(false), 8000);
+  if (S.settings.autoUpdate !== false) setTimeout(() => checkUpdate(false), 8000);
   setTimeout(() => SFX.play('startup'), 700);
   fetch('/api/guidebind', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bind: S.settings.guideDefault && S.settings.guideDefault !== 'auto' ? S.settings.guideDefault : 'chord', ps: (S.settings.guidePs || 13) - 1, touch: (S.settings.guideTouch || 14) - 1 }) }).catch(() => {});
   pollRunning();
@@ -225,6 +247,21 @@ function openPadTest() {
 }
 ptdlg.addEventListener('close', () => clearInterval(ptTimer));
 document.getElementById('ptclose').addEventListener('click', () => ptdlg.close());
+// opens the Guide window the same way the controller would, to tell a drawing problem from a button problem
+document.getElementById('ptguide').addEventListener('click', () => { fetch('/api/overlay', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'open' }) }).catch(() => {}); toast('Opening the Guide\u2026'); });
+// everything needed to work out a controller problem, as text to paste
+document.getElementById('ptcopy').addEventListener('click', async () => {
+  const pads = (navigator.getGamepads ? [...navigator.getGamepads()] : []).filter(x => x && x.connected);
+  const raw = await fetch('/api/padraw').then(x => x.json()).catch(() => null);
+  const lg = await fetch('/api/log').then(x => x.json()).catch(() => ({ log: '' }));
+  const s = S.settings;
+  const t = ['Hollywood Arcade ' + window.APP_VERSION + ' controller report',
+    'Controllers (browser): ' + (pads.map(p => p.id + ' [' + (p.mapping || 'raw') + ']').join('; ') || 'none'),
+    'Windows buttons now: xinput=' + (raw ? raw.xinput : '?') + ' joy=' + (raw ? raw.joy : '?'),
+    'Guide setting: ' + (s.guideDefault || 'auto') + ', PS button #' + (s.guidePs || 13) + ', touchpad #' + (s.guideTouch || 14),
+    'Recent log:', String(lg.log || '').split('\n').slice(-25).join('\n')].join('\n');
+  try { await navigator.clipboard.writeText(t); toast('Report copied'); } catch { prompt('Copy this report', t); }
+});
 for (const [id, key] of [['ptps', 'guidePs'], ['pttouch', 'guideTouch']]) {
   document.getElementById(id).addEventListener('change', (e) => {
     const n = Math.max(1, Math.min(32, +e.target.value || 1)); S.settings[key] = n; save();
@@ -242,7 +279,7 @@ function v2Settings() {
       `<button class="switch ${snd.on !== false ? 'on' : ''}" role="switch" aria-checked="${snd.on !== false}" data-v2="snd-on"></button>`) +
     row('Sound style', 'Classic is bright and glassy. Soft is quieter.', chip('snd-theme', 'classic', 'Classic', snd.theme !== 'soft' && snd.theme !== 'off') + chip('snd-theme', 'soft', 'Soft', snd.theme === 'soft') + chip('snd-theme', 'off', 'Off', snd.theme === 'off')) +
     row('Sound volume', 'How loud the interface sounds are.', `<input type="range" min="0" max="100" value="${Math.round((snd.vol ?? 0.6) * 100)}" data-v2="snd-vol" style="width:160px"><button class="btn" data-v2="snd-test">Try</button>`) +
-    row('Guide button', 'Which button opens the Guide inside a game. Automatic uses L3+R3 (hold) for Steam and PS5-native games and the touchpad (hold) for everything else. Each game can override this in its info card.',
+    row('Guide button', 'Which button opens the Guide inside a game. Automatic uses L3+R3 (hold) for Steam and PS5-native games, and any of L3+R3, the touchpad or the PS button for everything else. Xbox controllers always use L3+R3. Each game can override this in its info card.',
       `<select class="keyin" data-v2="guide-default">${opt('auto', 'Automatic', s.guideDefault || 'auto')}${opt('chord', 'L3 + R3 (hold)', s.guideDefault)}${opt('touch', 'Touchpad (hold)', s.guideDefault)}${opt('ps', 'PS button', s.guideDefault)}${opt('any', 'Any of them', s.guideDefault)}</select>`) +
     row('Jellyfin address', 'Where your Jellyfin server runs. ErsatzTV channels you added to Jellyfin show up under Live TV on the Watch page.', `<input class="keyin" data-v2="jf-url" value="${esc(s.jellyfinUrl || '')}" placeholder="${esc(jfBase())}" autocomplete="off">`) +
     row('Jellyfin API key', 'Jellyfin Dashboard \u203a API Keys \u203a add one named Hollywood Arcade, then paste it here. It stays on this PC.', `<input class="keyin" type="password" data-v2="jf-key" value="${esc(s.jellyfinKey || '')}" placeholder="Paste key" autocomplete="off"><button class="btn" data-v2="jf-test">Test</button>`) +
@@ -397,17 +434,34 @@ const verNum = (v) => String(v || '0').replace(/^v/i, '').split('.').map(x => pa
 const verNewer = (a, b) => { const x = verNum(a), y = verNum(b); for (let i = 0; i < 3; i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); } return false; };
 window.__update = null;
 async function checkUpdate(manual) {
-  const u = (S.settings.updateUrl || '').trim();
-  if (!u) { if (manual) toast('Paste a link to your version.json in Settings first'); return; }
-  const r = await fetch('/api/updatecheck?url=' + encodeURIComponent(u)).then(x => x.json()).catch(() => null);
+  const r = await fetch('/api/update/check').then(x => x.json()).catch(() => null);
   if (!r || !r.ok) { if (manual) toast((r && r.error) || "Couldn't check for updates"); return; }
-  const i = r.info || {};
-  if (i.version && verNewer(i.version, window.APP_VERSION)) { window.__update = i; if (view === 'home' || view === 'settings') render(); if (manual) toast('Update available: ' + i.version); }
-  else { window.__update = null; if (manual) toast('You are up to date (' + window.APP_VERSION + ')'); }
+  if (r.newer) {
+    const first = !window.__update || window.__update.version !== r.latest;
+    window.__update = { version: r.latest, notes: r.notes || '', canInstall: r.canInstall, page: r.page };
+    if (view === 'home' || view === 'settings') render();
+    if (first || manual) { toast('Update available: ' + r.latest); if (typeof notify === 'function') notify('Update available', 'Version ' + r.latest + ' is ready to install.', 'update'); }
+    if (manual) updateDialog();
+  } else { window.__update = null; if (manual) toast('You are up to date (' + window.APP_VERSION + ')'); }
 }
 function v2UpdateBanner() {
   const i = window.__update; if (!i) return '';
-  return `<div class="updbar"><b>Update available: ${esc(i.version)}</b><span>${esc(i.notes || '')}</span><button class="btn primary" data-v2="upd-get">Download</button></div>`;
+  return `<div class="updbar"><b>Update available: ${esc(i.version)}</b><span>You have ${esc(window.APP_VERSION)}</span><button class="btn primary" data-v2="upd-get">See what\u2019s new</button></div>`;
+}
+// shows the release notes and installs the update when the person agrees
+function updateDialog() {
+  const i = window.__update; if (!i) return;
+  const notes = String(i.notes || 'No notes for this release.').replace(/\r/g, '');
+  const body = `<h2>Update to ${esc(i.version)}</h2><p class="hint">You have ${esc(window.APP_VERSION)}. Arcade checks the download against its published checksum, restarts itself, and puts the old version back if the new one will not start.</p><pre class="updnotes">${esc(notes)}</pre><p id="updmsg" class="hint"></p>`;
+  const btns = i.canInstall
+    ? [{ label: 'Update now', primary: true, close: false, fn: async () => {
+        const m = document.getElementById('updmsg'); if (m) m.textContent = 'Downloading\u2026 Arcade will restart in a moment.';
+        const r = await fetch('/api/update/install', { method: 'POST' }).then(x => x.json()).catch(() => null);
+        if (r && r.ok) { if (m) m.textContent = 'Installed ' + r.version + '. Restarting\u2026'; }
+        else if (m) m.textContent = (r && r.error) || 'The update could not be installed.';
+      } }, { label: 'Later' }]
+    : [{ label: 'Open the release page', primary: true, fn: () => { if (i.page) api.launch({ kind: 'url', target: i.page, name: 'Update' }); } }, { label: 'Later' }];
+  v21show(body, btns, true);
 }
 
 // ================= Settings: backup, updates, about =================
@@ -418,17 +472,17 @@ v2Settings = function () {
   return v2UpdateBanner() + _v2Settings() +
     row('Look for new games at start-up', 'Scans Steam, Epic, GOG, Ubisoft and Game Pass every time Arcade opens and adds anything new.', `<button class="switch ${s.autoScan ? 'on' : ''}" role="switch" aria-checked="${!!s.autoScan}" data-v2="autoscan"></button>`) +
     row('Back up and restore', 'Saves your library, settings and covers to one file, or loads one back.', '<button class="btn" data-v2="backup">Back up</button><button class="btn" data-v2="restore">Restore</button>', 'v2backup') +
-    row('Update check', 'Optional. Paste the link to a version.json file and Arcade will tell you when a newer version is published. It never installs anything by itself.', `<input class="keyin" data-v2="upd-url" value="${esc(s.updateUrl || '')}" placeholder="https://…/version.json" autocomplete="off"><button class="btn" data-v2="upd-check">Check</button>`) +
+    row('Updates', 'Arcade checks the project\u2019s releases on GitHub a few seconds after start-up and tells you when a new version is out. It never installs anything without asking.', `<button class="switch ${s.autoUpdate !== false ? 'on' : ''}" role="switch" aria-checked="${s.autoUpdate !== false}" data-v2="autoupd"></button><button class="btn" data-v2="upd-check">Check now</button>`) +
     row('About and credits', 'Version ' + esc(window.APP_VERSION) + '. Data sources and error log.', '<button class="btn" data-v2="about">Open</button>');
 };
 document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-v2]'); if (!b) return; const k = b.dataset.v2;
   if (k === 'backup') doBackup(); else if (k === 'restore') doRestore(); else if (k === 'about') openAbout();
   else if (k === 'upd-check') checkUpdate(true);
-  else if (k === 'upd-get' && window.__update) { const u = window.__update.url; if (u && /^https?:\/\//i.test(u)) api.launch({ kind: 'url', target: u, name: 'Download' }); else toast('No download link in the update file'); }
+  else if (k === 'upd-get') updateDialog();
+  else if (k === 'autoupd') { S.settings.autoUpdate = S.settings.autoUpdate === false; save(); render(); }
   else if (k === 'autoscan') { S.settings.autoScan = !S.settings.autoScan; save(); render(); }
 });
-document.addEventListener('change', (e) => { const b = e.target.closest && e.target.closest('[data-v2="upd-url"]'); if (b) { S.settings.updateUrl = b.value.trim(); save(); } });
 
 // ================= first-run setup =================
 const wizd = document.getElementById('wizdlg');

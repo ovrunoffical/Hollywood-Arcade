@@ -614,6 +614,15 @@ func powerAction(a string) result {
 	case "desktop":
 		startExplorer()
 		return result{OK: true}
+	case "explorer":
+		return run("explorer.exe", "shell:MyComputerFolder")
+	case "taskmgr":
+		return run("taskmgr.exe")
+	case "closegame":
+		if !closeGame() {
+			return result{false, "No game to close"}
+		}
+		return result{OK: true}
 	case "exit":
 		exiting.Store(true)
 		if readSettingBool("shellMode") {
@@ -627,6 +636,8 @@ func powerAction(a string) result {
 
 func registerExtras(mux *http.ServeMux) {
 	registerMixer(mux)
+	registerUpdate(mux)
+	registerToast(mux)
 	mux.HandleFunc("/api/nowplaying", func(w http.ResponseWriter, r *http.Request) {
 		npOnce.Do(startNowPlaying)
 		npMu.Lock()

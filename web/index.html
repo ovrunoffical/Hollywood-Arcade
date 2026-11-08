@@ -49,7 +49,7 @@
   </aside>
 
   <section class="stage">
-    <div class="top"><input id="q" type="search" placeholder="Search" aria-label="Search"></div>
+    <div class="top"><input id="q" type="search" placeholder="Search" aria-label="Search"><button id="notbell" class="bell" type="button" aria-label="Notifications" data-v22="notes" title="Notifications"><svg viewBox="0 0 24 24"><path d="M12 22a2.4 2.4 0 0 0 2.4-2.4h-4.8A2.4 2.4 0 0 0 12 22zm7-6.4V11a7 7 0 0 0-5.5-6.8V3.5a1.5 1.5 0 0 0-3 0v.7A7 7 0 0 0 5 11v4.6l-2 2v1h18v-1z"/></svg><i></i></button></div>
     <main id="main"></main>
   </section>
 </div>
@@ -202,7 +202,7 @@
     <label>PS button is number <input type="number" id="ptps" min="1" max="32" class="keyin" style="width:80px"></label>
     <label>Touchpad is number <input type="number" id="pttouch" min="1" max="32" class="keyin" style="width:80px"></label>
   </div>
-  <div class="dlgbtns"><span class="spacer"></span><button type="button" class="btn primary" id="ptclose">Done</button></div>
+  <div class="dlgbtns"><button type="button" class="btn" id="ptguide">Open the Guide now</button><button type="button" class="btn" id="ptcopy">Copy report</button><span class="spacer"></span><button type="button" class="btn primary" id="ptclose">Done</button></div>
 </dialog>
 
 <dialog id="abdlg">
@@ -251,5 +251,6 @@
 <script src="v2.js"></script>
 <script src="watch.js"></script>
 <script src="v21.js"></script>
+<script src="v22.js"></script>
 </body>
 </html>

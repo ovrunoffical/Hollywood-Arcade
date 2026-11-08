@@ -86,6 +86,7 @@
     const power = (key, label, action) => ({ label: confirmKey === key ? 'Press again to confirm' : label, act: () => { if (confirmKey === key) { post('/api/power', { action }); closeGuide(); } else { confirmKey = key; draw(); } } });
     const center = [];
     if (running.running) center.push({ label: 'Resume game', sub: running.name || '', act: async () => { await post('/api/resume'); closeGuide(); } });
+    if (running.running) center.push(power('closegame', 'Close game (if it froze)', 'closegame'));
     center.push({ label: 'Arcade home', act: () => go('home') });
     center.push({ label: 'Play / pause', sub: nm, act: () => media('playpause') });
     center.push({ label: 'Next song', act: () => media('next') });
@@ -96,6 +97,8 @@
       if (mix.groups.games.n) center.push({ label: 'Game volume', slider: () => mix.groups.games.vol, set: (v) => { mix.groups.games.vol = v; post('/api/mixer/set', { group: 'games', vol: v }); } });
       if (mix.groups.chat.n) center.push({ label: 'Chat volume', slider: () => mix.groups.chat.vol, set: (v) => { mix.groups.chat.vol = v; post('/api/mixer/set', { group: 'chat', vol: v }); } });
     }
+    const unreadN = (lib.notes || []).filter(n => !n.read).length;
+    center.push({ label: 'Notifications', sub: unreadN ? unreadN + ' new' : '', act: () => go('notes') });
     center.push({ label: 'Discord', act: () => go('discord') });
     const profs = lib.profiles || [];
     if (profs.length > 1) center.push({ label: 'Switch profile', sub: (profs.find(p => p.id === lib.activeProfile) || {}).name || '', act: () => openPage('Who\u2019s playing', profs.map(p => ({ label: p.name, sub: p.id === lib.activeProfile ? 'Signed in' : '', act: () => go('profile:' + p.id) }))) });
@@ -112,6 +115,8 @@
       { label: 'Display', act: () => { sysDo({ do: 'open', arg: 'ms-settings:display' }); closeGuide(); } },
       { label: 'Sound', act: () => { sysDo({ do: 'open', arg: 'ms-settings:sound' }); closeGuide(); } },
       { label: 'Power mode', sub: ({ balanced: 'Balanced', saver: 'Power saver', high: 'High performance' })[S.plan] || '', act: () => openPage('Power mode', [['balanced', 'Balanced'], ['saver', 'Power saver'], ['high', 'High performance']].map(([k, n]) => ({ label: n, sub: S.plan === k ? 'Current' : '', act: async () => { const r = await sysDo({ do: 'plan', arg: k }); if (r.ok) { S.plan = k; flash(n + ' on'); popPage(); } else flash(r.error || 'Could not change'); } }))) },
+      { label: 'File Explorer', act: () => { post('/api/power', { action: 'explorer' }); closeGuide(); } },
+      { label: 'Task Manager', act: () => { post('/api/power', { action: 'taskmgr' }); closeGuide(); } },
       { label: 'Windows Update', act: () => { sysDo({ do: 'open', arg: 'ms-settings:windowsupdate' }); closeGuide(); } },
       { label: 'Screensaver', sub: 'Ambient mode', act: () => go('ambient') }
     ];

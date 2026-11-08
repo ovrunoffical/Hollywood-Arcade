@@ -662,3 +662,25 @@ select.keyin { background: #2b2b2b; color: #fff; }
 .pcols { display: flex; gap: 10px; justify-content: center; margin: 8px 0 16px; }
 .pcol { width: 34px; height: 34px; border-radius: 50%; border: 3px solid transparent; }
 .pcol.on, .pcol:focus-visible { border-color: #fff; outline: 0; }
+
+/* 2.2: notification bell, notification list, update notes */
+.top { display: flex; align-items: center; gap: 10px; }
+.bell { position: relative; width: 44px; height: 44px; border-radius: 10px; border: 0; background: rgba(255,255,255,.08); color: #fff; display: grid; place-items: center; cursor: pointer; flex: none; }
+.bell svg { width: 22px; height: 22px; fill: currentColor; opacity: .85; }
+.bell:hover, .bell:focus-visible { background: rgba(255,255,255,.16); outline: none; }
+.bell:focus-visible { box-shadow: 0 0 0 3px var(--xg, #9bf00b); }
+.bell i { display: none; position: absolute; top: 3px; right: 3px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: #e0342c; color: #fff; font: 700 11px/18px "Segoe UI", system-ui, sans-serif; text-align: center; box-sizing: border-box; }
+.bell.has i { display: block; }
+.notlist { display: flex; flex-direction: column; gap: 6px; max-height: 52vh; overflow-y: auto; margin: 10px 0; }
+.note { display: flex; gap: 12px; align-items: center; padding: 10px 12px; background: rgba(255,255,255,.05); border-radius: 8px; }
+.note.new { background: rgba(155,240,11,.1); box-shadow: inset 3px 0 0 #9bf00b; }
+.note .ni { font-size: 22px; width: 30px; text-align: center; }
+.note div { flex: 1; min-width: 0; } .note b { display: block; } .note small { display: block; opacity: .7; }
+.note em { font-style: normal; font-size: 12px; opacity: .55; white-space: nowrap; }
+.updnotes { max-height: 36vh; overflow: auto; white-space: pre-wrap; word-break: break-word; background: rgba(0,0,0,.25); padding: 10px 12px; border-radius: 8px; font: 13px/1.45 "Segoe UI", system-ui, sans-serif; margin: 8px 0; }
+
+/* Home keeps its own bell in the header row, so the top bar's copy stays hidden there */
+body.onhome #notbell { display: none; }
+.xbell { position: relative; }
+.xbell i { display: none; position: absolute; top: 2px; right: 2px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: #e0342c; color: #fff; font: 700 11px/17px "Segoe UI", system-ui, sans-serif; text-align: center; box-sizing: border-box; font-style: normal; }
+.xbell.has i { display: block; }
