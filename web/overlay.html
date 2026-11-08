@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hollywood Arcade Overlay</title>
+<link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --acc: #9bf00b; --acc2: #2e7d14; --panel: #1b1e1b; --panel2: #242824; --line: rgba(255,255,255,.08); --dim: #9aa39b; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body { font-family: "Segoe UI", "Segoe UI Variable Display", Inter, system-ui, sans-serif; color: #fff; overflow: hidden; user-select: none;
+    background: radial-gradient(80% 60% at 50% 0%, #17321a, #0a0d0a 70%); display: flex; flex-direction: column; }
+  body.embed { background: rgba(6, 9, 6, .9); backdrop-filter: blur(12px); }
+  .top { display: flex; align-items: center; padding: 14px 34px 6px; gap: 14px; }
+  .top h1 { font-size: 22px; font-weight: 600; letter-spacing: .01em; flex: 1; }
+  .top .clock { font-size: 20px; font-weight: 600; }
+  .top img { width: 34px; height: 34px; border-radius: 9px; }
+  .stage { flex: 1; display: flex; justify-content: center; align-items: stretch; padding: 4px 24px 8px; min-height: 0; gap: 10px; }
+  .side { display: flex; gap: 6px; }
+  .blade { width: 52px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 0; color: #c9d1ca; font: inherit; border-radius: 8px;
+    background: var(--panel); box-shadow: inset 0 0 0 1px var(--line); transition: background .15s, color .15s, transform .15s; }
+  .blade span { writing-mode: vertical-rl; font-size: 20px; font-weight: 600; letter-spacing: .03em; }
+  .side.l .blade span { transform: rotate(180deg); }
+  .blade:hover { background: var(--panel2); color: #fff; }
+  .main { flex: 1; max-width: 640px; display: flex; flex-direction: column; background: var(--panel); border-radius: 8px; color: #fff; box-shadow: 0 10px 40px rgba(0,0,0,.55), inset 0 0 0 1px var(--line); min-width: 0; overflow: hidden; border-top: 3px solid var(--acc); }
+  .who { padding: 14px 20px 10px; font-size: 22px; font-weight: 600; text-align: left; color: #fff; letter-spacing: .01em; }
+  .rows { flex: 1; overflow-y: auto; scrollbar-width: none; padding: 0 10px 8px; }
+  .rows::-webkit-scrollbar { display: none; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 0 18px; height: 50px; margin-bottom: 4px; font-size: 20px; cursor: pointer; border-radius: 6px; background: var(--panel2); border: 2px solid transparent; transition: transform .12s; }
+  .row.sel { background: #2c3a22; border-color: var(--acc); color: #fff; font-weight: 600; transform: scale(1.015); }
+  .row small { font-size: 15px; color: var(--dim); font-weight: 400; max-width: 46%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row.sel small { color: #d4efb0; }
+  .row .bar { flex: 0 0 190px; height: 10px; border-radius: 5px; background: rgba(255,255,255,.14); position: relative; overflow: hidden; }
+  .row .bar i { position: absolute; inset: 0 auto 0 0; background: var(--acc2); border-radius: 5px; }
+  .row.sel .bar i { background: var(--acc); }
+  .row.dim { opacity: .45; }
+  .empty { padding: 26px; text-align: center; color: var(--dim); font-size: 18px; }
+  .foot { display: flex; justify-content: center; gap: 26px; padding: 8px 20px 14px; font-size: 17px; color: rgba(255,255,255,.85); flex-wrap: wrap; }
+  .foot span { display: inline-flex; align-items: center; gap: 8px; }
+  .foot b { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font-size: 14px; color: #fff; }
+  .foot .a { background: #3aa31c; } .foot .b { background: #d1342c; } .foot .x { background: #2468c7; } .foot .y { background: #e2a912; }
+  .msg { position: absolute; left: 0; right: 0; bottom: 50px; text-align: center; font-size: 15px; color: #ffd6dc; min-height: 20px; }
+  @keyframes pop { from { opacity: 0; transform: translateY(8px) scale(.985); } to { opacity: 1; transform: none; } }
+  .main.anim { animation: pop .16s ease-out; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+  <div class="top"><img src="logo.png" alt=""><h1>Hollywood Guide</h1><span class="clock" id="clock"></span></div>
+  <div class="stage">
+    <div class="side l" id="sl"></div>
+    <div class="main" id="main"><div class="who" id="who"></div><div class="rows" id="rows"></div></div>
+    <div class="side r" id="sr"></div>
+  </div>
+  <div class="msg" id="msg"></div>
+  <div class="foot"><span><b class="a" id="ba">A</b> Select</span><span><b class="b" id="bb">B</b> Back</span><span><b class="x" id="bx">X</b> Resume game</span><span><b class="y" id="by">Y</b> Arcade home</span></div>
+<script src="shared.js"></script>
+<script>
+(() => {
+  const embed = new URLSearchParams(location.search).get('embed') === '1';
+  if (embed) document.body.classList.add('embed');
+  const $ = (s) => document.querySelector(s);
+  const post = (path, body) => fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) }).then(r => r.json()).catch(() => ({}));
+  const get = (path) => fetch(path).then(r => r.json()).catch(() => null);
+  let lib = { items: [], settings: {} }, np = {}, running = { running: false }, mix = null, confirmKey = '';
+  let bi = 2, ri = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, p: 0 };
+  let page = null, sys = null; // page: a nested list (Wi-Fi, power mode, profiles); B steps back out of it
+  const rk = () => (page ? 'p' : bi);
+  const rowsNow = () => (page ? page.rows : B[bi].rows);
+  const sysDo = (o) => post('/api/system/do', o);
+  const openPage = (title, rows) => { page = { title, rows }; ri.p = 0; SFX.play('select'); draw(true); };
+  const popPage = () => { if (!page) return false; page = null; SFX.play('back'); draw(true); return true; };
+  const loadSys = async () => { sys = await get('/api/system'); };
+  let sony = false;
+
+  const tellParent = (o) => { try { parent.postMessage(Object.assign({ ha: 'guide' }, o), location.origin); } catch { /* ignore */ } };
+  const closeGuide = () => { if (embed) tellParent({ cmd: 'close' }); else post('/api/overlay', { action: 'close' }); };
+  const go = (dest, front) => { if (embed) { tellParent({ cmd: 'nav', go: dest }); return; } post('/api/nav', { go: dest }); if (front !== false) post('/api/front'); closeGuide(); };
+  const media = (action, n) => post('/api/media', { action, n: n || 1 });
+  const flash = (t) => { $('#msg').textContent = t || ''; if (t) setTimeout(() => { if ($('#msg').textContent === t) $('#msg').textContent = ''; }, 2500); };
+  const fav = () => lib.items.filter(i => i.category === 'game').sort((a, b) => (b.lastPlayed || 0) - (a.lastPlayed || 0)).slice(0, 7);
+
+  function blades() {
+    const nm = np && np.active && np.title ? np.title + (np.artist ? ' · ' + np.artist : '') : 'Nothing playing';
+    const power = (key, label, action) => ({ label: confirmKey === key ? 'Press again to confirm' : label, act: () => { if (confirmKey === key) { post('/api/power', { action }); closeGuide(); } else { confirmKey = key; draw(); } } });
+    const center = [];
+    if (running.running) center.push({ label: 'Resume game', sub: running.name || '', act: async () => { await post('/api/resume'); closeGuide(); } });
+    center.push({ label: 'Arcade home', act: () => go('home') });
+    center.push({ label: 'Play / pause', sub: nm, act: () => media('playpause') });
+    center.push({ label: 'Next song', act: () => media('next') });
+    center.push({ label: 'Previous song', act: () => media('prev') });
+    if (mix) {
+      center.push({ label: 'Volume', slider: () => mix.master.vol, set: (v) => { mix.master.vol = v; post('/api/mixer/set', { group: 'master', vol: v }); } });
+      if (mix.groups.music.n) center.push({ label: 'Music volume', slider: () => mix.groups.music.vol, set: (v) => { mix.groups.music.vol = v; post('/api/mixer/set', { group: 'music', vol: v }); } });
+      if (mix.groups.games.n) center.push({ label: 'Game volume', slider: () => mix.groups.games.vol, set: (v) => { mix.groups.games.vol = v; post('/api/mixer/set', { group: 'games', vol: v }); } });
+      if (mix.groups.chat.n) center.push({ label: 'Chat volume', slider: () => mix.groups.chat.vol, set: (v) => { mix.groups.chat.vol = v; post('/api/mixer/set', { group: 'chat', vol: v }); } });
+    }
+    center.push({ label: 'Discord', act: () => go('discord') });
+    const profs = lib.profiles || [];
+    if (profs.length > 1) center.push({ label: 'Switch profile', sub: (profs.find(p => p.id === lib.activeProfile) || {}).name || '', act: () => openPage('Who\u2019s playing', profs.map(p => ({ label: p.name, sub: p.id === lib.activeProfile ? 'Signed in' : '', act: () => go('profile:' + p.id) }))) });
+    center.push(power('sleep', 'Sleep', 'sleep'), power('restart', 'Restart', 'restart'), power('shutdown', 'Shut down', 'shutdown'));
+    const games = [{ label: 'All games', act: () => go('games') }];
+    for (const g of fav()) games.push({ label: g.name, sub: g.source || '', act: () => go('launch:' + g.id, false) });
+    const app = (id, label) => { const a = lib.items.find(i => i.id === id || (i.category === 'app' && i.name.toLowerCase() === label.toLowerCase())); return a ? { label, act: () => go('launch:' + a.id) } : null; };
+    const S = sys || {};
+    const sysRows = [
+      { label: 'Wi-Fi', sub: S.current || 'Not connected', act: () => openPage('Wi-Fi', [
+        ...(S.wifi || []).map(n => ({ label: n, sub: n === S.current ? 'Connected' : 'Saved', act: async () => { flash('Connecting to ' + n + '\u2026'); const r = await sysDo({ do: 'wifi', arg: n }); flash(r.ok ? 'Connecting\u2026' : (r.error || 'Could not connect')); setTimeout(async () => { await loadSys(); draw(); }, 3500); } })),
+        { label: 'Add a network\u2026', act: () => { sysDo({ do: 'open', arg: 'ms-availablenetworks:' }); closeGuide(); } }]) },
+      { label: 'Bluetooth and devices', act: () => { sysDo({ do: 'open', arg: 'ms-settings:bluetooth' }); closeGuide(); } },
+      { label: 'Display', act: () => { sysDo({ do: 'open', arg: 'ms-settings:display' }); closeGuide(); } },
+      { label: 'Sound', act: () => { sysDo({ do: 'open', arg: 'ms-settings:sound' }); closeGuide(); } },
+      { label: 'Power mode', sub: ({ balanced: 'Balanced', saver: 'Power saver', high: 'High performance' })[S.plan] || '', act: () => openPage('Power mode', [['balanced', 'Balanced'], ['saver', 'Power saver'], ['high', 'High performance']].map(([k, n]) => ({ label: n, sub: S.plan === k ? 'Current' : '', act: async () => { const r = await sysDo({ do: 'plan', arg: k }); if (r.ok) { S.plan = k; flash(n + ' on'); popPage(); } else flash(r.error || 'Could not change'); } }))) },
+      { label: 'Windows Update', act: () => { sysDo({ do: 'open', arg: 'ms-settings:windowsupdate' }); closeGuide(); } },
+      { label: 'Screensaver', sub: 'Ambient mode', act: () => go('ambient') }
+    ];
+    if (typeof S.brightness === 'number' && S.brightness >= 0) sysRows.splice(3, 0, { label: 'Brightness', slider: () => S.brightness, set: (v) => { S.brightness = v; clearTimeout(window.__bt); window.__bt = setTimeout(() => sysDo({ do: 'brightness', value: v }), 250); } });
+    return [
+      { name: 'Store', who: 'Store', rows: [{ label: 'Open Store', act: () => go('store:top_sellers') }, { label: 'Retro classics', act: () => go('store:retro') }, { label: 'Emulators', act: () => go('store:emu') }, { label: 'Game Pass', act: () => go('store:gamepass') }, { label: 'Free to play', act: () => go('store:free') }] },
+      { name: 'Games', who: 'Games', rows: games },
+      { name: 'Hollywood', who: 'Hollywood', rows: center },
+      { name: 'Media', who: 'Media', rows: [app('preset-jellyfin', 'Jellyfin'), app('preset-ersatztv', 'ErsatzTV'), { label: 'Music', act: () => go('music') }, { label: 'Play / pause', sub: nm, act: () => media('playpause') }, { label: 'Next song', act: () => media('next') }].filter(Boolean) },
+      { name: 'System', who: 'System', rows: sysRows },
+      { name: 'Settings', who: 'Settings', rows: [{ label: 'Settings', act: () => go('settings') }, { label: 'Patch notes', act: () => go('patchnotes') }, { label: 'Controller test', act: () => go('padtest') }, { label: 'Back up library', act: () => go('backup') }] }
+    ];
+  }
+
+  let B = [];
+  function draw(anim) {
+    B = blades();
+    const cur = B[bi], rows = rowsNow(), K = rk();
+    ri[K] = Math.max(0, Math.min(ri[K], rows.length - 1));
+    $('#sl').innerHTML = B.slice(0, bi).map((b, i) => `<button class="blade" data-b="${i}"><span>${b.name}</span></button>`).join('');
+    $('#sr').innerHTML = B.slice(bi + 1).map((b, i) => `<button class="blade" data-b="${bi + 1 + i}"><span>${b.name}</span></button>`).join('');
+    $('#who').textContent = page ? page.title : cur.who;
+    $('#rows').innerHTML = rows.length ? rows.map((r, i) => `<div class="row${i === ri[K] ? ' sel' : ''}" data-i="${i}"><span>${esc(r.label)}</span>` +
+      (r.slider ? `<span class="bar"><i style="width:${r.slider()}%"></i></span>` : (r.sub ? `<small>${esc(r.sub)}</small>` : '')) + '</div>').join('') : '<div class="empty">Nothing here yet.</div>';
+    const sel = $('#rows .sel'); if (sel) sel.scrollIntoView({ block: 'nearest' });
+    $('#bx').parentElement.style.opacity = running.running ? 1 : .4;
+    if (anim) { const m = $('#main'); m.classList.remove('anim'); void m.offsetWidth; m.classList.add('anim'); }
+  }
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  const moveRow = (d) => { const n = rowsNow().length; if (!n) return; ri[rk()] = (ri[rk()] + d + n) % n; confirmKey = ''; SFX.play('tick'); draw(); };
+  const moveBlade = (d) => { const n = Math.max(0, Math.min(B.length - 1, bi + d)); if (n === bi) return; page = null; bi = n; if (B[bi].name === 'System') loadSys().then(() => draw()); confirmKey = ''; SFX.play('tick'); draw(true); };
+  const press = () => { const r = rowsNow()[ri[rk()]]; if (!r || r.slider) return; SFX.play('select'); r.act && r.act(); };
+  const adjust = (d) => { const r = rowsNow()[ri[rk()]]; if (r && r.slider) { r.set(Math.max(0, Math.min(100, r.slider() + d * 5))); SFX.play('tick'); draw(); } else moveBlade(d > 0 ? 1 : -1); };
+  const resume = async () => { if (running.running) { SFX.play('select'); await post('/api/resume'); closeGuide(); } };
+
+  document.addEventListener('click', (e) => {
+    const bl = e.target.closest('.blade'); if (bl) { page = null; bi = +bl.dataset.b; if (B[bi].name === 'System') loadSys().then(() => draw()); SFX.play('tick'); draw(true); return; }
+    const row = e.target.closest('.row'); if (row) { ri[rk()] = +row.dataset.i; draw(); press(); }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') { moveRow(1); e.preventDefault(); } else if (e.key === 'ArrowUp') { moveRow(-1); e.preventDefault(); }
+    else if (e.key === 'ArrowRight') adjust(1); else if (e.key === 'ArrowLeft') adjust(-1);
+    else if (e.key === 'Enter') press(); else if (e.key === 'Escape') { if (!popPage()) { SFX.play('back'); closeGuide(); } }
+    else if (e.key.toLowerCase() === 'x') resume(); else if (e.key.toLowerCase() === 'y') go('home');
+  });
+
+  // ---- controller
+  function stdPad(p) {
+    const o = { b: new Array(18).fill(false), ax: p.axes[0] || 0, ay: p.axes[1] || 0 };
+    const pr = (i) => !!(p.buttons[i] && p.buttons[i].pressed);
+    if (p.mapping === 'standard') { for (let i = 0; i < 18; i++) o.b[i] = pr(i); return o; }
+    if (/054c|dualsense|dualshock|wireless controller|playstation/i.test(p.id)) {
+      [[0, 1], [1, 2], [2, 0], [3, 3], [4, 4], [5, 5]].forEach(([s, r]) => { o.b[s] = pr(r); });
+    } else { [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5]].forEach(([s, r]) => { o.b[s] = pr(r); }); }
+    const hat = p.axes[9];
+    if (typeof hat === 'number' && hat <= 1.05 && p.axes.length > 9) {
+      const k = Math.round((hat + 1) / (2 / 7));
+      o.b[12] = [0, 1, 7].includes(k); o.b[15] = [1, 2, 3].includes(k); o.b[13] = [3, 4, 5].includes(k); o.b[14] = [5, 6, 7].includes(k);
+    }
+    return o;
+  }
+  let held = {}, dirNow = null, dirAt = 0, first = true;
+  (function poll() {
+    if (!document.hasFocus()) { held = {}; dirNow = null; first = true; requestAnimationFrame(poll); return; }
+    const list = (navigator.getGamepads ? [...navigator.getGamepads()] : []).filter(x => x && x.connected);
+    const m = { b: new Array(18).fill(false), ax: 0, ay: 0 };
+    for (const p of list) { if (/054c|dualsense|dualshock|wireless controller|playstation/i.test(p.id)) sony = true; const s = stdPad(p); s.b.forEach((v, i) => { m.b[i] = m.b[i] || v; }); if (Math.hypot(s.ax, s.ay) > Math.hypot(m.ax, m.ay)) { m.ax = s.ax; m.ay = s.ay; } }
+    if (first) { first = false; m.b.forEach((v, i) => { if (v) held[i] = 1; }); requestAnimationFrame(poll); return; }
+    const stick = Math.hypot(m.ax, m.ay) > .5 ? (Math.abs(m.ax) > Math.abs(m.ay) ? (m.ax < 0 ? 'left' : 'right') : (m.ay < 0 ? 'up' : 'down')) : null;
+    const d = m.b[14] ? 'left' : m.b[15] ? 'right' : m.b[12] ? 'up' : m.b[13] ? 'down' : stick, now = Date.now();
+    const step = (dir) => { if (dir === 'up') moveRow(-1); else if (dir === 'down') moveRow(1); else adjust(dir === 'right' ? 1 : -1); };
+    if (d && d !== dirNow) { step(d); dirAt = now + 360; } else if (d && now >= dirAt) { step(d); dirAt = now + 110; }
+    dirNow = d;
+    const once = (i, fn) => { if (m.b[i]) { if (!held[i]) { held[i] = 1; fn(); } } else held[i] = 0; };
+    once(0, press); once(1, () => { if (!popPage()) { SFX.play('back'); closeGuide(); } }); once(2, resume); once(3, () => go('home'));
+    once(4, () => moveBlade(-1)); once(5, () => moveBlade(1)); once(16, () => { SFX.play('back'); closeGuide(); });
+    requestAnimationFrame(poll);
+  })();
+
+  // ---- labels follow the controller in use (PlayStation symbols or Xbox letters)
+  function labels() {
+    const ps = sony;
+    $('#ba').textContent = ps ? '✕' : 'A'; $('#bb').textContent = ps ? '○' : 'B'; $('#bx').textContent = ps ? '□' : 'X'; $('#by').textContent = ps ? '△' : 'Y';
+  }
+  setInterval(labels, 1500);
+
+  // ---- live data
+  const clock = () => { $('#clock').textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); };
+  clock(); setInterval(clock, 15000);
+  async function refresh() {
+    const [l, n, r, x] = await Promise.all([get('/api/load'), get('/api/nowplaying'), get('/api/running'), get('/api/mixer')]);
+    if (l) lib = { items: l.items || [], settings: l.settings || {}, profiles: l.profiles || [], activeProfile: l.activeProfile || '' };
+    if (n) np = n; if (r) running = r; mix = x && x.ok ? x : null;
+    SFX.config(lib.settings.sound);
+    if (!document.activeElement || document.activeElement === document.body || true) draw();
+  }
+  refresh().then(() => SFX.play('open'));
+  setInterval(() => { if (document.hasFocus()) refresh(); }, 3000);
+  // when the hidden panel is shown again, refresh at once and play the opening sound
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { bi = 2; page = null; refresh().then(() => SFX.play('open')); } });
+  window.addEventListener('focus', () => { refresh(); });
+  let dead = 0;
+  setInterval(() => fetch('/api/ping').then(() => { dead = 0; }).catch(() => { if (!embed && ++dead >= 4) window.close(); }), 5000);
+})();
+</script>
+</body>
+</html>

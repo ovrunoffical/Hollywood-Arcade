@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hollywood Arcade</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="icon" type="image/x-icon" href="favicon.ico" sizes="any">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="splash" aria-hidden="true"><div class="spl-in"><div class="spl-h"><i class="l" style="grid-area:1/1;--d:0ms"></i><i class="l" style="grid-area:2/1;--d:70ms"></i><i class="l" style="grid-area:3/1;--d:140ms"></i><i class="l" style="grid-area:4/1;--d:210ms"></i><i class="l" style="grid-area:5/1;--d:280ms"></i><i class="r" style="grid-area:5/5;--d:120ms"></i><i class="r" style="grid-area:4/5;--d:190ms"></i><i class="r" style="grid-area:3/5;--d:260ms"></i><i class="r" style="grid-area:2/5;--d:330ms"></i><i class="r" style="grid-area:1/5;--d:400ms"></i><i class="m" style="grid-area:3/2;--d:520ms"></i><i class="m" style="grid-area:3/3;--d:610ms"></i><i class="m" style="grid-area:3/4;--d:700ms"></i></div><div class="spl-name"><b>HOLLYWOOD</b><span>ARCADE</span></div></div></div>
+<script>
+(function () {
+  var s = document.getElementById('splash'), t0 = Date.now(), off = false;
+  try { off = localStorage.getItem('ha_nosplash') === '1'; } catch (e) {}
+  if (off) { s.remove(); return; }
+  // dialogs (first-run setup, patch notes) wait until the intro has finished
+  var sm = HTMLDialogElement.prototype.showModal;
+  HTMLDialogElement.prototype.showModal = function () {
+    var d = this;
+    (function go() { if (document.getElementById('splash') && !s.classList.contains('out')) setTimeout(go, 150); else { sm.call(d); } })();
+  };
+  var done = false;
+  function bye() { if (done) return; done = true; s.classList.add('out'); setTimeout(function () { s.remove(); }, 600); }
+  ['keydown', 'pointerdown', 'gamepadconnected'].forEach(function (ev) { window.addEventListener(ev, bye, { once: true }); });
+  setTimeout(bye, 2300);
+})();
+</script>
+<div class="mesh"></div>
+<div id="homebg" aria-hidden="true"></div>
+
+<div class="shell">
+  <aside class="side">
+    <div class="brand"><img class="logo-img" src="logo.png" alt="">Hollywood</div>
+    <nav>
+      <button class="nav" data-view="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</button>
+      <button class="nav" data-view="games"><svg viewBox="0 0 24 24"><path d="M7 7h10a5 5 0 0 1 4.8 6.4l-.9 3.2a2.5 2.5 0 0 1-4.2 1L15 16H9l-1.7 1.6a2.5 2.5 0 0 1-4.2-1l-.9-3.2A5 5 0 0 1 7 7zm1 3v1.5H6.5v1H8V14h1v-1.5h1.5v-1H9V10zm8.5.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm2 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/></svg>Games<span class="cnt" data-c="games"></span></button>
+      <button class="nav" data-view="apps"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zm9 0h7v7h-7zM4 13h7v7H4zm9 0h7v7h-7z"/></svg>Apps<span class="cnt" data-c="apps"></span></button>
+      <button class="nav" data-view="store"><svg viewBox="0 0 24 24"><path d="M7 7V6a5 5 0 0 1 10 0v1h3l-1 14H5L4 7zm2 0h6V6a3 3 0 0 0-6 0z"/></svg>Store</button>
+      <button class="nav" data-view="watch"><svg viewBox="0 0 24 24"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-5l1 2h2v1H7v-1h2l1-2H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm5 3v6l6-3z"/></svg>Watch</button>
+      <button class="nav" data-view="ach"><svg viewBox="0 0 24 24"><path d="M7 3h10v2h3v3a4 4 0 0 1-4 4h-.3A5 5 0 0 1 13 14.9V17h3v2H8v-2h3v-2.1A5 5 0 0 1 8.300 12H8a4 4 0 0 1-4-4V5h3zm-1 4v1a2 2 0 0 0 1 1.700V7zm12 0h-1v2.700A2 2 0 0 0 18 8z"/></svg>Achievements</button>
+      <button class="nav" data-view="music"><svg viewBox="0 0 24 24"><path d="M9 3v12.3A3.5 3.5 0 1 0 11 18.5V8l8-2v7.3A3.5 3.5 0 1 0 21 16.5V3z"/></svg>Music</button>
+      <button class="nav" data-view="discord"><svg viewBox="0 0 24 24"><path d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-9l-5 4v-4H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/></svg>Discord</button>
+    </nav>
+    <div class="spacer"></div>
+    <button class="nav" id="powerbtn" data-act="power-menu"><svg viewBox="0 0 24 24"><path d="M11 3h2v9h-2zM6.400 6.400l1.400 1.400a6 6 0 1 0 8.400 0l1.400-1.400a8 8 0 1 1-11.200 0z"/></svg>Power</button>
+    <button class="nav" data-view="settings"><svg viewBox="0 0 24 24"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm8.4 5.3l1.6 1.2-2 3.5-1.9-.7a7.6 7.6 0 0 1-1.8 1l-.3 2H10l-.3-2a7.6 7.6 0 0 1-1.8-1l-1.9.7-2-3.5 1.6-1.2a7.800 7.800 0 0 1 0-2.100L4 10.500l2-3.500 1.900.7a7.600 7.600 0 0 1 1.800-1l.3-2h4l.3 2a7.600 7.600 0 0 1 1.800 1l1.900-.7 2 3.500-1.600 1.200a7.800 7.800 0 0 1 0 2.100z"/></svg>Settings</button>
+  </aside>
+
+  <section class="stage">
+    <div class="top"><input id="q" type="search" placeholder="Search" aria-label="Search"></div>
+    <main id="main"></main>
+  </section>
+</div>
+
+<footer class="player" id="player">
+  <div class="pmeta"><div class="pcover" id="pcover"></div><div><b id="ptitle">Nothing playing</b><small id="partist">Pick a music folder in Music</small></div></div>
+  <div class="pctrl">
+    <button id="pshuf" aria-label="Shuffle"></button>
+    <button id="pprev" aria-label="Previous"></button>
+    <button id="pplay" class="big" aria-label="Play"></button>
+    <button id="pnext" aria-label="Next"></button>
+    <button id="pmode" class="pmode" title="Switch music source"></button>
+  </div>
+  <div class="pseek"><small id="ptime">0:00</small><input id="pseek" type="range" min="0" max="1000" value="0" aria-label="Seek"><small id="pdur">0:00</small></div>
+  <div class="pvol"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9zm11.5 3a4 4 0 0 0-2-3.500v7a4 4 0 0 0 2-3.500z"/></svg><input id="pvol" type="range" min="0" max="100" aria-label="Volume"><button type="button" class="mixbtn" data-act="mixer">Mixer</button><span class="sysvol"><button type="button" data-media="voldown" data-n="5" aria-label="Volume down">&minus;</button><button type="button" data-media="mute" aria-label="Mute">Mute</button><button type="button" data-media="volup" data-n="5" aria-label="Volume up">+</button></span></div>
+</footer>
+
+<div id="padhints" popover="manual" aria-hidden="true"></div>
+<div id="toast" role="status"></div>
+
+<dialog id="dlg">
+  <form id="f" autocomplete="off">
+    <h2 id="dlgtitle">Add</h2>
+    <div id="presets" class="chips" hidden>
+      <button type="button" class="chip" data-preset="jellyfin">Jellyfin</button>
+      <button type="button" class="chip" data-preset="ersatztv">ErsatzTV</button>
+    </div>
+    <label>Name<input id="fn" required></label>
+    <div class="two">
+      <label>Shows up in<select id="fcat"><option value="game">Games</option><option value="app">Apps</option></select></label>
+      <label>How it launches<select id="fkind">
+        <option value="exe">Program (.exe)</option>
+        <option value="rom">Emulator + game file</option>
+        <option value="url">Website (opens in app)</option>
+        <option value="uri">Launch link (steam://, Start menu)</option>
+      </select></label>
+    </div>
+    <label><span id="lbl-target">Program</span>
+      <span class="with-btn"><input id="ftarget" required><button type="button" class="btn small" id="b-target" data-browse="ftarget" data-pick="exe">Browse</button></span>
+    </label>
+    <label id="row-rom">Game file (ROM)
+      <span class="with-btn"><input id="from"><button type="button" class="btn small" data-browse="from" data-pick="any">Browse</button></span>
+    </label>
+    <label id="row-args">Extra launch options <small>(optional, use {rom} for the game file)</small><input id="fargs" placeholder='e.g. -f "{rom}"'></label>
+    <div class="two">
+      <label>Label<input id="fsrc" list="srcs" placeholder="Steam, Game Pass, Emulator…"><datalist id="srcs"><option>Steam</option><option>Game Pass</option><option>Emulator</option><option>PC</option><option>Media</option></datalist></label>
+      <label>Cover image <small>(optional)</small><span class="with-btn"><input id="fart"><button type="button" class="btn small" data-browse="fart" data-pick="image">Browse</button></span></label>
+    </div>
+    <div class="dlgbtns">
+      <button type="button" class="btn danger" id="del" hidden>Remove</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn" id="cancel">Cancel</button>
+      <button type="submit" class="btn primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="edlg">
+  <form id="ef" autocomplete="off">
+    <h2 id="edtitle">Add emulator</h2>
+    <label>Start from a preset
+      <select id="epreset">
+        <option value="">Other / custom</option>
+        <option value="dolphin">Dolphin (GameCube, Wii)</option>
+        <option value="pcsx2">PCSX2 (PlayStation 2)</option>
+        <option value="duckstation">DuckStation (PlayStation)</option>
+        <option value="cemu">Cemu (Wii U)</option>
+        <option value="mgba">mGBA (Game Boy, GBA)</option>
+        <option value="melonds">melonDS (Nintendo DS)</option>
+        <option value="rpcs3">RPCS3 (PlayStation 3)</option>
+        <option value="ppsspp">PPSSPP (PSP)</option>
+        <option value="xenia">Xenia (Xbox 360)</option>
+        <option value="azahar">Azahar (Nintendo 3DS)</option>
+        <option value="retroarch">RetroArch</option>
+      </select>
+    </label>
+    <label>Name <small>(shows as the label on its games)</small><input id="ename" required placeholder="Dolphin"></label>
+    <label>Emulator program
+      <span class="with-btn"><input id="eexe" required><button type="button" class="btn small" data-browse="eexe" data-pick="exe">Browse</button></span>
+    </label>
+    <label>Game folder
+      <span class="with-btn"><input id="efolder" required><button type="button" class="btn small" data-browse="efolder" data-pick="folder">Browse</button></span>
+    </label>
+    <label>Game file types <small>(separated by commas)</small><input id="eexts" required placeholder="iso, rvz"></label>
+    <label>Launch options <small>({rom} is replaced by the game file)</small><input id="eargs"></label>
+    <p class="hint" id="ehint"></p>
+    <div class="dlgbtns">
+      <button type="button" class="btn danger" id="edel" hidden>Remove emulator</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn" id="ecancel">Cancel</button>
+      <button type="submit" class="btn primary">Save and scan</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="imp">
+  <h2>Import from Start menu</h2>
+  <p class="hint">Game Pass games and other installed apps show up here. Tick the ones to add.</p>
+  <input id="impq" type="search" placeholder="Filter">
+  <div id="implist" class="implist"></div>
+  <div class="two">
+    <label>Add as<select id="impcat"><option value="game">Games</option><option value="app">Apps</option></select></label>
+    <label>Label<select id="impsrc"><option>Game Pass</option><option>PC</option><option>Emulator</option><option>Media</option></select></label>
+  </div>
+  <div class="dlgbtns">
+    <span class="spacer"></span>
+    <button type="button" class="btn" id="impcancel">Cancel</button>
+    <button type="button" class="btn primary" id="impgo">Add selected</button>
+  </div>
+</dialog>
+
+<dialog id="sdlg">
+  <div class="ginfo"><div class="gcover" id="scover"></div><div class="gtext"><h2 id="sname"></h2><div class="chips"><span class="chip" id="sprice"></span></div><p id="sdesc" class="gdesc"></p></div></div>
+  <div class="dlgbtns"><button type="button" class="btn primary" id="sopen">Open in Steam</button><button type="button" class="btn" id="sinstall" hidden>Install free</button><button type="button" class="btn primary" id="sgoemu" hidden>Find emulator</button><span class="spacer"></span><button type="button" class="btn" id="sclose">Close</button></div>
+</dialog>
+
+<dialog id="cdlg">
+  <h2>Choose a cover</h2>
+  <p class="hint" id="cstatus">Looking…</p>
+  <div id="cgrid" class="cgrid"></div>
+  <div class="dlgbtns"><button type="button" class="btn" id="cown">Use my own picture…</button><button type="button" class="btn" id="creset">Back to automatic</button><span class="spacer"></span><button type="button" class="btn" id="cclose">Close</button></div>
+</dialog>
+
+<dialog id="gdlg">
+  <div class="ghero" id="ghero" hidden></div>
+  <div class="ginfo"><div class="gcover" id="gcover"></div><div class="gtext"><h2 id="gname"></h2><div id="gchips" class="chips"></div><p id="gdesc" class="gdesc"></p><small id="gfrom" class="hint"></small>
+    <div class="gvol"><label>Volume for this game <b id="gvolv">Auto</b><input type="range" id="gvol" min="0" max="100" value="50"></label><button type="button" class="btn" id="gvolreset">Auto</button></div>
+    <div class="gvol"><label>Guide button in this game <select id="gbind"><option value="auto">Automatic</option><option value="chord">L3 + R3 (hold)</option><option value="touch">Touchpad (hold)</option><option value="ps">PS button</option><option value="any">Any of them</option></select></label></div></div></div></div>
+  <div class="gshots" id="gshots"></div>
+  <div class="dlgbtns"><button type="button" class="btn primary" id="gplay">Play</button><button type="button" class="btn" id="gedit">Edit</button><button type="button" class="btn" id="gcovers">Choose cover</button><button type="button" class="btn" id="grefresh">Refresh info</button><button type="button" class="btn" id="gach">Achievements</button><span class="spacer"></span><button type="button" class="btn" id="gclose">Close</button></div>
+</dialog>
+
+<dialog id="mdlg">
+  <h2>Volume mixer</h2>
+  <div id="mixbody"><p class="hint">Loading…</p></div>
+  <div class="dlgbtns"><span class="spacer"></span><button type="button" class="btn" id="mclose">Close</button></div>
+</dialog>
+
+<dialog id="pndlg">
+  <h2 id="pntitle">What\u2019s new</h2>
+  <div id="pnbody" class="pnbody"></div>
+  <div class="dlgbtns"><button type="button" class="btn" id="pnall">All versions</button><span class="spacer"></span><button type="button" class="btn primary" id="pnclose">Got it</button></div>
+</dialog>
+
+<dialog id="ptdlg">
+  <h2>Controller test</h2>
+  <p class="hint">Press buttons on your controller. This shows what the browser and Windows can see, so you can tell which button opens the Guide.</p>
+  <div id="ptbody" class="ptbody"></div>
+  <div class="ptset">
+    <label>PS button is number <input type="number" id="ptps" min="1" max="32" class="keyin" style="width:80px"></label>
+    <label>Touchpad is number <input type="number" id="pttouch" min="1" max="32" class="keyin" style="width:80px"></label>
+  </div>
+  <div class="dlgbtns"><span class="spacer"></span><button type="button" class="btn primary" id="ptclose">Done</button></div>
+</dialog>
+
+<dialog id="abdlg">
+  <h2>About Hollywood Arcade</h2>
+  <div id="abbody" class="pnbody"></div>
+  <div class="dlgbtns"><button type="button" class="btn" id="ablog">Error log</button><span class="spacer"></span><button type="button" class="btn primary" id="abclose">Close</button></div>
+</dialog>
+
+<dialog id="logdlg">
+  <h2>Error log</h2>
+  <p class="hint">If something broke, copy this and send it along. It stays on this PC unless you share it.</p>
+  <pre id="logtext" class="logtext"></pre>
+  <div class="dlgbtns"><button type="button" class="btn primary" id="logcopy">Copy</button><span class="spacer"></span><button type="button" class="btn" id="logclose">Close</button></div>
+</dialog>
+
+<dialog id="wizdlg">
+  <div id="wizbody"></div>
+  <div class="dlgbtns"><button type="button" class="btn" id="wizback">Back</button><span class="spacer"></span><button type="button" class="btn" id="wizskip">Skip setup</button><button type="button" class="btn primary" id="wiznext">Next</button></div>
+</dialog>
+
+<dialog id="pdlg">
+  <h2>Power &amp; system</h2>
+  <div class="pgrid" id="pgrid">
+    <button class="btn" data-p="sleep">Sleep</button>
+    <button class="btn" data-p="restart" data-confirm="1">Restart</button>
+    <button class="btn" data-p="shutdown" data-confirm="1">Shut down</button>
+    <button class="btn" data-p="signout" data-confirm="1">Sign out</button>
+    <button class="btn" data-p="desktop">Windows desktop</button>
+    <button class="btn" data-p="exit" data-confirm="1">Exit Arcade</button>
+  </div>
+  <h2 style="margin-top:20px">Quick settings</h2>
+  <div class="pgrid">
+    <button class="btn" data-ms="ms-settings:network-wifi">Wi-Fi</button>
+    <button class="btn" data-ms="ms-settings:bluetooth">Bluetooth &amp; controllers</button>
+    <button class="btn" data-ms="ms-settings:display">Display</button>
+    <button class="btn" data-ms="ms-settings:sound">Sound</button>
+    <button class="btn" data-ms="ms-settings:windowsupdate">Windows Update</button>
+    <button class="btn" data-ms="ms-settings:">All Windows settings</button>
+  </div>
+  <div class="dlgbtns"><span class="spacer"></span><button type="button" class="btn" id="pclose">Close</button></div>
+</dialog>
+
+<script src="api.js"></script>
+<script src="shared.js"></script>
+<script src="app.js"></script>
+<script src="v2.js"></script>
+<script src="watch.js"></script>
+<script src="v21.js"></script>
+</body>
+</html>

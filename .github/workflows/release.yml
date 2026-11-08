@@ -1,0 +1,49 @@
+name: Build release
+
+# Builds the Windows exe from the source in this repository when you push a version tag (for example v2.1.0),
+# and publishes it with a SHA-256 checksum so anyone can check that the download matches the source.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+      - name: Check formatting and vet
+        run: |
+          test -z "$(gofmt -l .)"
+          go vet ./...
+          GOOS=windows GOARCH=amd64 go vet ./...
+      - name: Build
+        run: |
+          mkdir dist
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -H=windowsgui" -o dist/HollywoodArcade.exe .
+      - name: Checksum and version file
+        run: |
+          cd dist
+          sha256sum HollywoodArcade.exe > HollywoodArcade.exe.sha256
+          VER="${GITHUB_REF_NAME#v}"
+          printf '{"version":"%s","notes":"See the release page for what changed.","url":"https://github.com/%s/releases/tag/%s"}\n' "$VER" "$GITHUB_REPOSITORY" "$GITHUB_REF_NAME" > version.json
+          cat HollywoodArcade.exe.sha256
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/HollywoodArcade.exe
+            dist/HollywoodArcade.exe.sha256
+            dist/version.json
+          generate_release_notes: true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HollywoodArcade
+          path: dist/*

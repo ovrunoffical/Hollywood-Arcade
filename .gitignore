@@ -1,0 +1,12 @@
+# build output
+HollywoodArcade.exe
+*.exe
+dist/
+# editor and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+# local test data
+home*/
+*.log
