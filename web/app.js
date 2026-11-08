@@ -701,7 +701,8 @@ function padStep(d) {
 }
 const padClick = () => {
   const f = document.activeElement;
-  if (f && f !== document.body && f.click) { padReturn = f; f.click(); } else move('down');
+  if (f && f.tagName === 'INPUT' && typeof isTextBox === 'function' && isTextBox(f) && typeof oskOpen === 'function') { padReturn = f; oskOpen(f); }
+  else if (f && f !== document.body && f.click) { padReturn = f; f.click(); } else move('down');
 };
 let padReturn = null, padLast = 0;
 const padFocusContent = () => ($('.stage .tile, .stage .track, .stage .btn, .stage input') || $('.nav.on'))?.focus();

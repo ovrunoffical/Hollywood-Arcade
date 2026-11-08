@@ -23,7 +23,7 @@ import (
 	"time"
 )
 
-const appVersion = "2.2.0"
+const appVersion = "2.2.1"
 
 //go:embed web
 var webFS embed.FS
@@ -134,7 +134,13 @@ func launch(it Item) result {
 		return openApp(it.Target)
 	case "uri":
 		if strings.HasPrefix(strings.ToLower(it.Target), "shell:") {
+			if t := strings.ToLower(it.Target + " " + it.Name); strings.Contains(t, "applemusic") || strings.Contains(t, "apple music") {
+				go appleBackground()
+			}
 			return start("explorer.exe", []string{it.Target}, "")
+		}
+		if t := strings.ToLower(it.Target + " " + it.Name); strings.Contains(t, "applemusic") || strings.Contains(t, "apple music") {
+			go appleBackground()
 		}
 		return start("rundll32.exe", []string{"url.dll,FileProtocolHandler", it.Target}, "")
 	case "exe", "rom":

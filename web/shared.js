@@ -48,6 +48,6 @@
     if (!it) return 'any';
     const steam = it.appid || /steam/i.test(it.source || '') || /^steam:/i.test(it.target || '');
     if (steam || it.nativePS5) return 'chord';
-    return 'any'; // non-Steam games: L3+R3, the touchpad or the PS button all work
+    return 'any'; // non-Steam games: L3+R3 or the touchpad (the PS button is Steam's, so it is opt-in)
   };
 })();

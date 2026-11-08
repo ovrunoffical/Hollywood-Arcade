@@ -497,7 +497,7 @@ func startPadChord(onChord func()) {
 			case "ps":
 				hit, hold = ps, 0
 			case "any":
-				hit, hold = chord || touch || ps, 450*time.Millisecond
+				hit, hold = chord || touch, 450*time.Millisecond // the PS button is left out: Steam grabs it and opens Big Picture
 			default:
 				hit, hold = chord, 320*time.Millisecond
 			}

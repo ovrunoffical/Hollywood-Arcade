@@ -11,7 +11,7 @@ It is one `.exe`. Double-click it. No installer, no account, no background servi
 ## Features
 - **Home, Games, Apps** with covers, descriptions and play time, pulled from free sources.
 - **Library import** from Steam, Epic, GOG, Ubisoft Connect, Game Pass and the Start menu, plus emulator game folders.
-- **The Guide**: an Xbox 360 style menu with blades for Store, Games, Hollywood, Media, System and Settings. Hold L3 + R3, hold the touchpad, or press the PS button, even in a game.
+- **The Guide**: an Xbox 360 style menu with blades for Store, Games, Hollywood, Media, System and Settings. Hold L3 + R3, hold the touchpad, even in a game.
 - **Profiles** with separate play history, favourites, achievements, themes and accounts.
 - **Achievements** from Steam, RetroAchievements and Xbox (experimental), plus Arcade's own badges.
 - **Watch**: your Jellyfin library (ErsatzTV channels appear under Live TV) and a row of streaming services that open full screen and work with a controller.

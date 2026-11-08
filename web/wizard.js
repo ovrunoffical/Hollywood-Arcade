@@ -2,7 +2,7 @@
 const W = { pad: null, detected: '', timer: null, done: false };
 const wizSteps = ['Welcome', 'You', 'Controller', 'Games', 'Achievements', 'Look and sound', 'Watch', 'Privacy', 'Ready'];
 const wizPadTip = {
-  ps: 'In a game, hold <b>L3 + R3</b> (press both sticks in) in Steam games, or hold the <b>touchpad</b> (or press the <b>PS button</b>) in everything else, to open the Guide.',
+  ps: 'In a game, hold <b>L3 + R3</b> (press both sticks in) in Steam games, or hold the <b>touchpad</b> in everything else, to open the Guide.',
   xbox: 'In any game, hold <b>L3 + R3</b> (press both sticks in) to open the Guide.',
   none: 'Everything works with a keyboard and mouse too. Press <b>Ctrl+Alt+H</b> in a game for the music and volume panel.'
 };

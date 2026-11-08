@@ -74,6 +74,7 @@ func applePlay(link, term string) result {
 	if os.Getenv("HA_TESTHOST") == "" {
 		start("rundll32.exe", []string{"url.dll,FileProtocolHandler", ml}, "")
 	}
+	go appleBackground()
 	go func() {
 		// give the app a moment to load the song, then make sure it is actually playing
 		for _, d := range []time.Duration{3500 * time.Millisecond, 3 * time.Second} {
@@ -135,4 +136,19 @@ func registerApple(mux *http.ServeMux) {
 		w.Header().Set("Cache-Control", "max-age=86400")
 		w.Write(pic)
 	})
+}
+
+// appleBackground minimises the Apple Music window as soon as it appears, so a song or the app starts
+// playing behind Arcade instead of pulling you away from it.
+func appleBackground() {
+	if os.Getenv("HA_TESTHOST") != "" {
+		return
+	}
+	psOutput(`Add-Type -Name W -Namespace HA -MemberDefinition '[DllImport("user32.dll")] public static extern bool ShowWindowAsync(IntPtr h, int c);'
+$done = 0
+for ($i = 0; $i -lt 40 -and $done -lt 3; $i++) {
+  Start-Sleep -Milliseconds 400
+  $ps = Get-Process | Where-Object { $_.ProcessName -match '^(AppleMusic|iTunes)' -and $_.MainWindowHandle -ne 0 }
+  foreach ($p in $ps) { [HA.W]::ShowWindowAsync($p.MainWindowHandle, 7) | Out-Null; $done++ }
+}`, 30*time.Second)
 }

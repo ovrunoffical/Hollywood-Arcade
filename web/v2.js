@@ -1,10 +1,20 @@
 // Hollywood Arcade 2.0 features: patch notes, and (added below) Guide, sounds, keyboard, backup and more.
 'use strict';
-window.APP_VERSION = '2.2.0';
+window.APP_VERSION = '2.2.1';
 
 // ---------- patch notes ----------
 // Add a new entry at the TOP for every release. The What's New screen shows automatically once per version.
 const PATCH_NOTES = [
+  {
+    v: '2.2.1', date: 'November 2026', title: 'Quick fixes',
+    groups: [
+      ['Fixed', [
+        'The PlayStation button no longer opens the Guide in games that are not from Steam. Steam grabs that button and opened Big Picture too. Use L3 + R3 or hold the touchpad. You can still choose the PS button in Settings.',
+        'The on-screen keyboard no longer pops up the moment the search bar is highlighted. It opens when you press A (or click) on a text box, and with a mouse or keyboard you can just type.',
+        'Apple Music now starts in the background: songs you play from Arcade, and the Apple Music app tile, minimise Apple Music as soon as it opens, so you stay in Arcade.'
+      ]]
+    ]
+  },
   {
     v: '2.2.0', date: 'November 2026', title: 'Updates, notifications and a sturdier Guide',
     groups: [
@@ -369,7 +379,7 @@ oskd.addEventListener('click', (e) => {
 document.addEventListener('focusin', (e) => {
   const el = e.target;
   if (!isTextBox(el) || el.dataset.noosk || oskd.contains(el) || oskd.open) return;
-  if (Date.now() - padAct < 1500) setTimeout(() => { if (document.activeElement === el) oskOpen(el); }, 60);
+  // the keyboard opens on A / click (see padClick), not just because a box got focus
 });
 document.addEventListener('keydown', (e) => { if (oskd.open && e.key === 'Escape') { e.preventDefault(); oskClose(); } }, true);
 
