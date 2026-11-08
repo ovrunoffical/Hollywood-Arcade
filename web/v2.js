@@ -9,6 +9,7 @@ const PATCH_NOTES = [
     v: '2.2.0', date: 'November 2026', title: 'Updates, notifications and a sturdier Guide',
     groups: [
       ['New', [
+        'A brand-new first-run setup: nine quick steps for your profile and photo, controller (with the right Guide shortcut), game scan, achievements, accent colour and sounds, Jellyfin, and privacy choices, ending with a recap. B on a controller goes back a step. You can run it again from Settings.',
         'Updates inside Arcade: it checks the project\u2019s releases on GitHub after start-up and shows what changed. Press Update now and it downloads the new version, checks it against the published checksum, restarts itself, and puts the old version back if the new one will not start. It never installs anything without asking, and you can turn the check off in Settings.',
         'Live achievement pop-ups: while a game you started from Arcade is running, its achievements are checked every 30 seconds (Steam, RetroAchievements and Xbox titles you have set up). A new unlock shows a pop-up over the game with its own chime.',
         'Notification Center: the bell on Home and in the top bar (and a row in the Guide) lists achievements, updates and downloads, with a count of what is new.',

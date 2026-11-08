@@ -684,3 +684,23 @@ body.onhome #notbell { display: none; }
 .xbell { position: relative; }
 .xbell i { display: none; position: absolute; top: 2px; right: 2px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: #e0342c; color: #fff; font: 700 11px/17px "Segoe UI", system-ui, sans-serif; text-align: center; box-sizing: border-box; font-style: normal; }
 .xbell.has i { display: block; }
+
+/* 2.2: first-run setup */
+#wizdlg { width: min(760px, 94vw); max-height: 92vh; overflow-y: auto; }
+.wizprog { display: flex; gap: 6px; margin: 0 0 6px; } .wizprog i { flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,.14); }
+.wizprog i.past { background: var(--xg2, #159c15); } .wizprog i.now { background: var(--xhi, #9bf00b); }
+.wizstep { font-size: 12px; opacity: .6; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 10px; }
+.wizhero { text-align: center; padding: 8px 0 2px; } .wizhero h2 { font-size: 30px; margin: 6px 0; }
+.wizlogo { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 8px 30px rgba(0,0,0,.5), 0 0 40px color-mix(in srgb, var(--xg, #107c10) 50%, transparent); animation: wizfloat 3.2s ease-in-out infinite; }
+@keyframes wizfloat { 50% { transform: translateY(-5px); } }
+.wizsub { font-size: 18px; opacity: .85; margin: 0 0 14px; }
+.wizchips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 10px 0; } .wizchips span { background: rgba(255,255,255,.08); border-radius: 18px; padding: 6px 12px; font-size: 14px; } .wizchips b { color: var(--xhi, #9bf00b); margin-left: 4px; }
+.wizme { display: flex; gap: 22px; align-items: center; margin-top: 12px; } .wizme .wizf { flex: 1; margin-top: 0; }
+.wizopts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0 8px; }
+.wizopt { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 16px 8px; border: 2px solid transparent; border-radius: 10px; background: rgba(255,255,255,.07); color: #fff; font: inherit; cursor: pointer; }
+.wizopt span { font-size: 32px; } .wizopt small { opacity: .65; } .wizopt:hover, .wizopt:focus-visible { background: rgba(255,255,255,.13); outline: none; }
+.wizopt.on { border-color: var(--xhi, #9bf00b); background: color-mix(in srgb, var(--xg, #107c10) 30%, transparent); }
+.wizdet { min-height: 20px; color: var(--xhi, #9bf00b); margin: 6px 0; } .wiztip { background: rgba(255,255,255,.06); border-left: 3px solid var(--xhi, #9bf00b); padding: 10px 12px; border-radius: 4px; margin: 8px 0; min-height: 20px; }
+.wizdone .pbig { width: 84px; height: 84px; font-size: 38px; }
+.wizlist { list-style: none; padding: 0; margin: 12px auto; display: inline-block; text-align: left; } .wizlist li { padding: 3px 0; } .wizlist .ok { color: #fff; } .wizlist .ok::first-letter { color: var(--xhi, #9bf00b); } .wizlist .no { opacity: .6; }
+#wizbody label { display: block; font-size: 14px; } #wizbody label small { opacity: .6; } #wizbody label .keyin { margin-top: 4px; width: 100%; box-sizing: border-box; }
