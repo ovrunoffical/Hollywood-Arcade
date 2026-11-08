@@ -144,7 +144,10 @@ func installUpdate() (string, error) {
 	if err != nil {
 		return "", errors.New("Couldn't download the checksum")
 	}
-	want := strings.ToLower(strings.Fields(string(sumTxt) + " ")[0])
+	want := ""
+	if f := strings.Fields(string(sumTxt)); len(f) > 0 {
+		want = strings.ToLower(f[0])
+	}
 	if len(want) != 64 {
 		return "", errors.New("The checksum file looks wrong")
 	}

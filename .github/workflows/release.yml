@@ -18,11 +18,20 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.24'
-      - name: Check formatting and vet
+      - name: Check the version in the code matches the tag
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          SRC=$(grep -oP 'const appVersion = "\K[^"]+' main.go)
+          if [ "$SRC" != "${GITHUB_REF_NAME#v}" ]; then
+            echo "main.go says version $SRC but the tag is $GITHUB_REF_NAME. Fix appVersion, then tag again."
+            exit 1
+          fi
+      - name: Check formatting, vet and tests
         run: |
           test -z "$(gofmt -l .)"
           go vet ./...
           GOOS=windows GOARCH=amd64 go vet ./...
+          go test ./...
       - name: Build
         run: |
           mkdir dist

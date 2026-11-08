@@ -1,10 +1,21 @@
 // Hollywood Arcade 2.0 features: patch notes, and (added below) Guide, sounds, keyboard, backup and more.
 'use strict';
-window.APP_VERSION = '2.2.3';
+window.APP_VERSION = '2.3.0';
 
 // ---------- patch notes ----------
 // Add a new entry at the TOP for every release. The What's New screen shows automatically once per version.
 const PATCH_NOTES = [
+  {
+    v: '2.3.0', date: 'November 2026', title: 'Release polish',
+    groups: [
+      ['Improved', [
+        'Saving is sturdier: your library is written safely so a crash or power cut cannot leave a half-written file, saves report a problem instead of hiding it, and a damaged library file is replaced by your newest automatic backup.',
+        'Restoring a backup first keeps a copy of what you had.',
+        'The update installer now handles a broken checksum file without failing, and the release build refuses to publish if the version in the code does not match the release tag.',
+        'Built-in automatic tests for saving, updating, backups and the private local server.'
+      ]]
+    ]
+  },
   {
     v: '2.2.3', date: 'November 2026', title: 'Update test',
     groups: [

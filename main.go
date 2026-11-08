@@ -23,7 +23,7 @@ import (
 	"time"
 )
 
-const appVersion = "2.2.3"
+const appVersion = "2.3.0"
 
 //go:embed web
 var webFS embed.FS
@@ -397,8 +397,22 @@ func buildMux() *http.ServeMux {
 		writeJSON(w, result{OK: true})
 	})
 	mux.HandleFunc("/api/load", func(w http.ResponseWriter, r *http.Request) {
+		libMu.Lock()
 		b, err := os.ReadFile(filepath.Join(cfgDir, "library.json"))
-		if err != nil || !json.Valid(b) {
+		if err == nil && !json.Valid(b) {
+			// the file is damaged: use the newest good backup instead of starting from an empty library
+			arcLog("library.json could not be read, looking for a backup")
+			b = nil
+			for _, n := range backupNames() {
+				if bb, e := os.ReadFile(filepath.Join(backupDir(), n)); e == nil && json.Valid(bb) {
+					b = bb
+					arcLog("Restored the library from backup " + n)
+					break
+				}
+			}
+		}
+		libMu.Unlock()
+		if err != nil || b == nil {
 			b = []byte("null")
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -410,10 +424,13 @@ func buildMux() *http.ServeMux {
 			writeJSON(w, result{false, "bad data"})
 			return
 		}
+		libMu.Lock()
+		defer libMu.Unlock()
 		rotateBackup()
-		tmp := filepath.Join(cfgDir, "library.json.tmp")
-		if err := os.WriteFile(tmp, b, 0o600); err == nil {
-			err = os.Rename(tmp, filepath.Join(cfgDir, "library.json"))
+		if err := writeFileSafe(filepath.Join(cfgDir, "library.json"), b); err != nil {
+			arcLog("Saving the library failed: " + err.Error())
+			writeJSON(w, result{false, "Couldn't save: " + err.Error()})
+			return
 		}
 		writeJSON(w, result{OK: true})
 	})

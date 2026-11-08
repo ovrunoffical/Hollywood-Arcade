@@ -192,7 +192,7 @@ func unzipSafe(src, dest string) error {
 			rc.Close()
 			return err
 		}
-		_, err = io.Copy(out, rc)
+		_, err = io.Copy(out, io.LimitReader(rc, 3<<30))
 		out.Close()
 		rc.Close()
 		if err != nil {

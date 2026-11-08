@@ -207,7 +207,18 @@ func registerV2(mux *http.ServeMux) {
 			}
 			dst := filepath.Join(cfgDir, filepath.FromSlash(name))
 			os.MkdirAll(filepath.Dir(dst), 0o755)
-			os.WriteFile(dst, data, 0o644)
+			if name == "library.json" {
+				libMu.Lock()
+				rotateBackupForce() // keep what was here, in case this was the wrong file
+				err = writeFileSafe(dst, data)
+				libMu.Unlock()
+				if err != nil {
+					writeJSON(w, result{false, "Couldn't restore the library: " + err.Error()})
+					return
+				}
+			} else {
+				os.WriteFile(dst, data, 0o644)
+			}
 		}
 		if !ok {
 			writeJSON(w, result{false, "That backup has no library in it."})

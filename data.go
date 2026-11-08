@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -175,10 +176,12 @@ func registerData(mux *http.ServeMux) {
 			writeJSON(w, result{false, "That backup can't be read"})
 			return
 		}
+		libMu.Lock()
+		defer libMu.Unlock()
 		rotateBackupForce()
-		tmp := filepath.Join(cfgDir, "library.json.tmp")
-		if os.WriteFile(tmp, b, 0o600) == nil {
-			os.Rename(tmp, filepath.Join(cfgDir, "library.json"))
+		if err := writeFileSafe(filepath.Join(cfgDir, "library.json"), b); err != nil {
+			writeJSON(w, result{false, "Couldn't restore: " + err.Error()})
+			return
 		}
 		writeJSON(w, result{OK: true})
 	})
@@ -224,4 +227,31 @@ func rotateBackupForce() {
 	}
 	os.MkdirAll(backupDir(), 0o700)
 	os.WriteFile(filepath.Join(backupDir(), "library-"+time.Now().Format("20060102-150405")+"-before-restore.json"), b, 0o600)
+}
+
+// libMu keeps overlapping saves, loads and restores of library.json from stepping on each other.
+var libMu sync.Mutex
+
+// writeFileSafe writes next to the target, flushes it to disk, then swaps it in, so a crash or power cut never
+// leaves a half-written file behind.
+func writeFileSafe(path string, b []byte) error {
+	tmp := path + ".tmp"
+	f, err := os.OpenFile(tmp, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600)
+	if err != nil {
+		return err
+	}
+	if _, err = f.Write(b); err == nil {
+		err = f.Sync()
+	}
+	if cerr := f.Close(); err == nil {
+		err = cerr
+	}
+	if err != nil {
+		os.Remove(tmp)
+		return err
+	}
+	if err = os.Rename(tmp, path); err != nil {
+		os.Remove(tmp)
+	}
+	return err
 }
