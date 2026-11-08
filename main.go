@@ -23,7 +23,7 @@ import (
 	"time"
 )
 
-const appVersion = "2.3.0"
+const appVersion = "2.3.1"
 
 //go:embed web
 var webFS embed.FS
@@ -595,8 +595,13 @@ func spawnOverlay(show bool) {
 		return
 	}
 	u := fmt.Sprintf("http://127.0.0.1:%d/overlay.html?k=%s", port, token)
-	cmd := exec.Command(br, "--app="+u, "--user-data-dir="+filepath.Join(cfgDir, "profile-overlay"),
-		"--no-first-run", "--autoplay-policy=no-user-gesture-required", "--window-size=1060,640", "--disable-features=Translate,HardwareMediaKeyHandling,MediaSessionService")
+	args := []string{"--app=" + u, "--user-data-dir=" + filepath.Join(cfgDir, "profile-overlay"),
+		"--no-first-run", "--autoplay-policy=no-user-gesture-required", "--window-size=1060,640", "--disable-features=Translate,HardwareMediaKeyHandling,MediaSessionService"}
+	if !show {
+		// get ready in the background: open far off-screen so it can never flash up before it is hidden
+		args = append(args, "--window-position=-32000,-32000")
+	}
+	cmd := exec.Command(br, args...)
 	if err := cmd.Start(); err != nil {
 		arcLog("Guide: could not start the window: " + err.Error())
 		return
@@ -605,8 +610,8 @@ func spawnOverlay(show bool) {
 	overlaySpawning = true
 	go func() {
 		defer func() { overlayMu.Lock(); overlaySpawning = false; overlayMu.Unlock() }()
-		for i := 0; i < 80; i++ { // wait for the window to exist, then show it on top
-			time.Sleep(250 * time.Millisecond)
+		for i := 0; i < 1000; i++ { // wait for the window to exist (checked often, so a hidden one is gone at once)
+			time.Sleep(20 * time.Millisecond)
 			if h := findWindow(overlayTitle, true); h != 0 {
 				if show {
 					showOnTop(h)
