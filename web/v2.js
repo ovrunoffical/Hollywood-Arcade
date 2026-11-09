@@ -1,17 +1,26 @@
 // Hollywood Arcade 2.0 features: patch notes, and (added below) Guide, sounds, keyboard, backup and more.
 'use strict';
-window.APP_VERSION = '3.1.0-test4';
+window.APP_VERSION = '3.0.0';
 
 // ---------- patch notes ----------
 // Add a new entry at the TOP for every release. The What's New screen shows automatically once per version.
 const PATCH_NOTES = [
   {
-    v: '3.1.0', date: 'November 2026', title: 'Discord and Apple Music',
-    groups: [['New', [
-      'Join your Discord voice channel from the Guide, the Discord page or Settings, with Discord tucked away afterwards.',
-      'Your Discord status shows the game you launched from Arcade, like "Ultimate Spider-Man on PCSX2". Add your Application ID in Settings.',
-      'Experimental: pick a song in Arcade and it presses play in Apple Music for you. The keys and delay are adjustable in Settings.'
-    ]]]
+    v: '3.0.0', date: 'November 2026', title: 'Hollywood Arcade 3.0: the first official release',
+    groups: [
+      ['New', [
+        'Hollywood Arcade is out of beta. Everything from the 2.x series is here: the console home screen, the in-game Guide, profiles, achievements, the Store, Watch, the System menu, shell mode and the self-updater.',
+        'A guided first-run setup, which you can run again from Settings.',
+        'Join your Discord voice channel from the Guide, the Discord page or Settings, with Discord tucked away afterwards.',
+        'Your Discord status shows the game you launched from Arcade, like "Ultimate Spider-Man on PCSX2". Add your Application ID in Settings.',
+        'Experimental: pick a song in Arcade and it presses play in Apple Music for you. The keys and delay are adjustable in Settings.'
+      ]],
+      ['Improved', [
+        'The Guide now takes real focus when it opens in a game, so the controller works without clicking it first.',
+        'Resume game returns to the game window itself, not an emulator\u2019s library window.',
+        'Safer saving with automatic backup recovery, a steadier updater, and a Guide that gets ready off-screen instead of flashing at start-up.'
+      ]]
+    ]
   },
   {
     v: '2.3.1', date: 'November 2026', title: 'Start-up fix',

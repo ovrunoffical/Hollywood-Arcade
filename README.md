@@ -6,7 +6,7 @@ A console-style front end for your PC. Steam, Epic, GOG, Ubisoft, Game Pass, emu
 
 It is one `.exe`. Double-click it. No installer, no account, no background services.
 
-> **Beta.** Hollywood Arcade is early software that has been tested by a handful of friends. Expect rough edges, and please report them.
+> **Version 3.0 is the first official release.** It is free, open source and made by one person, so if something breaks, use **Settings > Health check > Copy report** and open an issue.
 
 ## Features
 - **Home, Games, Apps** with covers, descriptions and play time, pulled from free sources.
@@ -17,6 +17,7 @@ It is one `.exe`. Double-click it. No installer, no account, no background servi
 - **Watch**: your Jellyfin library (ErsatzTV channels appear under Live TV) and a row of streaming services that open full screen and work with a controller.
 - **System menu** for Wi-Fi, Bluetooth, display, sound, Windows Update, power mode and brightness.
 - **Store** tab with Steam deals, Game Pass, a retro classics browser and emulators, including one-click install for several (experimental).
+- **Discord**: a one-press Join voice button (your channel link stays on your PC) and a status that shows the game you launched from Arcade, such as an emulated game on its emulator.
 - Screensaver mode, sounds, on-screen keyboard, backups and restore, patch notes after every update.
 
 ## Download and run
