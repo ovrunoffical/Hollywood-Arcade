@@ -479,28 +479,73 @@ func resumeGame() bool {
 		arcLog("Resume: no game is remembered")
 		return false
 	}
-	if r, _, _ := pIsWin.Call(h); r == 0 {
-		// games often swap their window (a launcher hands over to the real game): look for it again
-		h = 0
-		nameL := strings.ToLower(strings.TrimSpace(name))
-		for _, w := range topWindows() {
-			if strings.HasPrefix(w.title, "Hollywood Arcade") || w.title == "Program Manager" {
-				continue
-			}
-			if (pid != 0 && w.pid == pid) || (nameL != "" && strings.Contains(strings.ToLower(w.title), nameL)) {
-				h = w.h
-				setLastGame(name, w.h, w.pid)
-				break
-			}
+	// Emulators keep a library window and open the game in a second one, and launchers hand over to the real
+	// game, so the window remembered at launch is often not the one to go back to: pick the best candidate now.
+	if best := bestGameWindow(h, pid, name); best != 0 {
+		if best != h {
+			setLastGame(name, best, pid)
 		}
-		if h == 0 {
-			arcLog("Resume: the game window is gone")
-			return false
-		}
+		h = best
+	} else {
+		arcLog("Resume: the game window is gone")
+		return false
 	}
 	forceFront(h)
 	arcLog("Resume: brought the game back")
 	return true
+}
+
+// bestGameWindow looks at every window the game's program has open and picks the one showing the game: a title
+// that mentions the game wins, otherwise the biggest window (the game, not the emulator's library list).
+func bestGameWindow(h uintptr, pid uint32, name string) uintptr {
+	nameL := strings.ToLower(strings.TrimSpace(name))
+	words := []string{}
+	for _, w := range strings.Fields(nameL) {
+		if len(w) > 2 {
+			words = append(words, w)
+		}
+	}
+	var best uintptr
+	bestScore := -1
+	for _, w := range topWindows() {
+		if strings.HasPrefix(w.title, "Hollywood Arcade") || w.title == "Program Manager" {
+			continue
+		}
+		t := strings.ToLower(w.title)
+		score := 0
+		if nameL != "" && strings.Contains(t, nameL) {
+			score += 1000
+		} else {
+			for _, wd := range words {
+				if strings.Contains(t, wd) {
+					score += 200
+				}
+			}
+		}
+		if pid != 0 && w.pid == pid {
+			score += 100
+		} else if score == 0 {
+			continue // not this game's window
+		}
+		var rc [4]int32
+		if r, _, _ := pGetRect.Call(w.h, uintptr(unsafe.Pointer(&rc))); r != 0 {
+			if area := int(rc[2]-rc[0]) * int(rc[3]-rc[1]); area > 0 {
+				score += area / 100000 // a 1920x1080 window adds about 20
+			}
+		}
+		if w.h == h {
+			score++
+		}
+		if score > bestScore {
+			best, bestScore = w.h, score
+		}
+	}
+	if best == 0 {
+		if r, _, _ := pIsWin.Call(h); r != 0 {
+			return h
+		}
+	}
+	return best
 }
 
 // forceFront puts a window in front of everything, including the full-screen Arcade window, and gives it focus.
