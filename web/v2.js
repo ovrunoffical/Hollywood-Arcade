@@ -1,10 +1,14 @@
 // Hollywood Arcade 2.0 features: patch notes, and (added below) Guide, sounds, keyboard, backup and more.
 'use strict';
-window.APP_VERSION = '3.0.0';
+window.APP_VERSION = '3.0.1';
 
 // ---------- patch notes ----------
 // Add a new entry at the TOP for every release. The What's New screen shows automatically once per version.
 const PATCH_NOTES = [
+  {
+    v: '3.0.1', date: 'November 2026', title: 'App icons',
+    groups: [['Fixed', ['App icons: well-known apps (Jellyfin, Proton VPN, Apple Music, Discord and many more) now get their real logo, and a screenshot from Wikipedia is no longer used as an icon. Arcade looks your apps up again once after updating.']]]
+  },
   {
     v: '3.0.0', date: 'November 2026', title: 'Hollywood Arcade 3.0: the first official release',
     groups: [

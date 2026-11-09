@@ -297,6 +297,15 @@ func fetchAppMeta(id, name, kind, target string) appMeta {
 			m.Sources = append(m.Sources, "program icon")
 		}
 	}
+	if m.Icon == "" {
+		// well-known apps: their official site's icon, which beats a guess from Wikipedia
+		if d := knownAppDomain(nm); d != "" {
+			if p := downloadIcon("https://www.google.com/s2/favicons?sz=256&domain="+url.QueryEscape(d), id, "https://www.google.com/"); p != "" {
+				m.Icon = p
+				m.Sources = append(m.Sources, "site icon ("+d+")")
+			}
+		}
+	}
 	title, ex, tag, wpage, thumb := wikiApp(nm)
 	if title == "" {
 		m.Log = append(m.Log, "Wikipedia: no article for \""+nm+"\"")
@@ -311,7 +320,11 @@ func fetchAppMeta(id, name, kind, target string) appMeta {
 			m.Site = wpage
 		}
 		if m.Icon == "" && thumb != "" {
-			m.Icon = downloadIcon(thumb, id, "")
+			if logoLooking(thumb) {
+				m.Icon = downloadIcon(thumb, id, "")
+			} else {
+				m.Log = append(m.Log, "Wikipedia: its picture looks like a screenshot, not a logo, so it was skipped")
+			}
 		}
 		m.Sources = append(m.Sources, "Wikipedia")
 	}
@@ -360,4 +373,43 @@ func bigThumb(u string) string {
 		return reThumbPx.ReplaceAllString(u, "/1000px-")
 	}
 	return u
+}
+
+// logoLooking is true when a Wikipedia image's file name says it is a logo or icon (not a screenshot).
+func logoLooking(u string) bool {
+	l := strings.ToLower(u)
+	for _, w := range []string{"logo", "icon", "symbol", "wordmark", "emblem"} {
+		if strings.Contains(l, w) {
+			return true
+		}
+	}
+	return false
+}
+
+// appSites maps well-known app names to the site whose icon represents them.
+var appSites = []struct{ key, domain string }{
+	{"jellyfin", "jellyfin.org"}, {"ersatztv", "ersatztv.org"}, {"protonvpn", "protonvpn.com"}, {"protonmail", "proton.me"},
+	{"proton", "proton.me"}, {"applemusic", "music.apple.com"}, {"appletv", "tv.apple.com"}, {"itunes", "apple.com"},
+	{"discord", "discord.com"}, {"spotify", "spotify.com"}, {"steam", "steampowered.com"}, {"epicgames", "epicgames.com"},
+	{"gogga", "gog.com"}, {"gog", "gog.com"}, {"ubisoft", "ubisoft.com"}, {"battlenet", "battle.net"}, {"origin", "ea.com"},
+	{"eaapp", "ea.com"}, {"chrome", "google.com/chrome"}, {"firefox", "mozilla.org"}, {"edge", "microsoft.com"},
+	{"brave", "brave.com"}, {"opera", "opera.com"}, {"vlc", "videolan.org"}, {"obs", "obsproject.com"}, {"plex", "plex.tv"},
+	{"kodi", "kodi.tv"}, {"twitch", "twitch.tv"}, {"youtube", "youtube.com"}, {"netflix", "netflix.com"},
+	{"telegram", "telegram.org"}, {"whatsapp", "whatsapp.com"}, {"slack", "slack.com"}, {"zoom", "zoom.us"},
+	{"teams", "microsoft.com"}, {"nordvpn", "nordvpn.com"}, {"expressvpn", "expressvpn.com"}, {"qbittorrent", "qbittorrent.org"},
+	{"retroarch", "retroarch.com"}, {"pcsx2", "pcsx2.net"}, {"rpcs3", "rpcs3.net"}, {"dolphin", "dolphin-emu.org"},
+	{"ppsspp", "ppsspp.org"}, {"cemu", "cemu.info"}, {"xenia", "xenia.jp"}, {"yuzu", "yuzu-emu.org"}, {"ryujinx", "ryujinx.org"},
+	{"duckstation", "duckstation.org"}, {"melonds", "melonds.kuribo64.net"}, {"nvidia", "nvidia.com"}, {"geforce", "nvidia.com"},
+	{"7zip", "7-zip.org"}, {"notepad", "notepad-plus-plus.org"}, {"gimp", "gimp.org"}, {"blender", "blender.org"},
+}
+
+// knownAppDomain returns the website for a well-known app name, or "".
+func knownAppDomain(name string) string {
+	k := strings.ToLower(strings.NewReplacer(" ", "", "-", "", "_", "", ".", "").Replace(name))
+	for _, s := range appSites {
+		if k == s.key || strings.HasPrefix(k, s.key) {
+			return s.domain
+		}
+	}
+	return ""
 }

@@ -129,3 +129,14 @@ func TestVoiceLink(t *testing.T) {
 		}
 	}
 }
+
+func TestAppIconHelpers(t *testing.T) {
+	for in, want := range map[string]string{"Jellyfin": "jellyfin.org", "Proton VPN": "protonvpn.com", "Apple Music": "music.apple.com", "Discord": "discord.com", "My Random Tool": ""} {
+		if got := knownAppDomain(in); got != want {
+			t.Errorf("knownAppDomain(%q)=%q want %q", in, got, want)
+		}
+	}
+	if !logoLooking("https://upload.wikimedia.org/x/Jellyfin_logo.svg.png") || logoLooking("https://upload.wikimedia.org/x/Jellyfin_10.8_screenshot.png") {
+		t.Error("logoLooking mistook a screenshot for a logo, or the other way round")
+	}
+}

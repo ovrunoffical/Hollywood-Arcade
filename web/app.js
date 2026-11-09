@@ -1143,7 +1143,7 @@ async function fetchAppInfo(it) {
   const r = await fetch('/api/appmeta', { method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id: it.id, name: it.name, kind: it.kind || '', target: it.target || '' }) }).then(x => x.json()).catch(() => null);
   if (!r) return false;
-  it.metaAt = Date.now(); it.metaV = 5; it.metaLog = (r.meta && r.meta.log) || [];
+  it.metaAt = Date.now(); it.metaV = 5; it.appV = 2; it.metaLog = (r.meta && r.meta.log) || [];
   if (!r.ok) return false;
   const m = r.meta;
   if (m.icon) it.icon = m.icon;
@@ -1168,7 +1168,7 @@ async function fetchInfo(it) {
 let metaBusy = false;
 async function runMeta(force) {
   if (metaBusy) return toast('Already fetching game info\u2026');
-  const list = S.items.filter(i => (i.category === 'game' || i.category === 'app') && (force || !i.metaAt || i.metaV !== 5));
+  const list = S.items.filter(i => (i.category === 'game' || i.category === 'app') && (force || !i.metaAt || i.metaV !== 5 || (i.category === 'app' && i.appV !== 2)));
   if (!list.length) return force ? toast('Add some games or apps first') : undefined;
   metaBusy = true; let done = 0, found = 0, next = 0;
   const worker = async () => {
