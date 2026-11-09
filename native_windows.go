@@ -118,6 +118,72 @@ func showOnTop(h uintptr) {
 	pKeybd.Call(0x12, 0, 0, 0)                                            // a tap of Alt lets us take focus from a game
 	pKeybd.Call(0x12, 0, 2, 0)
 	pForegrnd.Call(h)
+	go takeFocus(h) // in the background: it must never be able to stall the controller loop
+}
+
+var (
+	kernel32Lib  = syscall.NewLazyDLL("kernel32.dll")
+	pCurThread   = kernel32Lib.NewProc("GetCurrentThreadId")
+	pWinThread   = user32.NewProc("GetWindowThreadProcessId")
+	pAttachInput = user32.NewProc("AttachThreadInput")
+	pSetFocus    = user32.NewProc("SetFocus")
+	pSetActive   = user32.NewProc("SetActiveWindow")
+	pBringTop    = user32.NewProc("BringWindowToTop")
+	pFindEx      = user32.NewProc("FindWindowExW")
+	pGetCursor   = user32.NewProc("GetCursorPos")
+	pSetCursor   = user32.NewProc("SetCursorPos")
+	pMouseEvt    = user32.NewProc("mouse_event")
+)
+
+// takeFocus makes the Guide's page the thing that has keyboard and controller focus, not just the top window.
+// The page only reads the controller while it has focus, and Windows often leaves focus with the game.
+func takeFocus(h uintptr) {
+	defer func() { recover() }()
+	me, _, _ := pCurThread.Call()
+	them, _, _ := pWinThread.Call(h, 0)
+	fg, _, _ := pFgWin.Call()
+	fgThread, _, _ := pWinThread.Call(fg, 0)
+	// join the input queues of the game and the Guide for a moment, so we are allowed to move focus between them
+	for _, t := range []uintptr{them, fgThread} {
+		if t != 0 && t != me {
+			pAttachInput.Call(me, t, 1)
+			defer pAttachInput.Call(me, t, 0)
+		}
+	}
+	pBringTop.Call(h)
+	pSetActive.Call(h)
+	pForegrnd.Call(h)
+	cls, _ := syscall.UTF16PtrFromString("Chrome_RenderWidgetHostHWND")
+	if child, _, _ := pFindEx.Call(h, 0, uintptr(unsafe.Pointer(cls)), 0); child != 0 {
+		pSetFocus.Call(child)
+	} else {
+		pSetFocus.Call(h)
+	}
+	time.Sleep(120 * time.Millisecond)
+	// last resort, the same thing a person does: one click on an empty corner of the window, then put the pointer back
+	if now, _, _ := pFgWin.Call(); now != h || !pageFocused(h) {
+		var rc [4]int32
+		if r, _, _ := pGetRect.Call(h, uintptr(unsafe.Pointer(&rc))); r != 0 {
+			var pt [2]int32
+			pGetCursor.Call(uintptr(unsafe.Pointer(&pt)))
+			pSetCursor.Call(uintptr(rc[2]-14), uintptr(rc[3]-14))
+			pMouseEvt.Call(0x2, 0, 0, 0, 0) // left down
+			pMouseEvt.Call(0x4, 0, 0, 0, 0) // left up
+			pSetCursor.Call(uintptr(pt[0]), uintptr(pt[1]))
+			arcLog("Guide: had to click the window to give it focus")
+		}
+	}
+}
+
+// pageFocused reports whether the window's own page (or the window itself) is where keyboard focus sits.
+func pageFocused(h uintptr) bool {
+	pGetFocusWin := user32.NewProc("GetFocus")
+	them, _, _ := pWinThread.Call(h, 0)
+	me, _, _ := pCurThread.Call()
+	pAttachInput.Call(me, them, 1)
+	f, _, _ := pGetFocusWin.Call()
+	pAttachInput.Call(me, them, 0)
+	return f != 0
 }
 
 var (
