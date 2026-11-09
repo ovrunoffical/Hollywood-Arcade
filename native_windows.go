@@ -473,16 +473,59 @@ func gameState() (string, bool) {
 
 func resumeGame() bool {
 	lastGame.Lock()
-	h := lastGame.h
+	h, pid, name := lastGame.h, lastGame.pid, lastGame.name
 	lastGame.Unlock()
 	if h == 0 {
+		arcLog("Resume: no game is remembered")
 		return false
 	}
 	if r, _, _ := pIsWin.Call(h); r == 0 {
-		return false
+		// games often swap their window (a launcher hands over to the real game): look for it again
+		h = 0
+		nameL := strings.ToLower(strings.TrimSpace(name))
+		for _, w := range topWindows() {
+			if strings.HasPrefix(w.title, "Hollywood Arcade") || w.title == "Program Manager" {
+				continue
+			}
+			if (pid != 0 && w.pid == pid) || (nameL != "" && strings.Contains(strings.ToLower(w.title), nameL)) {
+				h = w.h
+				setLastGame(name, w.h, w.pid)
+				break
+			}
+		}
+		if h == 0 {
+			arcLog("Resume: the game window is gone")
+			return false
+		}
 	}
-	foreground(h)
+	forceFront(h)
+	arcLog("Resume: brought the game back")
 	return true
+}
+
+// forceFront puts a window in front of everything, including the full-screen Arcade window, and gives it focus.
+func forceFront(h uintptr) {
+	defer func() { recover() }()
+	if r, _, _ := pIsIconic.Call(h); r != 0 {
+		pShowWin.Call(h, 9) // SW_RESTORE
+	}
+	const swpNoSize, swpNoMove, swpShow = 0x1, 0x2, 0x40
+	pSetPos.Call(h, ^uintptr(0), 0, 0, 0, 0, swpNoSize|swpNoMove|swpShow) // topmost, so a topmost Arcade window cannot cover it
+	pKeybd.Call(0x12, 0, 0, 0)
+	pKeybd.Call(0x12, 0, 2, 0)
+	me, _, _ := pCurThread.Call()
+	them, _, _ := pWinThread.Call(h, 0)
+	if them != 0 && them != me {
+		pAttachInput.Call(me, them, 1)
+		defer pAttachInput.Call(me, them, 0)
+	}
+	pToTop.Call(h)
+	pForegrnd.Call(h)
+	pSetFocus.Call(h)
+	go func() { // drop the topmost flag again so Alt+Tab and the Guide behave normally
+		time.Sleep(500 * time.Millisecond)
+		pSetPos.Call(h, ^uintptr(1), 0, 0, 0, 0, swpNoSize|swpNoMove|swpShow) // HWND_NOTOPMOST
+	}()
 }
 
 func raiseArcade() {
