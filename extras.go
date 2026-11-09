@@ -637,6 +637,7 @@ func powerAction(a string) result {
 func registerExtras(mux *http.ServeMux) {
 	registerMixer(mux)
 	registerUpdate(mux)
+	registerVoice(mux)
 	registerToast(mux)
 	mux.HandleFunc("/api/nowplaying", func(w http.ResponseWriter, r *http.Request) {
 		npOnce.Do(startNowPlaying)

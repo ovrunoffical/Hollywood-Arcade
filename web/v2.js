@@ -1,10 +1,18 @@
 // Hollywood Arcade 2.0 features: patch notes, and (added below) Guide, sounds, keyboard, backup and more.
 'use strict';
-window.APP_VERSION = '2.3.1';
+window.APP_VERSION = '3.1.0-test';
 
 // ---------- patch notes ----------
 // Add a new entry at the TOP for every release. The What's New screen shows automatically once per version.
 const PATCH_NOTES = [
+  {
+    v: '3.1.0', date: 'November 2026', title: 'Discord and Apple Music',
+    groups: [['New', [
+      'Join your Discord voice channel from the Guide, the Discord page or Settings, with Discord tucked away afterwards.',
+      'Your Discord status shows the game you launched from Arcade, like "Ultimate Spider-Man on PCSX2". Add your Application ID in Settings.',
+      'Experimental: pick a song in Arcade and it presses play in Apple Music for you. The keys and delay are adjustable in Settings.'
+    ]]]
+  },
   {
     v: '2.3.1', date: 'November 2026', title: 'Start-up fix',
     groups: [['Fixed', ['The Guide no longer flashes on screen for a moment a few seconds after Arcade opens. It now gets ready off-screen.']]]

@@ -99,6 +99,7 @@
     }
     const unreadN = (lib.notes || []).filter(n => !n.read).length;
     center.push({ label: 'Notifications', sub: unreadN ? unreadN + ' new' : '', act: () => go('notes') });
+    if ((lib.settings || {}).discordVoice) center.push({ label: 'Join voice chat', act: async () => { await post('/api/discord/voice'); closeGuide(); } });
     center.push({ label: 'Discord', act: () => go('discord') });
     const profs = lib.profiles || [];
     if (profs.length > 1) center.push({ label: 'Switch profile', sub: (profs.find(p => p.id === lib.activeProfile) || {}).name || '', act: () => openPage('Who\u2019s playing', profs.map(p => ({ label: p.name, sub: p.id === lib.activeProfile ? 'Signed in' : '', act: () => go('profile:' + p.id) }))) });

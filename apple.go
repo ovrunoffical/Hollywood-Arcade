@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -74,7 +75,11 @@ func applePlay(link, term string) result {
 	if os.Getenv("HA_TESTHOST") == "" {
 		start("rundll32.exe", []string{"url.dll,FileProtocolHandler", ml}, "")
 	}
-	go appleBackground()
+	if readSetting("applePlay") == "off" {
+		go appleBackground()
+	} else {
+		go appleAutoPlay()
+	}
 	go func() {
 		// give the app a moment to load the song, then make sure it is actually playing
 		for _, d := range []time.Duration{3500 * time.Millisecond, 3 * time.Second} {
@@ -151,4 +156,54 @@ for ($i = 0; $i -lt 40 -and $done -lt 3; $i++) {
   $ps = Get-Process | Where-Object { $_.ProcessName -match '^(AppleMusic|iTunes)' -and $_.MainWindowHandle -ne 0 }
   foreach ($p in $ps) { [HA.W]::ShowWindowAsync($p.MainWindowHandle, 7) | Out-Null; $done++ }
 }`, 30*time.Second)
+}
+
+// appleAutoPlay is the experimental "press play for me": once the song's page is up it brings Apple Music
+// forward, sends the configured keys (Enter by default), then sends it to the background again.
+func appleAutoPlay() {
+	keys := readSetting("applePlayKeys")
+	if keys == "" {
+		keys = "{ENTER}"
+	}
+	delay := 3000
+	if d := readSetting("applePlayDelay"); d != "" {
+		if n, err := strconv.Atoi(d); err == nil && n >= 0 && n <= 15000 {
+			delay = n
+		}
+	}
+	arcLog("Apple Music: pressing " + keys + " after " + strconv.Itoa(delay) + " ms")
+	driveWindow("^(AppleMusic|iTunes)", keys, delay, true)
+}
+
+// driveWindow waits for a program's window, optionally sends it keystrokes, and optionally minimises it.
+// pattern is a regular expression for the process name, keys uses the .NET SendKeys syntax.
+func driveWindow(pattern, keys string, delayMs int, minimize bool) {
+	if os.Getenv("HA_TESTHOST") != "" {
+		return
+	}
+	q := func(s string) string { return "'" + strings.ReplaceAll(s, "'", "''") + "'" }
+	if len(keys) > 60 {
+		keys = keys[:60]
+	}
+	min := "$false"
+	if minimize {
+		min = "$true"
+	}
+	psOutput(`Add-Type -Name W -Namespace HA -MemberDefinition '[DllImport("user32.dll")] public static extern bool ShowWindowAsync(IntPtr h, int c);'
+$re = `+q(pattern)+`; $keys = `+q(keys)+`; $min = `+min+`
+$p = $null
+for ($i = 0; $i -lt 50 -and -not $p; $i++) {
+  Start-Sleep -Milliseconds 300
+  $p = Get-Process | Where-Object { $_.ProcessName -match $re -and $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+}
+if (-not $p) { exit }
+Start-Sleep -Milliseconds `+strconv.Itoa(delayMs)+`
+if ($keys) {
+  $sh = New-Object -ComObject WScript.Shell
+  $null = $sh.AppActivate($p.Id)
+  Start-Sleep -Milliseconds 400
+  $sh.SendKeys($keys)
+  Start-Sleep -Milliseconds 800
+}
+if ($min) { [HA.W]::ShowWindowAsync($p.MainWindowHandle, 7) | Out-Null }`, 45*time.Second)
 }

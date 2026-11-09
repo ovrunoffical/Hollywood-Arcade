@@ -111,3 +111,21 @@ func TestLibraryFallsBackToBackup(t *testing.T) {
 		t.Fatalf("expected the backup back, got %q", w.Body.String())
 	}
 }
+
+func TestVoiceLink(t *testing.T) {
+	ok := map[string]string{
+		"https://discord.com/channels/123/456":     "discord://-/channels/123/456",
+		"https://discordapp.com/channels/123/456/": "discord://-/channels/123/456",
+		"discord://-/channels/123/456":             "discord://-/channels/123/456",
+	}
+	for in, want := range ok {
+		if got := voiceLink(in); got != want {
+			t.Errorf("voiceLink(%q)=%q want %q", in, got, want)
+		}
+	}
+	for _, bad := range []string{"", "https://evil.example/channels/1/2", "https://discord.com.evil.example/channels/1/2", "calc.exe", "https://discord.com/invite/abc", "discord://-/channels/1/2; calc"} {
+		if got := voiceLink(bad); got != "" {
+			t.Errorf("voiceLink(%q) should be refused, got %q", bad, got)
+		}
+	}
+}

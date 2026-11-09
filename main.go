@@ -23,7 +23,7 @@ import (
 	"time"
 )
 
-const appVersion = "2.3.1"
+const appVersion = "3.1.0-test"
 
 //go:embed web
 var webFS embed.FS
@@ -41,6 +41,7 @@ type Item struct {
 	Rom    string `json:"rom"`
 	Args   string `json:"args"`
 	Name   string `json:"name"`
+	Source string `json:"source"`
 }
 
 type result struct {
@@ -443,6 +444,7 @@ func buildMux() *http.ServeMux {
 		before := windowSnapshot()
 		res := launch(it)
 		if res.OK {
+			setNowPlaying(it)
 			go raiseLaunched(before, it.Name, it.Target)
 		}
 		writeJSON(w, res)
@@ -753,6 +755,7 @@ func main() {
 	if os.Getenv("HA_NOWINDOW") == "" {
 		go prewarmOverlay()
 	}
+	go presenceLoop()
 
 	u := fmt.Sprintf("http://127.0.0.1:%d/?k=%s", port, token)
 	if os.Getenv("HA_NOWINDOW") != "" {
