@@ -704,3 +704,15 @@ body.onhome #notbell { display: none; }
 .wizdone .pbig { width: 84px; height: 84px; font-size: 38px; }
 .wizlist { list-style: none; padding: 0; margin: 12px auto; display: inline-block; text-align: left; } .wizlist li { padding: 3px 0; } .wizlist .ok { color: #fff; } .wizlist .ok::first-letter { color: var(--xhi, #9bf00b); } .wizlist .no { opacity: .6; }
 #wizbody label { display: block; font-size: 14px; } #wizbody label small { opacity: .6; } #wizbody label .keyin { margin-top: 4px; width: 100%; box-sizing: border-box; }
+
+/* Apps page: Launchpad-style grid */
+.lp { padding: 34px 22px 26px; border-radius: 34px; background: rgba(255, 255, 255, .06); border: 1px solid var(--line); -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px); }
+.grid.apps.lpg { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 38px 14px; justify-items: center; }
+.lp .tile { width: 100%; max-width: 140px; align-items: center; text-align: center; }
+.lp .tile .art { width: 104px; margin: 0 auto; border-radius: 23%; box-shadow: 0 8px 22px rgba(0, 0, 0, .4); }
+.lp .tile.app .glyph { font-size: 52px; }
+.lp .cap { padding: 12px 2px 0; width: 100%; text-align: center; }
+.lp .cap b { font-size: 14px; font-weight: 500; text-shadow: 0 1px 6px rgba(0, 0, 0, .6); }
+.lp .cap small { display: none; }
+.lp .tile:hover, .lp .tile:focus-visible { transform: scale(1.1); }
+.lp .tile:hover .art, .lp .tile:focus-visible .art { box-shadow: 0 0 0 3px #fff, 0 0 30px var(--ta), 0 16px 34px rgba(0, 0, 0, .5); }

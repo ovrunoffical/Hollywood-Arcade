@@ -237,7 +237,7 @@ $('#sclose').addEventListener('click', () => sdlg.close());
 function apps() {
   const list = S.items.filter(i => i.category === 'app' && hit(i));
   return `<h1 class="title">Apps</h1><div class="toolbar"><button class="btn primary" data-act="add-app">Add app</button><button class="btn" data-act="essentials">Add my essentials</button></div>` +
-    (list.length ? grid(list, 'apps') : '<div class="empty">No apps yet.</div>') +
+    (list.length ? `<div class="lp">${grid(list, 'apps lpg')}</div>` : '<div class="empty">No apps yet.</div>') +
     `<p class="hint" style="margin-top:26px">Web apps like Jellyfin and ErsatzTV open inside Arcade. Programs like Firefox and File Explorer open in their own window (Alt+Tab or the Arcade window gets you back). If a server runs on another address, right-click its tile to change it.</p>`;
 }
 
