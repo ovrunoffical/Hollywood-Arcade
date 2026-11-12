@@ -1,12 +1,12 @@
 // Hollywood Arcade 2.0 features: patch notes, and (added below) Guide, sounds, keyboard, backup and more.
 'use strict';
-window.APP_VERSION = '3.1.0-test2';
+window.APP_VERSION = '3.1.0';
 
 // ---------- patch notes ----------
 // Add a new entry at the TOP for every release. The What's New screen shows automatically once per version.
 const PATCH_NOTES = [
   {
-    v: '3.1.0-test2', date: 'November 2026', title: 'Plugins, and a smoother Guide',
+    v: '3.1.0', date: 'November 2026', title: 'Plugins, and a smoother Guide',
     groups: [
       ['New', [
         'Plugins. Put a plugin folder in Arcade\u2019s plugins folder and switch it on in Settings. Plugins can add a shelf to Home, a page to the sidebar, and use your library, but they run in a sandbox, start off until you approve them, and cannot launch programs or see your files. Tap Add examples in Settings to try two.',
