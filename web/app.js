@@ -634,7 +634,11 @@ function focusMove(els, dir) {
     if (e === cur) continue;
     const b = e.getBoundingClientRect(), x = b.left + b.width / 2 - cx, y = b.top + b.height / 2 - cy;
     const along = { left: -x, right: x, up: -y, down: y }[dir];
-    const across = Math.abs(dir === 'left' || dir === 'right' ? y : x);
+    // how far off line the target is: the best of its start edge, centre or end edge, so a wider button
+    // (a longer label like "Achievements") is not treated as further away than its shorter neighbours
+    const across = dir === 'left' || dir === 'right'
+      ? Math.min(Math.abs(y), Math.abs(b.top - r.top), Math.abs(b.bottom - r.bottom))
+      : Math.min(Math.abs(x), Math.abs(b.left - r.left), Math.abs(b.right - r.right));
     if (along <= 4) continue;
     const s = along + across * 2.5;
     if (s < bs) { bs = s; best = e; }
