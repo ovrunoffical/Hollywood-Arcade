@@ -1,0 +1,7 @@
+{
+  "name": "Most played",
+  "version": "1.0.0",
+  "author": "Hollywood Arcade",
+  "description": "A shelf on Home with the games you have played the most.",
+  "permissions": ["ui", "library.read"]
+}

@@ -174,13 +174,13 @@ async function achRefresh(it, quiet) {
     if (!quiet || r.unlocked > before) { /* saved below */ }
     if (r.unlocked > before && before >= 0 && quiet === 'announce') { try { SFX.play('toast'); } catch { /* ignore */ } toast('\u{1F3C6} ' + (r.unlocked - before) + ' new achievement' + (r.unlocked - before === 1 ? '' : 's') + ' in ' + it.name); }
   } else it.achMiss = Date.now();
-  save(); arcCheck();
+  (S.settings.achAt = Date.now()); save(); arcCheck();
   return r;
 }
 let achBusy = false;
-async function achRefreshAll() {
+async function achRefreshAll(force) {
   if (achBusy) return; achBusy = true;
-  const list = S.items.filter(i => i.category === 'game' && achWays(i).some(w => !w.need) && !(i.achMiss && Date.now() - i.achMiss < 7 * 864e5));
+  const list = S.items.filter(i => i.category === 'game' && achWays(i).some(w => !w.need) && (force || !(i.achMiss && Date.now() - i.achMiss < 864e5)));
   if (!list.length) { achBusy = false; return toast('Nothing to check. Add your Steam ID or RetroAchievements details in Settings first.'); }
   let n = 0;
   for (const it of list) {
@@ -201,7 +201,7 @@ function achView() {
   const stat = (n, l) => `<div class="astat"><b>${n}</b><small>${l}</small></div>`;
   let h = `<h1 class="title">Achievements${prof && (S.profiles || []).length > 1 ? ` <small class="hint">${esc(prof.name)}</small>` : ''}</h1><div class="astats">${stat(arcScore().toLocaleString(), 'Arcade score')}${stat(unl.toLocaleString() + (tot ? ' / ' + tot.toLocaleString() : ''), 'Game achievements')}${stat(done, 'Games completed')}${stat(ARC.filter(a => got[a[0]]).length + ' / ' + ARC.length, 'Arcade badges')}</div>`;
   const have = [s.steamId ? 'Steam' : '', s.raKey ? 'RetroAchievements' : '', s.xblKey ? 'Xbox' : ''].filter(Boolean);
-  h += `<div class="toolbar"><button class="btn primary" data-v21="ach-all">${ag.length ? 'Refresh all' : 'Find my achievements'}</button><button class="btn" data-act="gsettings">Set up accounts</button><span class="hint">${have.length ? 'Connected: ' + have.join(', ') : 'No accounts connected yet'}</span></div>`;
+  h += `<div class="toolbar"><button class="btn primary" data-v21="ach-all">${ag.length ? 'Refresh all' : 'Find my achievements'}</button><button class="btn" data-act="gsettings">Set up accounts</button><span class="hint">${have.length ? 'Connected: ' + have.join(', ') + achAgo() : 'No accounts connected yet'}</span></div>`;
   if (!ag.length) h += `<div class="welcome"><h2>Your trophy room</h2><p>Connect an account in Settings and press Find my achievements. Steam games work with just your Steam ID if your profile is public, retro games use a free RetroAchievements account, and Xbox titles use an OpenXBL key. Achievements for each game also show up in its info card.</p></div>`;
   else h += '<h2 class="row-title">Your games</h2><div class="grid">' + ag.map(it => `<button class="tile game achg" data-v21="ach-open" data-id="${esc(it.id)}">${artHTML(it, ring(it.ach.u, it.ach.t))}<div class="cap"><b>${esc(it.name)}</b><small>${it.ach.u} / ${it.ach.t}${it.ach.p ? ' · ' + esc(it.ach.p) : ''}</small></div></button>`).join('') + '</div>';
   h += '<h2 class="row-title">Arcade badges</h2><div class="abadges">' + ARC.map(([id, n, d, p]) => `<div class="abadge${got[id] ? ' on' : ''}"><span class="aico">${got[id] ? '\u{1F3C6}' : '\u{1F512}'}</span><div><b>${esc(n)}</b><small>${esc(d)}</small></div><em>${p}</em></div>`).join('') + '</div>';
@@ -392,7 +392,7 @@ document.addEventListener('click', async (e) => {
       return v21show(`<h2>Delete ${esc(p.name)}?</h2><p class="hint">Their play history, achievements and settings are removed. Your games stay.</p>`, [{ label: 'Delete', primary: true, fn: () => { const i = S.profiles.indexOf(p); S.profiles.splice(i, 1); v21switch(S.profiles[0].id, true); toast('Deleted ' + p.name); } }, { label: 'Keep' }]);
     }
     if (k === 'ask-prof') { S.settings.askProfile = !S.settings.askProfile; save(); return render(); }
-    if (k === 'ach-all') return achRefreshAll();
+    if (k === 'ach-all') return achRefreshAll(true);
     if (k === 'ach-open') return achOpen(el.dataset.id);
     if (k === 'ach-filter') { const it = S.items.find(i => i.id === el.dataset.id); if (it) achDetail(it, el.dataset.k); return; }
     if (k === 'stream') {
@@ -429,8 +429,16 @@ let v21last = null, v21lastAt = 0;
 window.addEventListener('focus', () => {
   if (!v21last || Date.now() - v21lastAt < 20000) return;
   const it = S.items.find(i => i.id === v21last); v21last = null;
-  if (it && it.ach && it.ach.t) achRefresh(it, 'announce').then(() => { if (view === 'ach') render(); });
+  if (it) achAfterGame(it);
 });
+// check a game's achievements once it has been played, even if it had none recorded before (a failed check is forgotten)
+function achAfterGame(it) {
+  if (!it || it.category !== 'game' || !achWays(it).some(w => !w.need)) return;
+  delete it.achMiss;
+  setTimeout(() => achRefresh(it, 'announce').then(() => { if (view === 'ach' || view === 'home') render(); }), 4000);
+}
+{ const _es = endSession; endSession = function () { const id = v2session && v2session.id; _es(); if (id) { if (v21last === id) v21last = null; achAfterGame(S.items.find(i => i.id === id)); } }; }
+const achAgo = () => { const t = (S.settings || {}).achAt; if (!t) return ''; const m = Math.round((Date.now() - t) / 60000); return ' \u00b7 last checked ' + (m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'); };
 
 // ================= start-up =================
 function v21init() {

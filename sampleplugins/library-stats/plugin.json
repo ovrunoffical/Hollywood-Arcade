@@ -1,0 +1,7 @@
+{
+  "name": "Library stats",
+  "version": "1.0.0",
+  "author": "Hollywood Arcade",
+  "description": "A sidebar page with totals and your most played games.",
+  "permissions": ["ui", "library.read"]
+}

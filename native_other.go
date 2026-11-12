@@ -23,3 +23,6 @@ func showToastWindow(h uintptr, on bool)                    {}
 func raiseArcade()                                          {}
 func padRaw() (uint32, uint32)                              { return 0, 0 }
 func centerWindow(h uintptr)                                {}
+func noteForeground()                                       {}
+func returnToGame()                                         {}
+func guideKickedGame() bool                                 { return false }

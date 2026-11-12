@@ -3,6 +3,7 @@ package main
 import (
 	"archive/zip"
 	"encoding/json"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -138,5 +139,86 @@ func TestAppIconHelpers(t *testing.T) {
 	}
 	if !logoLooking("https://upload.wikimedia.org/x/Jellyfin_logo.svg.png") || logoLooking("https://upload.wikimedia.org/x/Jellyfin_10.8_screenshot.png") {
 		t.Error("logoLooking mistook a screenshot for a logo, or the other way round")
+	}
+}
+
+func TestPluginHostRules(t *testing.T) {
+	for _, h := range []string{"127.0.0.1", "localhost", "10.0.0.5", "foo", "a b.com", "x.local", "evil.internal", "", "http://a.com", "a.com/path"} {
+		if validPluginHost(h) {
+			t.Errorf("%q should not be a usable plugin host", h)
+		}
+	}
+	for _, h := range []string{"api.example.com", "retroachievements.org", "a-b.co.uk"} {
+		if !validPluginHost(h) {
+			t.Errorf("%q should be usable", h)
+		}
+	}
+	if !hostAllowed("api.example.com", []string{"example.com"}) || hostAllowed("evilexample.com", []string{"example.com"}) || hostAllowed("example.com.evil.net", []string{"example.com"}) {
+		t.Error("hostAllowed matches the wrong sites")
+	}
+}
+
+func TestPublicIP(t *testing.T) {
+	for _, s := range []string{"127.0.0.1", "10.1.2.3", "192.168.1.5", "172.16.0.1", "169.254.1.1", "100.64.0.1", "0.0.0.0", "::1", "fe80::1", "fc00::1"} {
+		if publicIP(net.ParseIP(s)) {
+			t.Errorf("%s must not count as public", s)
+		}
+	}
+	if !publicIP(net.ParseIP("93.184.216.34")) {
+		t.Error("a public address was refused")
+	}
+}
+
+func TestPluginManifestChecks(t *testing.T) {
+	cfgDir = t.TempDir()
+	mk := func(id, js string) {
+		os.MkdirAll(filepath.Join(pluginsDir(), id), 0o755)
+		os.WriteFile(filepath.Join(pluginsDir(), id, "plugin.json"), []byte(js), 0o644)
+	}
+	mk("ok", `{"name":"Ok","permissions":["ui","net"],"net":["example.com"]}`)
+	mk("launch", `{"name":"L","permissions":["launch"]}`)
+	mk("unknown", `{"name":"U","permissions":["root"]}`)
+	mk("nonet", `{"name":"N","permissions":["net"]}`)
+	mk("path", `{"name":"P","main":"../x.js"}`)
+	mk("Bad Name", `{"name":"B"}`)
+	if _, bad := readManifest("ok"); bad != "" {
+		t.Errorf("a good manifest was refused: %s", bad)
+	}
+	for _, id := range []string{"launch", "unknown", "nonet", "path", "Bad Name", "missing"} {
+		if _, bad := readManifest(id); bad == "" {
+			t.Errorf("%s should have been refused", id)
+		}
+	}
+	if g := grantedPerms([]string{"ui"}, []string{"ui", "library.read"}); len(g) != 1 || g[0] != "ui" {
+		t.Errorf("a plugin must not get permissions its manifest does not ask for: %v", g)
+	}
+	// off by default, and a request is refused until it is switched on
+	if _, err := pluginFetch("ok", "https://example.com/"); err == nil {
+		t.Error("a plugin that was never switched on could fetch")
+	}
+	st := map[string]pluginState{"ok": {On: true, Perms: []string{"ui"}}}
+	savePluginState(st)
+	if _, err := pluginFetch("ok", "https://example.com/"); err == nil {
+		t.Error("fetch worked without the net permission")
+	}
+	st["ok"] = pluginState{On: true, Perms: []string{"ui", "net"}}
+	savePluginState(st)
+	for _, u := range []string{"http://example.com/", "https://other.com/", "https://127.0.0.1/", "https://example.com:8080/", "https://user@example.com/"} {
+		if _, err := pluginFetch("ok", u); err == nil {
+			t.Errorf("%s should have been refused", u)
+		}
+	}
+}
+
+func TestExamplePluginsAreValid(t *testing.T) {
+	cfgDir = t.TempDir()
+	n, err := installExamples()
+	if err != nil || n < 2 {
+		t.Fatalf("examples: %d, %v", n, err)
+	}
+	for _, p := range listPlugins() {
+		if p.Error != "" {
+			t.Errorf("example %s is invalid: %s", p.ID, p.Error)
+		}
 	}
 }

@@ -75,7 +75,7 @@
   let sony = false;
 
   const tellParent = (o) => { try { parent.postMessage(Object.assign({ ha: 'guide' }, o), location.origin); } catch { /* ignore */ } };
-  const closeGuide = () => { if (embed) tellParent({ cmd: 'close' }); else post('/api/overlay', { action: 'close' }); };
+  const closeGuide = (back) => { if (embed) tellParent({ cmd: 'close' }); else post('/api/overlay', { action: back === true ? 'back' : 'close' }); };
   const go = (dest, front) => { if (embed) { tellParent({ cmd: 'nav', go: dest }); return; } post('/api/nav', { go: dest }); if (front !== false) post('/api/front'); closeGuide(); };
   const media = (action, n) => post('/api/media', { action, n: n || 1 });
   const flash = (t) => { $('#msg').textContent = t || ''; if (t) setTimeout(() => { if ($('#msg').textContent === t) $('#msg').textContent = ''; }, 2500); };
@@ -85,7 +85,7 @@
     const nm = np && np.active && np.title ? np.title + (np.artist ? ' · ' + np.artist : '') : 'Nothing playing';
     const power = (key, label, action) => ({ label: confirmKey === key ? 'Press again to confirm' : label, act: () => { if (confirmKey === key) { post('/api/power', { action }); closeGuide(); } else { confirmKey = key; draw(); } } });
     const center = [];
-    if (running.running) center.push({ label: 'Resume game', sub: running.name || '', act: async () => { await post('/api/resume'); closeGuide(); } });
+    if (running.running) center.push({ label: 'Back to game', sub: running.kicked ? 'Tip: set ' + (running.name || 'the game') + ' to Borderless so it stays on screen behind the Guide' : (running.name || ''), act: async () => { await post('/api/resume'); closeGuide(); } });
     if (running.running) center.push(power('closegame', 'Close game (if it froze)', 'closegame'));
     center.push({ label: 'Arcade home', act: () => go('home') });
     center.push({ label: 'Play / pause', sub: nm, act: () => media('playpause') });
@@ -161,7 +161,7 @@
   document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowDown') { moveRow(1); e.preventDefault(); } else if (e.key === 'ArrowUp') { moveRow(-1); e.preventDefault(); }
     else if (e.key === 'ArrowRight') adjust(1); else if (e.key === 'ArrowLeft') adjust(-1);
-    else if (e.key === 'Enter') press(); else if (e.key === 'Escape') { if (!popPage()) { SFX.play('back'); closeGuide(); } }
+    else if (e.key === 'Enter') press(); else if (e.key === 'Escape') { if (!popPage()) { SFX.play('back'); closeGuide(true); } }
     else if (e.key.toLowerCase() === 'x') resume(); else if (e.key.toLowerCase() === 'y') go('home');
   });
 
@@ -193,8 +193,8 @@
     if (d && d !== dirNow) { step(d); dirAt = now + 360; } else if (d && now >= dirAt) { step(d); dirAt = now + 110; }
     dirNow = d;
     const once = (i, fn) => { if (m.b[i]) { if (!held[i]) { held[i] = 1; fn(); } } else held[i] = 0; };
-    once(0, press); once(1, () => { if (!popPage()) { SFX.play('back'); closeGuide(); } }); once(2, resume); once(3, () => go('home'));
-    once(4, () => moveBlade(-1)); once(5, () => moveBlade(1)); once(16, () => { SFX.play('back'); closeGuide(); });
+    once(0, press); once(1, () => { if (!popPage()) { SFX.play('back'); closeGuide(true); } }); once(2, resume); once(3, () => go('home'));
+    once(4, () => moveBlade(-1)); once(5, () => moveBlade(1)); once(16, () => { SFX.play('back'); closeGuide(true); });
     requestAnimationFrame(poll);
   })();
 
@@ -216,10 +216,12 @@
     if (!document.activeElement || document.activeElement === document.body || true) draw();
   }
   refresh().then(() => SFX.play('open'));
-  setInterval(() => { if (document.hasFocus()) refresh(); }, 3000);
+  let lastSeen = Date.now();
+  setInterval(() => { if (document.hasFocus()) { lastSeen = Date.now(); refresh(); } }, 3000);
   // when the hidden panel is shown again, refresh at once and play the opening sound
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { bi = 2; page = null; refresh().then(() => SFX.play('open')); } });
-  window.addEventListener('focus', () => { refresh(); });
+  const wake = () => { if (Date.now() - lastSeen > 10 * 60 * 1000) { location.reload(); return true; } lastSeen = Date.now(); return false; };  // a Guide left alone for a while starts fresh
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { if (wake()) return; bi = 2; page = null; refresh().then(() => SFX.play('open')); } else lastSeen = Date.now(); });
+  window.addEventListener('focus', () => { if (wake()) return; refresh(); });
   let dead = 0;
   setInterval(() => fetch('/api/ping').then(() => { dead = 0; }).catch(() => { if (!embed && ++dead >= 4) window.close(); }), 5000);
 })();

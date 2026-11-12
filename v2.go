@@ -71,7 +71,7 @@ func registerV2(mux *http.ServeMux) {
 	})
 	mux.HandleFunc("/api/running", func(w http.ResponseWriter, r *http.Request) {
 		n, ok := gameState()
-		writeJSON(w, map[string]any{"name": n, "running": ok})
+		writeJSON(w, map[string]any{"name": n, "running": ok, "kicked": ok && guideKickedGame()})
 	})
 	mux.HandleFunc("/api/resume", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, map[string]any{"ok": resumeGame()})

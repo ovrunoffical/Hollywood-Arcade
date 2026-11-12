@@ -638,6 +638,7 @@ func registerExtras(mux *http.ServeMux) {
 	registerMixer(mux)
 	registerUpdate(mux)
 	registerVoice(mux)
+	registerPlugins(mux)
 	registerToast(mux)
 	mux.HandleFunc("/api/nowplaying", func(w http.ResponseWriter, r *http.Request) {
 		npOnce.Do(startNowPlaying)

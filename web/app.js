@@ -63,7 +63,7 @@ function tile(it, o = {}) {
   const [a, b] = cols(it.name);
   const badge = it.category === 'game' && it.source ? `<span class="badge">${esc(String(it.source).toUpperCase())}</span>` : '';
   const info = it.category === 'game' || it.category === 'app' ? `<span class="info" data-act="info" data-id="${esc(it.id)}" role="button" aria-label="${it.category === 'app' ? 'App' : 'Game'} info">i</span>` : '';
-  return `<button class="tile ${it.category}${o.sq ? ' sq' : ''}${o.wide ? ' wide' : ''}" data-id="${esc(it.id)}" data-a="${a}" data-b="${b}" style="--ta:${a}">${artHTML(it, badge + info, o.wide)}<div class="cap"><b>${esc(it.name)}</b><small>${esc(it.source || '')}</small></div></button>`;
+  return `<button class="tile ${it.category}${o.sq ? ' sq' : ''}${o.wide ? ' wide' : ''}" data-id="${esc(it.id)}" data-a="${a}" data-b="${b}" style="--ta:${a}">${artHTML(it, badge + info, o.wide)}<div class="cap"><b>${esc(it.name)}</b><small>${esc(it.category === 'app' && /^windows$/i.test(it.source || '') ? '' : (it.source || ''))}</small></div></button>`;
 }
 const grid = (arr, cls = '') => `<div class="grid ${cls}">${arr.map(t => tile(t)).join('')}</div>`;
 const rail = (arr, o) => `<div class="rail">${arr.map(t => tile(t, o)).join('')}</div>`;
@@ -95,7 +95,7 @@ document.addEventListener('mouseover', homeHover);
 
 function home() {
   const games = S.items.filter(i => i.category === 'game'), apps = S.items.filter(i => i.category === 'app');
-  const head = `<div class="xhead"><button class="xprofile" data-act="guide" aria-label="Menu">${typeof v21Avatar === 'function' ? v21Avatar() : '<img src="logo.png" alt="">'}<span><b>${esc(typeof v21Name === 'function' ? v21Name() : 'Hollywood')}</b><small><i class="g">G</i> ${games.length} games · ${apps.length} apps</small></span></button>
+  const head = `<div class="xhead"><button class="xprofile" data-act="guide" aria-label="Menu">${typeof v21Avatar === 'function' ? v21Avatar() : '<img src="logo.png" alt="">'}<span><b>${esc(typeof v21Name === 'function' ? v21Name() : 'Hollywood')}</b><small><i class="g">\u2605</i> ${typeof arcScore === 'function' ? arcScore().toLocaleString() : 0} \u00b7 ${games.length} games \u00b7 ${apps.length} apps</small></span></button>
     <div class="xright"><button class="xsearch" data-act="gsearch">${SVG.search}<span>Search</span></button><button class="xgear xbell" data-v22="notes" aria-label="Notifications" title="Notifications"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 22a2.4 2.4 0 0 0 2.4-2.4h-4.8A2.4 2.4 0 0 0 12 22zm7-6.4V11a7 7 0 0 0-5.5-6.8V3.5a1.5 1.5 0 0 0-3 0v.7A7 7 0 0 0 5 11v4.6l-2 2v1h18v-1z"/></svg><i></i></button><button class="xgear" data-act="gsettings" aria-label="Settings">${SVG.gear}</button><span class="xclock" id="xclock">${clockText()}</span></div></div>`;
   if (!S.items.length) return head + `<div class="welcome"><h2>Your games, apps and music in one place.</h2><p>Start by pulling in what's already installed.</p><div class="toolbar"><button class="btn primary" data-act="scanAll">Scan my games</button><button class="btn" data-act="startMenu">Import Game Pass / Start menu</button><button class="btn" data-act="add-game">Add a game</button></div></div>`;
   const played = S.items.filter(i => i.lastPlayed).sort((a, b) => b.lastPlayed - a.lastPlayed);
@@ -334,7 +334,7 @@ function appearance() {
 function render() {
   applyTheme();
   $$('.nav').forEach(n => n.classList.toggle('on', n.dataset.view === view));
-  $('#main').innerHTML = ({ home, games, apps, store, watch: watchView, ach: typeof achView === 'function' ? achView : home, music, settings, discord, app: appview })[view]();
+  $('#main').innerHTML = ({ home, games, apps, store, watch: watchView, ach: typeof achView === 'function' ? achView : home, music, settings, discord, app: appview, plug: typeof plugView === 'function' ? plugView : home })[view]();
   document.body.classList.toggle('onhome', view === 'home');
   document.body.classList.remove('guide');
   const cnt = (k, n) => { const c = $('.cnt[data-c=' + k + ']'); if (c) c.textContent = n || ''; };

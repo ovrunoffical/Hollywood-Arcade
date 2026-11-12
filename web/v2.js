@@ -1,10 +1,25 @@
 // Hollywood Arcade 2.0 features: patch notes, and (added below) Guide, sounds, keyboard, backup and more.
 'use strict';
-window.APP_VERSION = '3.0.1';
+window.APP_VERSION = '3.1.0-test1';
 
 // ---------- patch notes ----------
 // Add a new entry at the TOP for every release. The What's New screen shows automatically once per version.
 const PATCH_NOTES = [
+  {
+    v: '3.1.0-test1', date: 'November 2026', title: 'Plugins, and a smoother Guide',
+    groups: [
+      ['New', [
+        'Plugins. Put a plugin folder in Arcade\u2019s plugins folder and switch it on in Settings. Plugins can add a shelf to Home, a page to the sidebar, and use your library, but they run in a sandbox, start off until you approve them, and cannot launch programs or see your files. Tap Add examples in Settings to try two.',
+        'Your Arcade score now shows next to your name on Home and in the sidebar.',
+        'The Guide has a Back to game row, and closing it with B, Esc or the Guide button puts you straight back into the game.'
+      ]],
+      ['Fixed', [
+        'Achievements are checked when you finish playing a game, even one that had none recorded before, and a game that failed a check is retried the next day instead of the next week. Settings shows when they were last checked.',
+        'A Guide left alone for a while starts fresh the next time you open it.',
+        'If a game gets minimized when the Guide opens, the Guide tells you to switch the game to Borderless.'
+      ]]
+    ]
+  },
   {
     v: '3.0.1', date: 'November 2026', title: 'App icons and a new Apps page',
     groups: [['New', ['The Apps page is now a Launchpad-style grid: bigger rounded icons on a soft glass panel.']], ['Fixed', ['App icons: well-known apps (Jellyfin, Proton VPN, Apple Music, Discord and many more) now get their real logo, and a screenshot from Wikipedia is no longer used as an icon. Arcade looks your apps up again once after updating.']]]

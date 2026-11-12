@@ -716,3 +716,21 @@ body.onhome #notbell { display: none; }
 .lp .cap small { display: none; }
 .lp .tile:hover, .lp .tile:focus-visible { transform: scale(1.1); }
 .lp .tile:hover .art, .lp .tile:focus-visible .art { box-shadow: 0 0 0 3px #fff, 0 0 30px var(--ta), 0 16px 34px rgba(0, 0, 0, .5); }
+
+/* sidebar name + score, plugin pages */
+.brand .bname { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.brand .bname b { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.brand .bname small { font-size: 12px; font-weight: 600; color: var(--dim); }
+.pstats { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 22px; }
+.pstats > div { flex: 1 1 150px; padding: 18px 20px; border-radius: 16px; background: var(--glass); border: 1px solid var(--line); }
+.pstats b { display: block; font-size: 30px; font-weight: 700; }
+.pstats small { color: var(--dim); }
+.plist { display: flex; flex-direction: column; gap: 6px; margin-bottom: 22px; }
+.plrow { display: flex; justify-content: space-between; align-items: center; gap: 14px; text-align: left; padding: 12px 16px; border-radius: 12px; background: var(--glass); border: 1px solid var(--line); }
+.plrow b { display: block; font-weight: 600; }
+.plrow small { color: var(--dim); }
+.plrow em { font-style: normal; color: var(--dim); white-space: nowrap; }
+.plrow:hover, .plrow:focus-visible { background: rgba(255, 255, 255, .14); outline: none; }
+
+.art.ico img.lo, .gcover.ico img.lo { padding: 30%; }
+main { padding-bottom: 150px; }

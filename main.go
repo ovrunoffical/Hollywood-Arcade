@@ -23,7 +23,7 @@ import (
 	"time"
 )
 
-const appVersion = "3.0.1"
+const appVersion = "3.1.0-test1"
 
 //go:embed web
 var webFS embed.FS
@@ -520,7 +520,14 @@ func buildMux() *http.ServeMux {
 			Action string `json:"action"`
 		}
 		readJSON(r, &o)
-		toggleOverlay(o.Action == "close")
+		switch o.Action {
+		case "back": // dismissed (B, Esc, the Guide button): go back to what was in front before
+			toggleOverlayTo(true, true)
+		case "close": // closed because something was chosen: stay where that choice took us
+			toggleOverlayTo(true, false)
+		default:
+			toggleOverlayTo(false, true)
+		}
 		writeJSON(w, result{OK: true})
 	})
 	mux.HandleFunc("/file", func(w http.ResponseWriter, r *http.Request) {
@@ -568,7 +575,10 @@ func killOverlay() {
 	go killToast()
 }
 
-func toggleOverlay(closeOnly bool) {
+func toggleOverlay(closeOnly bool) { toggleOverlayTo(closeOnly, true) }
+
+// toggleOverlayTo is toggleOverlay with a choice about whether closing hands the screen back to the game.
+func toggleOverlayTo(closeOnly, back bool) {
 	overlayMu.Lock()
 	defer overlayMu.Unlock()
 	// the panel window stays alive hidden, so showing it is instant and nothing gets launched twice
@@ -576,7 +586,11 @@ func toggleOverlay(closeOnly bool) {
 		if windowVisible(h) {
 			hideWindow(h)
 			arcLog("Guide: closed")
+			if back {
+				go returnToGame()
+			}
 		} else if !closeOnly {
+			noteForeground()
 			showOnTop(h)
 			arcLog("Guide: shown")
 		}
@@ -616,6 +630,7 @@ func spawnOverlay(show bool) {
 			time.Sleep(20 * time.Millisecond)
 			if h := findWindow(overlayTitle, true); h != 0 {
 				if show {
+					noteForeground()
 					showOnTop(h)
 					arcLog("Guide: window opened")
 				} else {

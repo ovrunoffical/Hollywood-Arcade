@@ -755,3 +755,66 @@ func showToastWindow(h uintptr, on bool) {
 	// HWND_TOPMOST, SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_FRAMECHANGED
 	pSetPos.Call(h, ^uintptr(0), w-sw-24, hh-sh-90, sw, sh, 0x10|0x40|0x20)
 }
+
+// ---------- the Guide gives the game back ----------
+
+var guideBack struct {
+	sync.Mutex
+	h      uintptr
+	kicked bool
+}
+
+// noteForeground remembers the window that is in front right now (the game), just before the Guide covers it.
+func noteForeground() {
+	defer func() { recover() }()
+	h, _, _ := pFgWin.Call()
+	guideBack.Lock()
+	defer guideBack.Unlock()
+	guideBack.h, guideBack.kicked = 0, false
+	if h == 0 {
+		return
+	}
+	buf := make([]uint16, 256)
+	n, _, _ := pGetText.Call(h, uintptr(unsafe.Pointer(&buf[0])), 256)
+	t := string(utf16.Decode(buf[:n]))
+	if strings.HasPrefix(t, "Hollywood Arcade") || t == "Program Manager" || t == "" {
+		return
+	}
+	guideBack.h = h
+	// a game in exclusive fullscreen gets minimized by Windows when the Guide opens: note it so the Guide can say why
+	go func() {
+		defer func() { recover() }()
+		time.Sleep(900 * time.Millisecond)
+		if r, _, _ := pIsIconic.Call(h); r != 0 {
+			guideBack.Lock()
+			if guideBack.h == h {
+				guideBack.kicked = true
+			}
+			guideBack.Unlock()
+			arcLog("Guide: the game was minimized when the Guide opened (it is probably in exclusive fullscreen)")
+		}
+	}()
+}
+
+// returnToGame brings the window that was in front before the Guide opened back to the front.
+func returnToGame() {
+	defer func() { recover() }()
+	time.Sleep(150 * time.Millisecond)
+	guideBack.Lock()
+	h := guideBack.h
+	guideBack.Unlock()
+	if h == 0 {
+		return
+	}
+	if r, _, _ := pIsWin.Call(h); r == 0 {
+		return
+	}
+	forceFront(h)
+	arcLog("Guide: went back to the game")
+}
+
+func guideKickedGame() bool {
+	guideBack.Lock()
+	defer guideBack.Unlock()
+	return guideBack.kicked
+}
