@@ -15,7 +15,7 @@ function dkEntries() {
   const run = window.__running;
   if (run && run.running) e.push({ act: 'resume', label: run.name || 'Resume', ic: 'games', resume: true });
   const games = [...S.items.filter(i => i.category === 'game')].sort((a, b) => (b.lastPlayed || 0) - (a.lastPlayed || 0) || a.name.localeCompare(b.name));
-  for (const g of games.slice(0, 60)) e.push({ act: 'play', id: g.id, label: g.name, it: g });
+  for (const g of games) e.push({ act: 'play', id: g.id, label: g.name, it: g });
   return e;
 }
 const dkFirstGame = (es) => Math.max(0, es.findIndex(x => x.it || x.resume));

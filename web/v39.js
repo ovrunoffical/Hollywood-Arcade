@@ -8,7 +8,7 @@ function nsEntries() {
   const e = [], run = window.__running;
   if (run && run.running) e.push({ act: 'resume', label: run.name || 'Resume', resume: true });
   const games = [...S.items.filter(i => i.category === 'game')].sort((a, b) => (b.lastPlayed || 0) - (a.lastPlayed || 0) || a.name.localeCompare(b.name));
-  for (const g of games.slice(0, 40)) e.push({ act: 'play', id: g.id, label: g.name, it: g });
+  for (const g of games) e.push({ act: 'play', id: g.id, label: g.name, it: g });
   e.push({ v: 'games', label: 'All games', all: true });
   return e;
 }
