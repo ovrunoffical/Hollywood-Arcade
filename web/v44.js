@@ -37,7 +37,23 @@ function fitTiles() {
   const box = sh.getBoundingClientRect(); let over = false;
   for (const k of kids) { if (over || k.getBoundingClientRect().right - box.left > sh.clientWidth + 1) { k.hidden = true; over = true; } }
 }
-function arFit() { try { fitDeck(); fitShelf(); fitTiles(); } catch { /* layout is cosmetic */ } }
+// Blades: game cards take the shape of their cover, and the cards that follow slide along to make room
+const BL = [[40, 27, 7.5], [33, 24.4], [26, 14.4], [19, 8.1], [16.5, 6.9], [14, 6]];   // height in vh, default width in vu
+function fitBlades() {
+  const box = document.getElementById('bcards'); if (!box) return;
+  const vu = arVu(), vh = innerHeight / 100; let x = 7.5 * vu;
+  const first = !box.dataset.fx;
+  for (const c of box.querySelectorAll('.bc')) {
+    const d = +c.dataset.d, row = BL[d];
+    if (!row) { c.style.left = c.style.width = ''; continue; }
+    const w = c.classList.contains('gm') ? row[0] * vh * (+c.dataset.ar || .75) : row[1] * vu;
+    if (first) c.style.transition = 'none';
+    c.style.left = x + 'px'; c.style.width = w + 'px';
+    x += w + .25 * vu;
+  }
+  if (first) { void box.offsetWidth; box.querySelectorAll('.bc').forEach(c => { c.style.transition = ''; }); box.dataset.fx = '1'; }
+}
+function arFit() { try { fitBlades(); fitDeck(); fitShelf(); fitTiles(); } catch { /* layout is cosmetic */ } }
 function arSoon() { cancelAnimationFrame(arFitT); arFitT = requestAnimationFrame(arFit); }
 
 document.addEventListener('load', (e) => { const im = e.target; if (im instanceof HTMLImageElement && im.classList.contains('cv')) { if (arApply(im)) arSoon(); } }, true);
@@ -56,6 +72,8 @@ document.addEventListener('error', (e) => {
     return r;
   };
   const _d = dkSync, _n = nsSync;
+  const _b = bSync;
+  bSync = function () { const r = _b.apply(this, arguments); arFit(); return r; };
   dkSync = function () { const r = _d.apply(this, arguments); arFit(); return r; };
   nsSync = function () { const r = _n.apply(this, arguments); arFit(); return r; };
   let tm = 0;

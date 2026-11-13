@@ -267,29 +267,25 @@ func lbRows(name string) []lbRow {
 	if idx == nil {
 		return nil
 	}
-	tries := []string{name}
-	for _, sep := range []string{": ", " - "} {
-		if i := strings.Index(name, sep); i > 0 {
-			tries = append(tries, name[:i])
-		}
-	}
+	tries := lbVariants(name)
 	for _, t := range tries {
 		rows := idx[lbNorm(t)]
 		if len(rows) == 0 {
 			continue
 		}
-		var out []lbRow
-		for _, r := range rows {
-			if strings.EqualFold(r.Plat, "Windows") {
-				out = append(out, r)
+		return lbOrder(rows)
+	}
+	// last resort: an index title that starts with ours (a longer subtitle) once ours is long enough to be specific
+	if n := lbNorm(name); len(n) >= 8 {
+		var best string
+		for k := range idx {
+			if strings.HasPrefix(k, n) && len(k)-len(n) <= 14 && (best == "" || len(k) < len(best)) {
+				best = k
 			}
 		}
-		for _, r := range rows {
-			if !strings.EqualFold(r.Plat, "Windows") {
-				out = append(out, r)
-			}
+		if best != "" {
+			return lbOrder(idx[best])
 		}
-		return out
 	}
 	return nil
 }
@@ -452,6 +448,57 @@ func lbLoad(path string) map[string][]lbRow {
 	}
 	if len(out) == 0 {
 		return nil
+	}
+	return out
+}
+
+// lbOrder puts Windows rows first.
+func lbOrder(rows []lbRow) []lbRow {
+	var out []lbRow
+	for _, r := range rows {
+		if strings.EqualFold(r.Plat, "Windows") {
+			out = append(out, r)
+		}
+	}
+	for _, r := range rows {
+		if !strings.EqualFold(r.Plat, "Windows") {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
+var reLbParen = regexp.MustCompile(`\s*[\(\[][^)\]]*[\)\]]`)
+var reLbEdition = regexp.MustCompile(`(?i)\s+(deluxe|standard|ultimate|gold|complete|definitive|special|collector'?s|game of the year|goty|digital)\b.*$`)
+
+// lbVariants lists the spellings of a game's name worth looking up, best first.
+func lbVariants(name string) []string {
+	seen := map[string]bool{}
+	var out []string
+	add := func(s string) {
+		s = strings.TrimSpace(s)
+		if s != "" && !seen[lbNorm(s)] {
+			seen[lbNorm(s)] = true
+			out = append(out, s)
+		}
+	}
+	base := []string{name}
+	n := strings.NewReplacer("™", "", "®", "", "©", "").Replace(name)
+	base = append(base, n, reLbParen.ReplaceAllString(n, ""), reLbEdition.ReplaceAllString(reLbParen.ReplaceAllString(n, ""), ""))
+	for _, b := range base {
+		add(b)
+		for _, p := range []string{"EA SPORTS ", "EA Sports ", "EA "} {
+			if strings.HasPrefix(b, p) {
+				add(strings.TrimPrefix(b, p))
+			}
+		}
+	}
+	for _, b := range append([]string{}, out...) {
+		for _, sep := range []string{": ", " - "} {
+			if i := strings.Index(b, sep); i > 0 {
+				add(b[:i])
+			}
+		}
 	}
 	return out
 }

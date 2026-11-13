@@ -39,7 +39,7 @@ function bPanelHTML(e, i) {
   }
   const src = e.it ? coverOf(e.it) : '';
   const body = e.it ? `<span class="bcv${coverOf(e.it) ? ' hc' : ''}">${phHTML(e.it)}${artImgHTML(e.it)}</span>` : `<span class="bic">${xsvg(e.ic)}</span>`;
-  return `<button class="bc" data-i="${i}" ${attrsOf(e)}>${body}<span class="bcl"><b>${esc(e.label)}</b>${e.sub ? `<small>${esc(e.sub)}</small>` : ''}</span></button>`;
+  return `<button class="bc${e.it ? ' gm' : ''}" data-i="${i}" ${attrsOf(e)}>${body}<span class="bcl"><b>${esc(e.label)}</b>${e.sub ? `<small>${esc(e.sub)}</small>` : ''}</span></button>`;
 }
 function bHome() {
   const cats = xmbCats();

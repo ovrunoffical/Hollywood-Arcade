@@ -54,3 +54,16 @@ func TestTgdbFronts(t *testing.T) {
 		t.Fatal("expected nothing without a good key")
 	}
 }
+
+func TestLbVariants(t *testing.T) {
+	v := lbVariants("EA SPORTS College Football 27 Deluxe Edition")
+	found := false
+	for _, s := range v {
+		if lbNorm(s) == lbNorm("College Football 27") {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("variants %v lack the plain title", v)
+	}
+}
