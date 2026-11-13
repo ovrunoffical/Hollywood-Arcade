@@ -97,7 +97,7 @@ function nPane(tab) {
     const wideG = rest.find(x => logoOf(x));
     const shelf = rest.filter(x => x !== wideG).slice(0, 8).map(it => nCover({ act: 'play', id: it.id, label: it.name, sub: meta(it), it }, 'sh')).join('');
     return res + (shelf ? `<div class="nshelf">${shelf}</div>` : '') +
-      nCover({ v: 'store', label: 'Store', ic: 'store' }, 'q') +
+      nCover({ v: 'store', label: 'Store', ic: 'store' }, 'q') + nCover({ v: 'settings', label: 'Settings', ic: 'settings' }, 'p') +
       nCover({ v: 'apps', label: 'Apps', ic: 'apps' }, 'r') + nCover({ v: 'watch', label: 'Watch', ic: 'watch' }, 'w') +
       (wideG ? nWide(wideG, 'g', meta(wideG)) : nCover({ v: 'games', label: 'Games', ic: 'games' }, 'g')) + nCover({ v: 'music', label: 'Music', ic: 'music' }, 'm');
   }
