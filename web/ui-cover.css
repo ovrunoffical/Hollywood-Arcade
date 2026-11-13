@@ -32,7 +32,6 @@ body.ui-alt .tile:hover .badge, body.ui-alt .tile:focus-visible .badge { opacity
 .nti.cv.hc { background: #1c1f24; }
 /* Tiles home: the shelf of covers (each at its own shape) and the wide logo boxes */
 .npane.is-home { --sh: calc(2 * var(--th) + .5 * var(--vu)); }
-.npane .nshelf { justify-content: space-between; }
 .nshelf .nti { flex: 0 0 auto; height: var(--sh); width: calc(var(--sh) * var(--ar, .75)); }
 .npane.swap { animation: nfade .16s ease both; }
 @keyframes nfade { from { opacity: 0; } to { opacity: 1; } }
@@ -73,3 +72,6 @@ img.ic { position: absolute; left: 16%; top: 16%; width: 68%; height: 68%; objec
 .nti:has(img.ic), .dka:has(img.ic), .nsa:has(img.ic), .bcv:has(img.ic) { background: linear-gradient(145deg, #3b4049, #22252b); }
 .nti:has(img.ic) .ph, .dka:has(img.ic) .ph, .nsa:has(img.ic) .ph, .bcv:has(img.ic) .ph { display: none; }
 .npane.is-list .nti:has(img.ic) { height: 19vh; width: 19vh; }
+
+/* Blades: your profile picture sits where the logo was */
+.blades .x3pf { position: absolute !important; right: calc(6.5 * var(--vu)); bottom: 4.6vh; width: 10vh; height: 10vh; border-radius: 50%; background: var(--xg); box-shadow: 0 .6vh 1.4vh rgba(0, 0, 0, .35); overflow: hidden; }

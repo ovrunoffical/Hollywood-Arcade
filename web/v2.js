@@ -128,7 +128,7 @@ const PATCH_NOTES = [
     v: '2.0.0', date: 'November 2026', title: 'Hollywood Arcade 2.0',
     groups: [
       ['New', [
-        'The Guide: an Xbox 360 style menu with side blades for Store, Games, Media and Settings. Resume your game, play music, change volume, jump to Discord or open the power options. It opens over a game too.',
+        'The Guide: a console-style menu with side blades for Store, Games, Media and Settings. Resume your game, play music, change volume, jump to Discord or open the power options. It opens over a game too.',
         'Choose how to open the Guide: hold L3 + R3, hold the touchpad, or press the PS button. Steam and PS5-native games use L3 + R3 and everything else uses the touchpad, and every game can override it. Settings has a controller test.',
         'Interface sounds: opening the Guide, moving around, selecting, notifications and a start-up chime. Pick Classic, Soft or Off, and set the volume.',
         'Watch: your Jellyfin shows, movies and Live TV channels (ErsatzTV too) in a Fire TV style page with a big banner and rows like Continue Watching. Add your server and API key in Settings.',
@@ -150,7 +150,7 @@ const PATCH_NOTES = [
   {
     v: 'Before 2.0', date: '', title: 'Where it started',
     groups: [['Included', [
-      'Xbox-style Home, library, Store and Game Pass tab.',
+      'Console-style Home, library, Store and Game Pass tab.',
       'Game and music info with covers from free sources, plus a cover chooser and themes.',
       'Controller navigation, an in-game music and volume panel, and a Windows power menu.'
     ]]]

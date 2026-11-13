@@ -33,10 +33,18 @@ function fitShelf() {
   else row.style.setProperty('--x', x + 'px');
 }
 function fitTiles() {
+  const m = document.querySelector('.npane .nti.m');
+  if (m) { m.style.width = ''; m.style.justifySelf = ''; }
   const sh = document.querySelector('.nshelf'); if (!sh) return;
   const kids = [...sh.children]; kids.forEach(k => { k.hidden = false; });
   const box = sh.getBoundingClientRect(); let over = false;
   for (const k of kids) { if (over || k.getBoundingClientRect().right - box.left > sh.clientWidth + 1) { k.hidden = true; over = true; } }
+  // the Music tile stops where the last cover stops, so the right edge is even
+  const vis = kids.filter(k => !k.hidden);
+  if (m && vis.length) {
+    const right = vis[vis.length - 1].getBoundingClientRect().right, left = m.getBoundingClientRect().left;
+    if (right - left > 100) { m.style.justifySelf = 'start'; m.style.width = (right - left) + 'px'; }
+  }
 }
 // Blades: game cards take the shape of their cover, and the cards that follow slide along to make room
 const BL = [[40, 27, 7.5], [33, 24.4], [26, 14.4], [19, 8.1], [16.5, 6.9], [14, 6]];   // height in vh, default width in vu

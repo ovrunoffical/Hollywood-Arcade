@@ -52,7 +52,7 @@ function bHome() {
     <nav class="bl" aria-label="Blades">${cats.map((c, i) => `<button class="bli${i === si ? ' sel' : ''}${i > si ? ' aft' : ''}" tabindex="-1" data-i="${i}" data-cat="${esc(c.id)}" style="--k:${i - si}">${esc(c.label)}</button>`).join('')}</nav>
     <div class="bcards" id="bcards" style="--p:${bpan}">${pans.map(bPanelHTML).join('')}</div>
     <div class="bav${bld === 'games' && bpan === 0 ? ' show' : ''}">${typeof avatarSVG === 'function' ? avatarSVG() : ''}</div>
-    <div class="bhint"><i>A</i> Select<i>B</i> Back</div>${logoSVG}
+    <div class="bhint"><i>A</i> Select<i>B</i> Back</div>${typeof avatarSVG === 'function' ? avatarSVG(null, 'x3pf', true) : logoSVG}
   </div>`;
 }
 function bSync() {

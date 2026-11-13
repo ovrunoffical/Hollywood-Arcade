@@ -139,7 +139,8 @@ const EMU_STORE = [
   { n: 'Azahar', sys: 'Nintendo 3DS', url: 'https://azahar-emu.org/', preset: 'azahar', d: 'Nintendo 3DS emulator, the maintained successor to Citra.' },
   { n: 'xemu', sys: 'Original Xbox', url: 'https://xemu.app/', d: 'Original Xbox emulator.' }
 ];
-const STORE_TABS = [['top_sellers', 'Top sellers'], ['new_releases', 'New releases'], ['specials', 'On sale'], ['coming_soon', 'Coming soon'], ['free', 'Free to play'], ['gamepass', 'Game Pass'], ['retro', 'Retro classics'], ['emu', 'Emulators']];
+const STORE_PRESETS = [['Epic Games Store', 'https://store.epicgames.com'], ['GOG', 'https://www.gog.com'], ['itch.io', 'https://itch.io/games'], ['Humble Store', 'https://www.humblebundle.com/store'], ['Ubisoft Store', 'https://store.ubisoft.com']];
+const STORE_TABS = [['top_sellers', 'Top sellers'], ['new_releases', 'New releases'], ['specials', 'On sale'], ['coming_soon', 'Coming soon'], ['free', 'Free to play'], ['gamepass', 'Game Pass'], ['retro', 'Retro classics'], ['emu', 'Emulators'], ['mine', 'My stores']];
 // Classic games, for browsing. Arcade can't download them: you add your own game files with the matching emulator.
 const LB = 'https://thumbnails.libretro.com/';
 const P = (arr) => arr.map((x) => { const [n, f, y] = x.split('|'); let file = f; if (!file) { file = n.replace(/: /g, ' - ').replace(/^The (.*?)( - |$)/, '$1, The$2'); file = file.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u2019/g, "'") + ' (USA)'; } return [n, file, +y]; });
@@ -190,6 +191,13 @@ function retroTile(g) {
 function store() {
   let h = '<h1 class="title">Store</h1><div class="asearch"><input id="stq" type="search" placeholder="Search the Steam store" value="' + esc(storeQ) + '" autocomplete="off"><button class="btn primary" data-act="stsearch">Search</button></div>';
   h += '<div class="chips tabs">' + STORE_TABS.map(([k, t]) => `<button class="chip ${!storeQ && k === storeTab ? 'on' : ''}" data-act="sttab" data-k="${k}">${t}</button>`).join('') + (storeQ ? `<button class="chip on" data-act="stclear">Results for “${esc(storeQ)}” ✕</button>` : '') + '</div>';
+  if (!storeQ && storeTab === 'mine') {
+    const mine = S.items.filter(i => i.category === 'store');
+    return h + '<p class="hint" style="margin-bottom:12px">Add a store or launcher where you buy or download games legally: an app on this PC or a website. Arcade only opens it for you. It never downloads or installs games itself.</p>' +
+      '<div class="toolbar"><button class="btn primary" data-act="add-store">Add a store</button></div>' +
+      '<div class="chips tabs sub">' + STORE_PRESETS.map((p, i) => `<button class="chip" data-act="store-preset" data-i="${i}">${esc(p[0])}</button>`).join('') + '</div>' +
+      (mine.length ? '<div class="ecards">' + mine.map(s => `<div class="ecard"><div><b>${esc(s.name)}</b><small>${esc(s.target || '')}</small></div><div class="ctl"><button class="btn primary" data-act="play" data-id="${esc(s.id)}">Open</button><button class="btn" data-act="edit-store" data-id="${esc(s.id)}">Edit</button></div></div>`).join('') + '</div>' : '<div class="empty">No stores yet. Tap Add a store, or a quick-add above to start.</div>');
+  }
   if (!storeQ && storeTab === 'retro') {
     const rs = RETRO.map(r => r[0]);
     h += '<div class="chips tabs">' + ['All', ...rs].map(c => `<button class="chip ${(retroSys || 'All') === c ? 'on' : ''}" data-act="rsys" data-k="${esc(c)}">${esc(c)}</button>`).join('') + '</div>';
@@ -361,7 +369,7 @@ function appearance() {
     row('Background picture', t.bgimg ? esc(t.bgimg) : 'Use any image behind the app (darkened so text stays readable).', `<button class="btn" data-act="bgpick">Choose</button>` + (t.bgimg ? '<button class="btn" data-act="theme" data-k="bgimg" data-v="">Remove</button>' : '')) +
     row('Glow', 'The soft accent light in the corner.', seg('glow', [[0, 'Off'], [16, 'Soft'], [30, 'Normal'], [50, 'Strong']], t.glow === undefined ? 30 : t.glow)) +
     row('Tile size', 'How big game and app tiles are.', seg('size', [['s', 'Small'], ['m', 'Medium'], ['l', 'Large']], t.size || 'm')) +
-    row('Corners', 'Sharp like Xbox, or softly rounded.', seg('round', [['', 'Square'], ['1', 'Rounded']], t.round ? '1' : '')) +
+    row('Corners', 'Sharp edges, or softly rounded.', seg('round', [['', 'Square'], ['1', 'Rounded']], t.round ? '1' : '')) +
     row('Game names', 'Show names on every cover, or only when selected.', seg('caps', [['', 'When selected'], ['1', 'Always']], t.caps ? '1' : '')) +
     '<div class="mixh">General</div>';
 }
@@ -416,7 +424,7 @@ function kindUI() {
 }
 function openEdit(it, def = {}) {
   editing = it;
-  $('#dlgtitle').textContent = it ? 'Edit ' + it.name : (def.category === 'app' ? 'Add app' : 'Add game');
+  $('#dlgtitle').textContent = it ? 'Edit ' + it.name : (def.category === 'store' ? 'Add store' : def.category === 'app' ? 'Add app' : 'Add game');
   fill(it || { category: 'game', kind: 'exe', source: 'PC', ...def });
   $('#del').hidden = !it;
   $('#presets').hidden = !!it || (def.category !== 'app');
@@ -616,6 +624,9 @@ document.addEventListener('click', async (e) => {
     if (act === 'play') return launch(el.dataset.id);
     if (act === 'add-game') return openEdit(null, { category: 'game' });
     if (act === 'add-app') return openEdit(null, { category: 'app', kind: 'url', source: 'Media' });
+    if (act === 'add-store') return openEdit(null, { category: 'store', kind: 'url', source: 'Store' });
+    if (act === 'edit-store') { const s = S.items.find(i => i.id === el.dataset.id); return s && openEdit(s); }
+    if (act === 'store-preset') { const p = STORE_PRESETS[+el.dataset.i]; return p && openEdit(null, { category: 'store', kind: 'url', source: 'Store', name: p[0], target: p[1] }); }
     if (act === 'filter') { srcFilter = el.dataset.s; return render(); }
     if (act === 'startMenu') return openImport();
     if (act === 'scanSteam') {

@@ -48,7 +48,10 @@ function xmbItems(cid) {
     out.push(open('apps', 'All apps', apps.length + ' ready', 'apps'));
     for (const a of [...apps].sort((x, y) => (y.lastPlayed || 0) - (x.lastPlayed || 0) || x.name.localeCompare(y.name)).slice(0, 30)) out.push({ act: 'play', id: a.id, label: a.name, sub: a.source && !/^windows$/i.test(a.source) ? a.source : '', it: a });
     out.push({ act: 'add-app', label: 'Add an app', sub: 'A program or a website', ic: 'apps' }, { act: 'essentials', label: 'Add my essentials', sub: 'Browser, file explorer', ic: 'apps' });
-  } else if (cid === 'store') out.push(open('store', 'Open the Store', 'Find games', 'store'));
+  } else if (cid === 'store') {
+    out.push(open('store', 'Open the Store', 'Find games', 'store'), { act: 'add-store', label: 'Add a store', sub: 'An app or website', ic: 'store' });
+    for (const s of S.items.filter(i => i.category === 'store')) out.push({ act: 'play', id: s.id, label: s.name, sub: 'Store', it: s });
+  }
   else if (cid === 'watch') out.push(open('watch', 'Open Watch', 'Jellyfin, live TV and more', 'watch'));
   else if (cid === 'ach') out.push(open('ach', 'Achievements', '★ ' + (typeof arcScore === 'function' ? arcScore().toLocaleString() : 0), 'ach'));
   else if (cid === 'music') out.push(open('music', 'Open Music', 'Now playing', 'music'));

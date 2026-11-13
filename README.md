@@ -2,7 +2,7 @@
 
 # Hollywood Arcade
 
-A console-style front end for your PC. Steam, Epic, GOG, Ubisoft, Game Pass, emulators, apps, music, Jellyfin and streaming services in one controller-friendly place, with an Xbox 360 style Guide you can open over a game.
+A console-style front end for your PC. Steam, Epic, GOG, Ubisoft, Game Pass, emulators, apps, music, Jellyfin and streaming services in one controller-friendly place, with a console-style Guide you can open over a game.
 
 It is one `.exe`. Double-click it. No installer, no account, no background services.
 
