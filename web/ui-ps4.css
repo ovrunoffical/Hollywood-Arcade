@@ -2,7 +2,7 @@
 
 /* ---- avatar editor (all styles) ---- */
 .avedit { display: flex; gap: 24px; flex-wrap: wrap; }
-.avbig { width: 190px; padding: 10px; border-radius: 12px; background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, .16), rgba(255, 255, 255, .04)); }
+.avbig { width: 170px; padding: 10px; border-radius: 12px; background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, .16), rgba(255, 255, 255, .04)); }
 .avbig svg { width: 100%; height: auto; display: block; }
 .avopts { flex: 1; min-width: 280px; }
 .avr { margin-bottom: 12px; }
@@ -51,7 +51,7 @@ body.ui-ps4 #main > h1.title { display: none; }
 .dkt.sel { flex-basis: 17.9vw; width: 17.9vw; border-color: rgba(255, 255, 255, .95); z-index: 3; margin-top: -.15vw; }
 .dkt.sel .dka { height: 17.9vw; } .dkt.sel .dkb { display: flex; } .dkt.sel .dkn { opacity: 1; }
 .dkt:focus-visible { outline: none; }
-.dka img.bk { inset: -8%; width: 116%; height: 116%; filter: blur(14px) brightness(.62); } .dka img.ct { object-fit: contain; }
+
 
 .dkinfo { position: absolute; left: 21.8vw; top: 62vh; width: 62vw; font-size: 2.4vh; font-weight: 300; }
 .dkh { font-size: 2.7vh; padding-bottom: .9vh; border-bottom: 1px solid rgba(255, 255, 255, .3); margin: 1.6vh 0 1.4vh; } .dkh:first-child { margin-top: 0; }
@@ -72,3 +72,17 @@ body.ui-ps4 .tile:hover .art, body.ui-ps4 .tile:focus-visible .art { box-shadow:
 body.ui-ps4 .setting, body.ui-ps4 .plrow, body.ui-ps4 .lp { background: rgba(255, 255, 255, .08); border-color: rgba(255, 255, 255, .22); }
 
 @media (prefers-reduced-motion: reduce) { .dkrow, .dkt, .dka { transition: none; } }
+
+/* the avatar moves */
+.av { overflow: visible; }
+.av .av-sway { animation: avsway 4.2s ease-in-out infinite; transform-origin: 100px 316px; }
+.av .av-head { animation: avhead 6s ease-in-out infinite; transform-origin: 100px 136px; }
+.av .av-wave { animation: avwave 1s ease-in-out infinite alternate; transform-origin: 160px 176px; }
+.av .av-larm { animation: avlarm 4.2s ease-in-out infinite; transform-origin: 66px 150px; }
+.av .av-eyes { animation: avblink 5s infinite; transform-origin: 100px 87px; }
+@keyframes avsway { 0%, 100% { transform: translateX(-2.5px) rotate(-.7deg); } 50% { transform: translateX(2.5px) rotate(.7deg); } }
+@keyframes avhead { 0%, 100% { transform: rotate(-2.6deg); } 50% { transform: rotate(2.6deg); } }
+@keyframes avwave { from { transform: rotate(-17deg); } to { transform: rotate(13deg); } }
+@keyframes avlarm { 0%, 100% { transform: rotate(2deg); } 50% { transform: rotate(-3deg); } }
+@keyframes avblink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.08); } }
+@media (prefers-reduced-motion: reduce) { .av * { animation: none !important; } }

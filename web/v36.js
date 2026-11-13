@@ -8,41 +8,71 @@ const AV_HAIR = ['#1c1410', '#3b2417', '#6b4423', '#b07a3c', '#d9b36a', '#c0392b
 const AV_SHIRT = ['#4f8f2f', '#2f7fd0', '#d0392f', '#e0a020', '#8a4bc4', '#2aa89a', '#e8e8e8', '#2a2e38', '#e0668c'];
 const AV_STYLES = [['short', 'Short'], ['long', 'Long'], ['curly', 'Curly'], ['bun', 'Bun'], ['cap', 'Cap'], ['none', 'Bald']];
 const AV_TOPS = [['tee', 'T-shirt'], ['hoodie', 'Hoodie'], ['jacket', 'Jacket']];
-const AV_FACES = [['smile', 'Smile'], ['grin', 'Grin'], ['cool', 'Cool']];
+const AV_FACES = [['smile', 'Smile'], ['grin', 'Grin'], ['happy', 'Happy'], ['cool', 'Cool']];
 const AV_DEFAULT = { skin: AV_SKIN[1], hair: AV_HAIR[1], style: 'short', shirt: AV_SHIRT[0], top: 'tee', face: 'smile', pants: '#2b2f3a' };
 const avatarOf = () => Object.assign({}, AV_DEFAULT, (S.settings && S.settings.avatar) || {});
 
+let avUid = 0;
+const _hex = (h) => { h = String(h).replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16) || 0); };
+const avMix = (h, o, p) => { const a = _hex(h), b = _hex(o); return '#' + a.map((x, i) => Math.round(x + (b[i] - x) * p).toString(16).padStart(2, '0')).join(''); };
+const avLight = (h, p) => avMix(h, '#ffffff', p), avDark = (h, p) => avMix(h, '#000000', p);
+
 function avatarSVG(a, cls, head) {
   a = a || avatarOf();
-  const dk = (c, p) => `color-mix(in srgb, ${c} ${100 - p}%, #000 ${p}%)`;
-  const hairBack = a.style === 'long' ? `<path d="M37 46 C34 80 36 92 44 94 L76 94 C84 92 86 80 83 46 Z" fill="${a.hair}"/>` : a.style === 'bun' ? `<circle cx="60" cy="19" r="10" fill="${a.hair}"/>` : '';
+  const u = 'g' + (++avUid), sk = a.skin, hr = a.hair, sh = a.shirt;
+  const defs = `<defs>
+    <radialGradient id="${u}s" cx=".36" cy=".3" r=".85"><stop offset="0" stop-color="${avLight(sk, .32)}"/><stop offset=".55" stop-color="${sk}"/><stop offset="1" stop-color="${avDark(sk, .2)}"/></radialGradient>
+    <linearGradient id="${u}t" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${avLight(sh, .22)}"/><stop offset="1" stop-color="${avDark(sh, .25)}"/></linearGradient>
+    <linearGradient id="${u}w" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c9ccd2"/></linearGradient>
+    <linearGradient id="${u}p" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${avLight(a.pants, .12)}"/><stop offset="1" stop-color="${avDark(a.pants, .35)}"/></linearGradient>
+    <radialGradient id="${u}h" cx=".4" cy=".25" r=".9"><stop offset="0" stop-color="${avLight(hr, .28)}"/><stop offset="1" stop-color="${avDark(hr, .3)}"/></radialGradient>
+  </defs>`;
+  const S = `url(#${u}s)`, T = `url(#${u}t)`, W = `url(#${u}w)`, P = `url(#${u}p)`, H = `url(#${u}h)`;
+  const hairBack = a.style === 'long' ? `<path d="M60 84 C52 140 58 156 72 160 L128 160 C142 156 148 140 140 84 Z" fill="${H}"/>` : a.style === 'bun' ? `<circle cx="100" cy="36" r="15" fill="${H}"/>` : a.style === 'curly' ? [[58, 70], [64, 96], [142, 70], [136, 96], [100, 38]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="13" fill="${H}"/>`).join('') : '';
   const hairFront = {
-    short: `<path d="M37 48 C34 18 86 18 83 48 C78 36 64 32 56 34 C48 36 40 40 37 48 Z" fill="${a.hair}"/>`,
-    long: `<path d="M37 50 C34 18 86 18 83 50 C78 38 64 32 56 34 C48 36 40 42 37 50 Z" fill="${a.hair}"/>`,
-    curly: [[40, 30], [50, 24], [62, 23], [72, 28], [79, 38], [41, 42], [78, 46], [60, 30]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9" fill="${a.hair}"/>`).join(''),
-    bun: `<path d="M37 48 C34 18 86 18 83 48 C78 36 64 32 56 34 C48 36 40 40 37 48 Z" fill="${a.hair}"/>`,
-    cap: `<path d="M36 42 C34 16 86 16 84 42 Z" fill="${a.shirt}"/><path d="M36 42 L92 42 C92 46 84 46 80 46 L36 46 Z" fill="${dk(a.shirt, 25)}"/>`,
+    short: `<path d="M61 80 C56 30 144 30 139 80 C134 62 120 54 100 55 C80 54 66 62 61 80 Z" fill="${H}"/>`,
+    long: `<path d="M61 84 C54 30 146 30 139 84 C134 64 122 54 100 55 C78 54 66 64 61 84 Z" fill="${H}"/>`,
+    curly: [[70, 52], [86, 42], [104, 40], [120, 44], [132, 56], [64, 68], [138, 68], [100, 52]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="13" fill="${H}"/>`).join(''),
+    bun: `<path d="M61 80 C56 30 144 30 139 80 C134 62 120 54 100 55 C80 54 66 62 61 80 Z" fill="${H}"/>`,
+    cap: `<path d="M60 72 C58 28 142 28 140 72 Z" fill="${T}"/><path d="M58 70 L160 70 C160 78 148 80 138 80 L58 80 Z" fill="${avDark(sh, .3)}"/>`,
     none: '',
   }[a.style] || '';
-  const mouth = a.face === 'grin' ? `<path d="M50 58 Q60 71 70 58 Z" fill="#fff" stroke="#3a2418" stroke-width="1.6" stroke-linejoin="round"/>` : a.face === 'cool' ? `<path d="M52 61 Q62 64 69 58" fill="none" stroke="#3a2418" stroke-width="2" stroke-linecap="round"/>` : `<path d="M51 59 Q60 68 69 59" fill="none" stroke="#3a2418" stroke-width="2" stroke-linecap="round"/>`;
-  const eyes = a.face === 'cool' ? `<path d="M46 48 H57 M63 48 H74" stroke="#2a1c14" stroke-width="3" stroke-linecap="round"/>` : `<circle cx="52" cy="49" r="2.8" fill="#2a1c14"/><circle cx="68" cy="49" r="2.8" fill="#2a1c14"/>`;
-  const topExtra = a.top === 'hoodie' ? `<path d="M44 82 Q60 96 76 82 L72 78 Q60 90 48 78 Z" fill="${dk(a.shirt, 22)}"/><rect x="48" y="112" width="24" height="12" rx="4" fill="${dk(a.shirt, 14)}"/>` : a.top === 'jacket' ? `<path d="M60 80 V132" stroke="${dk(a.shirt, 30)}" stroke-width="2.4"/><path d="M48 80 L60 94 L72 80 L68 76 L60 84 L52 76 Z" fill="${dk(a.shirt, 20)}"/>` : `<path d="M50 80 Q60 90 70 80 L66 76 Q60 84 54 76 Z" fill="${dk(a.shirt, 18)}"/>`;
-  const vb = head ? '24 14 72 68' : '0 0 120 200';
-  return `<svg class="av ${cls || ''}" viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    ${head ? '' : `<ellipse cx="60" cy="193" rx="34" ry="5" fill="rgba(0,0,0,.25)"/>
-    <rect x="42" y="124" width="16" height="62" rx="7" fill="${a.pants}"/><rect x="62" y="124" width="16" height="62" rx="7" fill="${a.pants}"/>
-    <ellipse cx="48" cy="187" rx="12" ry="6" fill="#ececec"/><ellipse cx="72" cy="187" rx="12" ry="6" fill="#ececec"/>
-    <path d="M34 80 Q34 74 44 74 L76 74 Q86 74 86 80 L88 128 Q88 134 80 134 L40 134 Q32 134 32 128 Z" fill="${a.shirt}"/>${topExtra}
-    <path d="M34 82 L24 124" stroke="${a.shirt}" stroke-width="12" stroke-linecap="round"/><circle cx="23" cy="129" r="6.5" fill="${a.skin}"/>
-    <path d="M86 82 L102 50" stroke="${a.shirt}" stroke-width="12" stroke-linecap="round"/><circle cx="105" cy="43" r="7" fill="${a.skin}"/>
-    <rect x="53" y="64" width="14" height="14" fill="${a.skin}"/>`}
+  const brows = a.style === 'cap' || a.face === 'cool' ? '' : `<path d="M74 72 Q84 67 94 72 M106 72 Q116 67 126 72" fill="none" stroke="${avDark(hr, .1)}" stroke-width="3" stroke-linecap="round"/>`;
+  const eyes = a.face === 'happy' ? `<path d="M74 88 Q84 76 94 88 M106 88 Q116 76 126 88" fill="none" stroke="#2a1a12" stroke-width="3.6" stroke-linecap="round"/>`
+    : a.face === 'cool' ? `<g class="av-eyes"><path d="M72 86 H95 M105 86 H128" stroke="#2a1a12" stroke-width="4" stroke-linecap="round"/></g>`
+    : `<g class="av-eyes"><ellipse cx="84" cy="87" rx="5.2" ry="6.4" fill="#25160f"/><ellipse cx="116" cy="87" rx="5.2" ry="6.4" fill="#25160f"/><circle cx="85.8" cy="84.6" r="1.8" fill="#fff"/><circle cx="117.8" cy="84.6" r="1.8" fill="#fff"/></g>`;
+  const mouth = a.face === 'grin' ? `<path d="M84 103 Q100 124 116 103 Z" fill="#fff" stroke="#3a2016" stroke-width="2.4" stroke-linejoin="round"/><path d="M90 110 Q100 120 110 110" fill="#c0504a" stroke="none"/>`
+    : a.face === 'cool' ? `<path d="M88 106 Q102 111 114 102" fill="none" stroke="#3a2016" stroke-width="3" stroke-linecap="round"/>`
+    : `<path d="M86 104 Q100 117 114 104" fill="none" stroke="#3a2016" stroke-width="3" stroke-linecap="round"/>`;
+  const sleeve = (d) => `<path d="${d}" stroke="${T}" stroke-width="22" stroke-linecap="round" fill="none"/>`;
+  const jacket = a.top === 'jacket', hood = a.top === 'hoodie';
+  const torso = `<path d="M60 152 Q60 134 80 134 L120 134 Q140 134 140 152 L144 220 Q144 228 135 228 L65 228 Q56 228 56 220 Z" fill="${jacket ? W : T}"/>` +
+    (jacket ? `<path d="M60 152 Q60 134 80 134 L90 134 L96 228 L65 228 Q56 228 56 220 Z" fill="${T}"/><path d="M140 152 Q140 134 120 134 L110 134 L104 228 L135 228 Q144 228 144 220 Z" fill="${T}"/><path d="M90 134 L100 160 L110 134" fill="none" stroke="${avDark(sh, .35)}" stroke-width="2.4"/>` :
+      hood ? `<rect x="80" y="196" width="40" height="22" rx="7" fill="${avDark(sh, .16)}"/><path d="M82 136 Q100 160 118 136 L112 132 Q100 148 88 132 Z" fill="${avDark(sh, .25)}"/><path d="M93 146 V170 M107 146 V170" stroke="#f0f0f0" stroke-width="2.4" stroke-linecap="round"/>` :
+      `<path d="M84 134 Q100 150 116 134 Z" fill="${avDark(sh, .3)}"/>`);
+  const body = `
+    <ellipse cx="100" cy="326" rx="52" ry="7" fill="rgba(0,0,0,.28)"/>
+    <g class="av-sway">
+      <path d="M66 222 L96 222 L94 306 Q94 312 88 312 L74 312 Q68 312 68 306 Z" fill="${P}"/><path d="M104 222 L134 222 L132 306 Q132 312 126 312 L112 312 Q106 312 106 306 Z" fill="${P}"/>
+      <path d="M62 306 Q62 296 80 298 L96 300 Q100 312 96 316 L66 316 Q60 316 62 306 Z" fill="#3a3d46"/><path d="M104 300 L120 298 Q138 296 138 306 Q140 316 134 316 L104 316 Q100 312 104 300 Z" fill="#3a3d46"/>
+      <path d="M62 314 H98 M102 314 H138" stroke="#e8e8ea" stroke-width="3" stroke-linecap="round"/>
+      <g class="av-larm">${sleeve('M66 150 Q52 180 56 212')}<circle cx="56" cy="222" r="10.5" fill="${S}"/><circle cx="47" cy="226" r="4.6" fill="${S}"/></g>
+      ${torso}
+      <rect x="90" y="120" width="20" height="20" rx="6" fill="${avDark(sk, .08)}"/>
+      <g class="av-rarm">${sleeve('M134 150 L160 176')}
+        <g class="av-wave">${sleeve('M160 176 L172 132')}<circle cx="174" cy="120" r="11" fill="${S}"/><circle cx="163" cy="116" r="4.8" fill="${S}"/><path d="M168 110 v-7 M175 108 v-9 M182 111 v-7" stroke="${S}" stroke-width="5" stroke-linecap="round"/></g></g>
+    </g>`;
+  const headSvg = `<g class="av-head">
     ${hairBack}
-    <circle cx="38" cy="52" r="5" fill="${a.skin}"/><circle cx="82" cy="52" r="5" fill="${a.skin}"/>
-    <ellipse cx="60" cy="50" rx="22" ry="25" fill="${a.skin}"/>
-    ${hairFront}
-    <path d="M45 42 Q52 39 57 42 M63 42 Q68 39 75 42" fill="none" stroke="${a.hair}" stroke-width="2.2" stroke-linecap="round" opacity="${a.style === 'none' || a.style === 'cap' ? 1 : .0}"/>
-    ${eyes}${mouth}<ellipse cx="45" cy="57" rx="4" ry="2.6" fill="#e86a5a" opacity=".22"/><ellipse cx="75" cy="57" rx="4" ry="2.6" fill="#e86a5a" opacity=".22"/>
-  </svg>`;
+    <circle cx="62" cy="90" r="9" fill="${S}"/><circle cx="138" cy="90" r="9" fill="${S}"/>
+    <ellipse cx="100" cy="84" rx="39" ry="43" fill="${S}"/>
+    ${hairFront}${brows}${eyes}
+    <path d="M97 94 Q100 99 103 94" fill="none" stroke="${avDark(sk, .25)}" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+    ${mouth}
+    <ellipse cx="76" cy="100" rx="7" ry="4.2" fill="#e86a5a" opacity=".24"/><ellipse cx="124" cy="100" rx="7" ry="4.2" fill="#e86a5a" opacity=".24"/>
+  </g>`;
+  const vb = head ? '48 30 104 108' : '0 0 200 340';
+  return `<svg class="av ${cls || ''}" viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${defs}${head ? '' : body}${headSvg}</svg>`;
 }
 
 function avatarRow() {

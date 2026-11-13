@@ -10,10 +10,11 @@ const coverOf = (it) => { const isIco = it.category === 'app' && !it.art && !it.
 
 // Artwork that fits: landscape art (hero) fills a wide tile; a tall cover is shown whole over a blurred copy of itself instead of being cropped.
 function artImgHTML(it, wide) {
-  const hero = it.hero ? toURL(it.hero) : (typeof steamId === 'function' && steamId(it)) ? `https://cdn.akamai.steamstatic.com/steam/apps/${steamId(it)}/library_hero.jpg` : '';
-  if (wide && hero) return `<img class="hr" src="${esc(hero)}" alt="" loading="lazy">`;
+  const sid = (typeof steamId === 'function') ? steamId(it) : '';
+  const land = it.hero ? toURL(it.hero) : sid ? `https://cdn.akamai.steamstatic.com/steam/apps/${sid}/library_hero.jpg` : (it.shots && it.shots[0]) ? toURL(it.shots[0]) : '';
+  if (wide && land) return `<img class="hr" src="${esc(land)}" alt="" loading="lazy">`;
   const c = coverOf(it); if (!c) return '';
-  return `<img class="bk" src="${esc(c)}" alt="" loading="lazy"><img class="ct" src="${esc(c)}" alt="" loading="lazy">`;
+  return `<img class="cv" src="${esc(c)}" alt="" loading="lazy">`;   // a cover fills the tile from the top, never letterboxed
 }
 const logoSVG = '<svg class="x3logo" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="50"/><g><rect x="25" y="20" width="12" height="60" rx="3"/><rect x="63" y="20" width="12" height="60" rx="3"/><rect x="33" y="44" width="34" height="12"/></g></svg>';
 
