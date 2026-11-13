@@ -20,6 +20,7 @@ function nsTile(e, i) {
 function nsRound() {
   const x = NS_ROUND.map(([v, l, ic, c]) => `<button class="nsr" data-act="goto" data-v="${v}" aria-label="${l}" title="${l}" style="--c:${c}">${xsvg(ic)}</button>`);
   if (typeof PLUG !== 'undefined') for (const id of Object.keys(PLUG.pages)) x.push(`<button class="nsr" data-act="goto" data-v="plug" data-plug="${esc(id)}" aria-label="${esc(PLUG.pages[id].title)}" title="${esc(PLUG.pages[id].title)}" style="--c:#6a7078">${xsvg('plug')}</button>`);
+  x.push(`<button class="nsr" data-act="looks" aria-label="Change look" title="Change look" style="--c:#6a7078"><svg viewBox="0 0 24 24" fill="currentColor">${XI.style}</svg></button>`);
   x.push(`<button class="nsr" data-act="gsettings" aria-label="Settings" title="Settings" style="--c:#6a7078"><svg viewBox="0 0 24 24" fill="currentColor">${XI.settings}</svg></button>`);
   x.push(`<button class="nsr" data-act="power-menu" aria-label="Power" title="Power" style="--c:#6a7078"><svg viewBox="0 0 24 24" fill="currentColor">${XI.power}</svg></button>`);
   return x.join('');
@@ -29,7 +30,6 @@ function shelfHome() {
   const name = typeof v21Name === 'function' ? v21Name() : 'Hollywood';
   return `<div class="shelf" style="--j:${Math.max(0, ns - 2)}">
     <button class="nsme" data-act="goto" data-v="ach" aria-label="${esc(name)}">${avatarSVG(null, 'nsav', true)}</button>
-    <button class="nslook" data-act="looks" aria-label="Change look">Change look</button>
     <span class="nsclock" id="xclock">${clockText()}</span>
     <div class="nstitle" id="nstitle">${esc(es[ns].label)}</div>
     <div class="nsrow" id="nsrow">${es.map(nsTile).join('')}</div>

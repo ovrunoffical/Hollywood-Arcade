@@ -40,7 +40,6 @@ svg { fill: currentColor; }
 /* sidebar */
 .side { display: flex; flex-direction: column; gap: 4px; padding: 22px 14px 18px; background: rgba(10, 8, 22, .45); backdrop-filter: blur(40px) saturate(180%); border-right: 1px solid var(--line); }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; letter-spacing: -.01em; padding: 4px 10px 22px; }
-.logo-dot { width: 18px; height: 18px; border-radius: 6px; background: linear-gradient(135deg, var(--pink), var(--c1) 55%, var(--c2)); box-shadow: 0 2px 14px var(--c1); }
 .spacer { flex: 1; }
 .nav { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 12px; font-size: 16px; font-weight: 500; color: var(--dim); text-align: left; transition: background .15s, color .15s; }
 .nav svg { width: 22px; height: 22px; }
@@ -95,8 +94,6 @@ h2.row-title { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin
 .hero > * { position: relative; }
 .hero small { font-weight: 600; opacity: .85; font-size: 15px; }
 .hero h2 { font-size: clamp(30px, 4.4vw, 58px); font-weight: 800; letter-spacing: -.035em; line-height: 1.02; margin: 8px 0 22px; max-width: 14ch; }
-.pill { display: inline-block; background: #fff; color: #1b1030; font-weight: 700; padding: 11px 28px; border-radius: 99px; }
-.hero .heroart { align-self: center; width: 150px; flex: none; }
 .welcome { padding: 34px; border-radius: 32px; background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(30px); }
 .welcome h2 { font-size: 30px; font-weight: 800; letter-spacing: -.03em; margin-bottom: 8px; }
 .welcome p, .hint, .empty { color: var(--dim); line-height: 1.5; }
@@ -326,8 +323,6 @@ h2.row-title { font-size: 18px; font-weight: 600; letter-spacing: 0; margin: 30p
 .hero:hover { transform: none; } .hero:focus-visible { transform: none; outline: 3px solid var(--xhi); outline-offset: 3px; }
 .hero::before { background: linear-gradient(90deg, rgba(0, 0, 0, .35), transparent 70%); }
 .hero h2 { font-weight: 600; letter-spacing: -.01em; }
-.hero .heroart .art { outline: none; }
-.pill { background: var(--xg2); color: #fff; border-radius: 4px; padding: 10px 26px; font-weight: 600; }
 .welcome, .np, .setting, .empty { border-radius: 6px; background: var(--panel); border: 0; backdrop-filter: none; }
 .welcome h2 { font-weight: 600; letter-spacing: 0; }
 .empty { border: 1px dashed #3a3a3a; background: transparent; }

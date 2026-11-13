@@ -505,8 +505,6 @@ function doRestore() {
   };
   f.click();
 }
-const verNum = (v) => String(v || '0').replace(/^v/i, '').split('.').map(x => parseInt(x, 10) || 0);
-const verNewer = (a, b) => { const x = verNum(a), y = verNum(b); for (let i = 0; i < 3; i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); } return false; };
 window.__update = null;
 async function checkUpdate(manual) {
   const r = await fetch('/api/update/check').then(x => x.json()).catch(() => null);
@@ -562,30 +560,9 @@ document.addEventListener('click', (e) => {
 // ================= first-run setup =================
 const wizd = document.getElementById('wizdlg');
 let wizStep = 0;
-const WIZ = [
-  () => '<h2>Welcome to Hollywood Arcade</h2><p class="hint">Your games, apps, music and shows in one console-style place. This takes about a minute and you can change everything later in Settings.</p>',
-  () => `<h2>Find your games</h2><p class="hint">Arcade can look for installed games from Steam, Epic, GOG, Ubisoft and Game Pass. It only reads what is already on this PC.</p><div class="toolbar"><button class="btn primary" id="wizscan">Scan this PC now</button></div><p class="hint" id="wizscanmsg"></p>`,
-  () => `<h2>Jellyfin (optional)</h2><p class="hint">If you run Jellyfin, add its address and an API key to get the Watch page. Skip this if you do not use it.</p><div class="wizf"><input class="keyin" id="wizjfu" placeholder="http://localhost:8096" value="${esc(S.settings.jellyfinUrl || '')}" autocomplete="off"><input class="keyin" id="wizjfk" type="password" placeholder="API key" value="${esc(S.settings.jellyfinKey || '')}" autocomplete="off"></div>`,
-  () => '<h2>Using a controller</h2><p class="hint">Move with the D-pad or left stick, press ✕ or A to select, ○ or B to go back. In a game, hold L3 + R3 (or the touchpad) to open the Guide for music, volume and getting back to Arcade. You can change the button in Settings and test your controller there too.</p>',
-  () => '<h2>You are all set</h2><p class="hint">Browse the Store for free games and emulators, and open Settings any time to change the look, sounds and more.</p>'
-];
-function wizDraw() {
-  document.getElementById('wizbody').innerHTML = WIZ[wizStep]();
-  document.getElementById('wizback').hidden = wizStep === 0;
-  document.getElementById('wiznext').textContent = wizStep === WIZ.length - 1 ? 'Finish' : 'Next';
-  const sc = document.getElementById('wizscan');
-  if (sc) sc.onclick = async () => { sc.disabled = true; document.getElementById('wizscanmsg').textContent = 'Looking…'; S.settings.autoScan = true; try { await runScanAll(); } catch { /* shown by toast */ } document.getElementById('wizscanmsg').textContent = S.items.filter(i => i.category === 'game').length + ' games in your library.'; sc.disabled = false; };
-  (document.getElementById('wiznext') || {}).focus && document.getElementById('wiznext').focus();
-}
-function wizSaveStep() {
-  const u = document.getElementById('wizjfu'), k = document.getElementById('wizjfk');
-  if (u) { S.settings.jellyfinUrl = u.value.trim(); S.settings.jellyfinKey = (k.value || '').trim(); jfSend(); }
-}
-function wizFinish() { wizSaveStep(); S.settings.setupDone = true; S.settings.seenVersion = window.APP_VERSION; save(); if (wizd.open) wizd.close(); render(); }
+const WIZ = [];   // steps live in wizard.js
 document.getElementById('wiznext').onclick = () => { wizSaveStep(); if (wizStep >= WIZ.length - 1) return wizFinish(); wizStep++; wizDraw(); };
 document.getElementById('wizback').onclick = () => { if (wizStep > 0) { wizStep--; wizDraw(); } };
-document.getElementById('wizskip').onclick = wizFinish;
-wizd.addEventListener('cancel', (e) => { e.preventDefault(); wizFinish(); });
 function maybeWizard() {
   if (S.settings.setupDone) return;
   if (S.items.some(i => i.category === 'game') || S.settings.steamPath || S.settings.musicFolder) { S.settings.setupDone = true; save(); return; } // an existing library

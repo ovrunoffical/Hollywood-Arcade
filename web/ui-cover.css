@@ -26,7 +26,6 @@ body.ui-alt .tile:hover .badge, body.ui-alt .tile:focus-visible .badge { opacity
 .nti:hover, .nti:focus { transform: none; box-shadow: none; outline: none; }
 .nti::before { content: ''; position: absolute; inset: 0; z-index: 3; border: .5vh solid #fff; opacity: 0; transition: opacity .12s; pointer-events: none; }
 .nti:hover::before, .nti:focus::before { opacity: 1; }
-.nti .nlt { display: none; }
 .nti .ph b, .nti .ph small, .bcv .ph b, .bcv .ph small { display: none; }
 .nti .ph::after, .bcv .ph::after { content: attr(data-l); position: relative; font: 700 min(34cqw, 40cqh) / 1 var(--x3font, inherit); opacity: .55; }
 .nti.cv.hc { background: #1c1f24; }
@@ -91,6 +90,4 @@ img.ic { position: absolute; left: 16%; top: 16%; width: 68%; height: 68%; objec
 .lookc i { display: block; width: 100%; height: 56px; border-radius: 6px; position: relative; box-shadow: inset 0 0 0 1px rgba(255,255,255,.15); }
 .lookc u { position: absolute; left: 8px; bottom: 8px; width: 38%; height: 8px; border-radius: 4px; }
 .lookc small { opacity: .7; font-size: 12px; }
-.shelf .nslook { position: absolute; left: 10vh; top: 3.4vh; font: inherit; font-size: 1.8vh; padding: .8vh 1.6vh; border-radius: 2vh; border: 0; background: rgba(0,0,0,.08); color: inherit; cursor: pointer; }
-.shelf .nslook:focus-visible, .shelf .nslook:hover { background: var(--xg); color: #fff; outline: none; }
 @media (max-width: 800px) { .lookgrid { grid-template-columns: repeat(2, 1fr); } }
