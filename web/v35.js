@@ -64,17 +64,18 @@ function bSelectBlade(id) {
 // ================= 2011 tiles =================
 function nCover(e, cls, big) {
   const src = e.it ? coverOf(e.it) : '';
-  if (e.it) return `<button class="nti cv ${cls}" ${attrsOf(e)}><i class="nlt">${esc((e.it.name[0] || '?').toUpperCase())}</i>${artImgHTML(e.it, true)}<span class="nl">${esc(e.label)}</span></button>`;
-  return `<button class="nti gr ${cls}" ${attrsOf(e)}><span class="ng">${xsvg(e.ic)}</span><span class="nl">${esc(e.label)}</span></button>`;
+  if (e.it) return `<button class="nti cv ${cls}" ${attrsOf(e)}><i class="nlt">${esc((e.it.name[0] || '?').toUpperCase())}</i>${artImgHTML(e.it, true)}<span class="nl"><b>${esc(e.label)}</b>${e.sub ? `<small>${esc(e.sub)}</small>` : ''}</span></button>`;
+  return `<button class="nti gr ${cls}" ${attrsOf(e)}><span class="ng">${xsvg(e.ic)}</span><span class="nl"><b>${esc(e.label)}</b>${e.sub ? `<small>${esc(e.sub)}</small>` : ''}</span></button>`;
 }
 function nTabs() { return [{ id: 'home', label: 'home' }, ...xmbCats().map(c => ({ id: c.id, label: c.label.toLowerCase() }))]; }
 function nPane(tab) {
   if (tab === 'home') {
     const g = [...S.items.filter(x => x.category === 'game')].sort((a, b) => (b.lastPlayed || 0) - (a.lastPlayed || 0) || (b.cover ? 1 : 0) - (a.cover ? 1 : 0));
-    const play = (it, pre) => ({ act: 'play', id: it.id, label: (pre || '') + it.name, it });
+    const meta = (it) => [it.source ? String(it.source).replace(/^./, c => c.toUpperCase()) : '', it.lastPlayed ? 'Played recently' : ''].filter(Boolean).join(' · ');
+    const play = (it, pre) => ({ act: 'play', id: it.id, label: it.name, sub: pre ? 'Continue playing' + (it.source ? ' · ' + String(it.source).replace(/^./, c => c.toUpperCase()) : '') : meta(it), it });
     const run = window.__running;
     const gm = (n, cls, pre) => g[n] ? nCover(play(g[n], pre), cls) : '';
-    const res = run && run.running ? nCover({ act: 'resume', label: 'Resume ' + (run.name || 'game'), ic: 'games' }, 'a') : (g[0] ? nCover(play(g[0], 'Play '), 'a') : nCover({ act: 'scanAll', label: 'Scan my games', ic: 'games' }, 'a'));
+    const res = run && run.running ? nCover({ act: 'resume', label: run.name || 'Game', sub: 'Playing now · resume', ic: 'games' }, 'a') : (g[0] ? nCover(play(g[0], 'Play '), 'a') : nCover({ act: 'scanAll', label: 'Scan my games', ic: 'games' }, 'a'));
     return res + gm(1, 'h') + gm(2, 's1') + gm(3, 's2') +
       nCover({ v: 'ach', label: 'Achievements', ic: 'ach' }, 'p') + nCover({ v: 'store', label: 'Store', ic: 'store' }, 'q') +
       nCover({ v: 'apps', label: 'Apps', ic: 'apps' }, 'r') + nCover({ v: 'watch', label: 'Watch', ic: 'watch' }, 'w') +
