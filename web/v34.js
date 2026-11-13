@@ -43,9 +43,11 @@ function xmbItems(cid) {
     out.push(open('games', 'All games', games.length + ' in your library', 'games'));
     const list = [...games].sort((a, b) => (b.lastPlayed || 0) - (a.lastPlayed || 0) || a.name.localeCompare(b.name)).slice(0, 30);
     for (const g of list) out.push({ act: 'play', id: g.id, label: g.name, sub: g.lastPlayed ? 'Played recently' : (g.source || ''), it: g });
+    out.push({ act: 'scanAll', label: 'Scan all my games', sub: 'Steam, Epic, Xbox and more', ic: 'games' }, { act: 'scanFolder', label: 'Add games from a folder', ic: 'games' }, { act: 'add-game', label: 'Add a game', sub: 'By hand', ic: 'games' }, { act: 'add-emu', label: 'Add an emulator', ic: 'games' });
   } else if (cid === 'apps') {
     out.push(open('apps', 'All apps', apps.length + ' ready', 'apps'));
     for (const a of [...apps].sort((x, y) => (y.lastPlayed || 0) - (x.lastPlayed || 0) || x.name.localeCompare(y.name)).slice(0, 30)) out.push({ act: 'play', id: a.id, label: a.name, sub: a.source && !/^windows$/i.test(a.source) ? a.source : '', it: a });
+    out.push({ act: 'add-app', label: 'Add an app', sub: 'A program or a website', ic: 'apps' }, { act: 'essentials', label: 'Add my essentials', sub: 'Browser, file explorer', ic: 'apps' });
   } else if (cid === 'store') out.push(open('store', 'Open the Store', 'Find games', 'store'));
   else if (cid === 'watch') out.push(open('watch', 'Open Watch', 'Jellyfin, live TV and more', 'watch'));
   else if (cid === 'ach') out.push(open('ach', 'Achievements', '★ ' + (typeof arcScore === 'function' ? arcScore().toLocaleString() : 0), 'ach'));

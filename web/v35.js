@@ -9,8 +9,10 @@ const attrsOf = (e) => e.style ? `data-v33="style" data-v="${e.style}"` : e.act 
 const coverOf = (it) => { const isIco = it.category === 'app' && !it.art && !it.cover && it.icon; return isIco ? '' : it.cover ? toURL(it.cover) : it.art ? toURL(it.art) : ''; };
 
 // Artwork that fits: the whole cover, never cropped, stretched or blurred
+const iconOf = (it) => it && it.category === 'app' && !it.art && !it.cover && it.icon ? toURL(it.icon) : '';
 function artImgHTML(it) {
-  const c = coverOf(it); if (!c) return '';
+  const c = coverOf(it);
+  if (!c) { const i = iconOf(it); return i ? `<img class="ic" src="${esc(i)}" alt="" loading="lazy">` : ''; }
   return `<img class="cv" src="${esc(c)}" alt="" loading="lazy">`;
 }
 const logoOf = (it) => it && it.logo ? toURL(it.logo) : '', discOf = (it) => it && it.disc ? toURL(it.disc) : '', fanOf = (it) => it && it.fan ? toURL(it.fan) : '';
@@ -121,7 +123,7 @@ function nBuildPane() {
   const id = nTabPend; nTabPend = null;
   const p = $('#npane'); if (!p) return;
   p.className = 'npane swap ' + (id === 'home' ? 'is-home' : 'is-list'); p.innerHTML = nPane(id); p.scrollTop = 0;
-  if (typeof arFit === 'function') { document.querySelectorAll('#npane img.cv').forEach(arApply); arFit(); }
+  if (typeof arFit === 'function') { document.querySelectorAll('#npane img.cv,#npane img.ic').forEach(arApply); arFit(); }
 }
 function nSelectTab(id) {
   if (id === ntab) return;

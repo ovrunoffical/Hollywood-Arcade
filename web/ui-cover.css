@@ -67,3 +67,9 @@ body.ui-alt .tile:hover .badge, body.ui-alt .tile:focus-visible .badge { opacity
 .ox-pvimg.hasd { background: none; }
 
 .bc.gm { background: none; }
+
+/* apps show their own icon, centred on a dark tile */
+img.ic { position: absolute; left: 16%; top: 16%; width: 68%; height: 68%; object-fit: contain; filter: drop-shadow(0 .3vh .6vh rgba(0, 0, 0, .4)); }
+.nti:has(img.ic), .dka:has(img.ic), .nsa:has(img.ic), .bcv:has(img.ic) { background: linear-gradient(145deg, #3b4049, #22252b); }
+.nti:has(img.ic) .ph, .dka:has(img.ic) .ph, .nsa:has(img.ic) .ph, .bcv:has(img.ic) .ph { display: none; }
+.npane.is-list .nti:has(img.ic) { height: 19vh; width: 19vh; }

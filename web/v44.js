@@ -8,6 +8,7 @@ function arSave() {
 }
 const AR_HOST = '.tile,.dkt,.nst,.nti,.bc';
 function arApply(im) {
+  if (im.classList.contains('ic')) { const h = im.closest(AR_HOST); if (!h || h.dataset.ar === '1') return false; h.dataset.ar = '1'; h.style.setProperty('--ar', 1); return true; }
   const k = im.getAttribute('src'); if (!k) return false;
   let r = AR[k];
   if (!r && im.complete && im.naturalWidth && im.naturalHeight) { r = Math.round(Math.max(.55, Math.min(1.8, im.naturalWidth / im.naturalHeight)) * 1000) / 1000; AR[k] = r; arSave(); }
@@ -78,7 +79,7 @@ document.addEventListener('error', (e) => {
         requestAnimationFrame(() => { n2.style.scrollBehavior = ''; });
       }
     } catch { /* cosmetic */ }
-    try { document.querySelectorAll('img.cv').forEach(arApply); arFit(); } catch { /* cosmetic */ }
+    try { document.querySelectorAll('img.cv,img.ic').forEach(arApply); arFit(); } catch { /* cosmetic */ }
     return r;
   };
   const _d = dkSync, _n = nsSync;
