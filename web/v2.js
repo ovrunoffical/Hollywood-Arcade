@@ -1,10 +1,26 @@
 // Hollywood Arcade 2.0 features: patch notes, and (added below) Guide, sounds, keyboard, backup and more.
 'use strict';
-window.APP_VERSION = '3.1.0';
+window.APP_VERSION = '3.2.0';
 
 // ---------- patch notes ----------
 // Add a new entry at the TOP for every release. The What's New screen shows automatically once per version.
 const PATCH_NOTES = [
+  {
+    v: '3.2.0', date: 'November 2026', title: 'Seven looks, and a profile',
+    groups: [
+      ['New', [
+        'Seven ways to see your games: Arcade, Orb, Waves, Blades, Tiles, Deck and Shelf. Pick one in setup, or any time with the Look button at the bottom. Each look remembers its own colours.',
+        'Your profile picture or avatar opens a Profile screen with Welcome, Social (coming soon) and Gaming tabs. It replaces the Achievements tab. On a controller, press the left stick.',
+        'Choose whether the corner badge shows your avatar or your profile picture.',
+        'Cover art, logos and discs for your games, with the whole cover always shown. Add your own stores: any launcher app or website where you buy games.',
+        'A new start-up animation, and sounds for scrolling, changing pages, launching, errors and switching looks.'
+      ]],
+      ['Fixed', [
+        'Every game now shows in every look. Some lists stopped at 30, 40 or 60 games.',
+        'The Guide uses your accent and background colours.'
+      ]]
+    ]
+  },
   {
     v: '3.1.0', date: 'November 2026', title: 'Plugins, and a smoother Guide',
     groups: [
