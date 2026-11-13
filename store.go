@@ -21,6 +21,7 @@ type storeItem struct {
 	Off   int    `json:"off,omitempty"`
 	Img   string `json:"img,omitempty"`
 	Src   string `json:"src,omitempty"`
+	Desc  string `json:"desc,omitempty"`
 }
 
 var (
@@ -29,7 +30,11 @@ var (
 		at    time.Time
 		items []storeItem
 	}{}
-	reAppID = regexp.MustCompile(`/apps/(\d+)/`)
+	reAppID   = regexp.MustCompile(`/apps/(\d+)/`)
+	infoCache = map[string]struct {
+		at   time.Time
+		info storeInfo
+	}{}
 )
 
 func money(cents int, cur string) string {
@@ -138,72 +143,144 @@ var (
 	dcURL     = "https://displaycatalog.mp.microsoft.com"
 )
 
-func gamePass() ([]storeItem, error) {
+// Microsoft's public Game Pass lists (ids only), by what they hold.
+var gpLists = map[string]string{
+	"gamepass":   "fdd9e2a7-0fee-49f6-ad69-4354098401ff", // everything on PC
+	"gp_console": "f6f1f99f-9b49-4ccd-b3bf-4d9767a77f5e", // everything on console
+	"gp_new":     "eab7757c-ff70-45af-bfa6-79d3cfb2bec4", // recently added
+	"gp_popular": "e7590b22-e299-44db-ae22-25c61405454c", // most popular
+	"gp_soon":    "95d20d3a-8b0d-4ea1-8736-83c3cdb7e5ad", // coming soon
+	"gp_leaving": "393f05bf-e596-4ef6-9487-6d4fa0eab987", // leaving soon
+	"gp_ea":      "b8900d09-a491-44cc-916e-32b5acae621b", // EA Play
+}
+
+func gpIDs(list string) ([]string, error) {
 	var ids []struct {
 		ID string `json:"id"`
 	}
-	if err := getJSON(gpListURL+"/sigls/v2?id=fdd9e2a7-0fee-49f6-ad69-4354098401ff&language=en-us&market=US", nil, &ids); err != nil {
+	if err := getJSON(gpListURL+"/sigls/v2?id="+list+"&language=en-us&market=US", nil, &ids); err != nil {
 		return nil, err
 	}
-	var list []string
+	var out []string
+	seen := map[string]bool{}
 	for _, x := range ids {
-		if x.ID != "" && len(list) < 80 {
-			list = append(list, x.ID)
+		if x.ID != "" && !seen[x.ID] && len(out) < 2000 {
+			seen[x.ID] = true
+			out = append(out, x.ID)
 		}
 	}
-	if len(list) == 0 {
+	return out, nil
+}
+
+type dcProduct struct {
+	ProductID string `json:"ProductId"`
+	Props     []struct {
+		Title     string `json:"ProductTitle"`
+		Short     string `json:"ShortDescription"`
+		Long      string `json:"ProductDescription"`
+		Developer string `json:"DeveloperName"`
+		Images    []struct {
+			Purpose string `json:"ImagePurpose"`
+			URI     string `json:"Uri"`
+		} `json:"Images"`
+	} `json:"LocalizedProperties"`
+	Market []struct {
+		Released string `json:"OriginalReleaseDate"`
+	} `json:"MarketProperties"`
+	Properties struct {
+		Category string `json:"Category"`
+	} `json:"Properties"`
+}
+
+func dcFetch(batch []string) []dcProduct {
+	var r struct {
+		Products []dcProduct `json:"Products"`
+	}
+	if getJSON(dcURL+"/v7.0/products?market=US&languages=en-us&MS-CV=DGU1mcuYo0WMMp%2BF.1&bigIds="+strings.Join(batch, ","), nil, &r) != nil {
+		return nil
+	}
+	return r.Products
+}
+
+func dcImage(p dcProduct, purposes ...string) string {
+	if len(p.Props) == 0 {
+		return ""
+	}
+	for _, want := range purposes {
+		for _, im := range p.Props[0].Images {
+			if im.Purpose == want && im.URI != "" {
+				if strings.HasPrefix(im.URI, "//") {
+					return "https:" + im.URI
+				}
+				return im.URI
+			}
+		}
+	}
+	return ""
+}
+
+func gamePass(kind string) ([]storeItem, error) {
+	list, ok := gpLists[kind]
+	if !ok {
+		return nil, errors.New("unknown Game Pass list")
+	}
+	ids, err := gpIDs(list)
+	if err != nil {
+		return nil, err
+	}
+	// "recently added" and "most popular" also list console-only games: keep just what runs on PC
+	if kind == "gp_new" || kind == "gp_popular" {
+		if pc, err := gpIDs(gpLists["gamepass"]); err == nil && len(pc) > 0 {
+			on := map[string]bool{}
+			for _, id := range pc {
+				on[id] = true
+			}
+			var keep []string
+			for _, id := range ids {
+				if on[id] {
+					keep = append(keep, id)
+				}
+			}
+			ids = keep
+		}
+	}
+	if len(ids) == 0 {
 		return nil, errors.New("Game Pass list was empty")
 	}
 	var mu sync.Mutex
 	var wg sync.WaitGroup
+	sem := make(chan struct{}, 6)
 	found := map[string]storeItem{}
-	for i := 0; i < len(list); i += 20 {
+	for i := 0; i < len(ids); i += 20 {
 		end := i + 20
-		if end > len(list) {
-			end = len(list)
+		if end > len(ids) {
+			end = len(ids)
 		}
 		wg.Add(1)
 		go func(batch []string) {
 			defer wg.Done()
-			var r struct {
-				Products []struct {
-					ProductID string `json:"ProductId"`
-					Props     []struct {
-						Title  string `json:"ProductTitle"`
-						Images []struct {
-							Purpose string `json:"ImagePurpose"`
-							URI     string `json:"Uri"`
-						} `json:"Images"`
-					} `json:"LocalizedProperties"`
-				} `json:"Products"`
-			}
-			if getJSON(dcURL+"/v7.0/products?market=US&languages=en-us&MS-CV=DGU1mcuYo0WMMp%2BF.1&bigIds="+strings.Join(batch, ","), nil, &r) != nil {
-				return
-			}
-			for _, p := range r.Products {
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			for _, p := range dcFetch(batch) {
 				if len(p.Props) == 0 || p.Props[0].Title == "" {
 					continue
 				}
-				img := ""
-				for _, want := range []string{"Poster", "BoxArt", "Tile", "Logo"} {
-					for _, im := range p.Props[0].Images {
-						if im.Purpose == want && im.URI != "" && img == "" {
-							img = im.URI
-						}
-					}
+				d := p.Props[0].Short
+				if d == "" {
+					d = p.Props[0].Long
 				}
-				if strings.HasPrefix(img, "//") {
-					img = "https:" + img
+				if len(d) > 280 {
+					d = d[:280] + "…"
 				}
 				mu.Lock()
-				found[p.ProductID] = storeItem{ID: p.ProductID, Name: p.Props[0].Title, Price: "Game Pass", Img: img, Src: "gp"}
+				found[p.ProductID] = storeItem{ID: p.ProductID, Name: p.Props[0].Title, Price: "Game Pass", Img: dcImage(p, "Poster", "BoxArt", "Tile", "Logo"), Src: "gp", Desc: d}
 				mu.Unlock()
 			}
-		}(list[i:end])
+		}(ids[i:end])
 	}
 	wg.Wait()
 	var out []storeItem
-	for _, id := range list {
+	for _, id := range ids {
 		if it, ok := found[id]; ok {
 			out = append(out, it)
 		}
@@ -214,7 +291,125 @@ func gamePass() ([]storeItem, error) {
 	return out, nil
 }
 
+// storeInfo: the longer description, genres, screenshots and so on for one store item.
+type storeInfo struct {
+	Desc   string   `json:"desc"`
+	Genres []string `json:"genres,omitempty"`
+	Date   string   `json:"date,omitempty"`
+	Dev    string   `json:"dev,omitempty"`
+	Shots  []string `json:"shots,omitempty"`
+	Score  int      `json:"score,omitempty"`
+	Price  string   `json:"price,omitempty"`
+}
+
+var reStoreID = regexp.MustCompile(`^[0-9A-Za-z]{3,20}$`)
+
+func fetchStoreInfo(src, id string) (storeInfo, error) {
+	var out storeInfo
+	if !reStoreID.MatchString(id) {
+		return out, errors.New("bad id")
+	}
+	if src == "gp" {
+		ps := dcFetch([]string{id})
+		if len(ps) == 0 || len(ps[0].Props) == 0 {
+			return out, errors.New("not found")
+		}
+		p := ps[0]
+		out.Desc = p.Props[0].Long
+		if out.Desc == "" {
+			out.Desc = p.Props[0].Short
+		}
+		if len(out.Desc) > 900 {
+			out.Desc = out.Desc[:900] + "…"
+		}
+		out.Dev = p.Props[0].Developer
+		if p.Properties.Category != "" {
+			out.Genres = strings.Split(p.Properties.Category, ",")
+		}
+		if len(p.Market) > 0 && len(p.Market[0].Released) >= 10 {
+			out.Date = p.Market[0].Released[:10]
+		}
+		for _, im := range p.Props[0].Images {
+			if im.Purpose == "Screenshot" && im.URI != "" && len(out.Shots) < 4 {
+				u := im.URI
+				if strings.HasPrefix(u, "//") {
+					u = "https:" + u
+				}
+				out.Shots = append(out.Shots, u)
+			}
+		}
+		return out, nil
+	}
+	var r map[string]struct {
+		Success bool `json:"success"`
+		Data    struct {
+			Short  string   `json:"short_description"`
+			Devs   []string `json:"developers"`
+			Genres []struct {
+				D string `json:"description"`
+			} `json:"genres"`
+			Release struct {
+				Date string `json:"date"`
+			} `json:"release_date"`
+			Shots []struct {
+				Full string `json:"path_full"`
+			} `json:"screenshots"`
+			Meta struct {
+				Score int `json:"score"`
+			} `json:"metacritic"`
+			Price struct {
+				Final string `json:"final_formatted"`
+			} `json:"price_overview"`
+		} `json:"data"`
+	}
+	if err := getJSON(steamStoreURL+"/api/appdetails?appids="+id+"&l=english&cc=us", nil, &r); err != nil {
+		return out, err
+	}
+	d := r[id]
+	if !d.Success {
+		return out, errors.New("not found")
+	}
+	out.Desc = strings.TrimSpace(reUnescape.Replace(d.Data.Short))
+	if len(d.Data.Devs) > 0 {
+		out.Dev = d.Data.Devs[0]
+	}
+	for _, g := range d.Data.Genres {
+		out.Genres = append(out.Genres, g.D)
+	}
+	out.Date = d.Data.Release.Date
+	for _, sh := range d.Data.Shots {
+		if len(out.Shots) < 4 {
+			out.Shots = append(out.Shots, sh.Full)
+		}
+	}
+	out.Score, out.Price = d.Data.Meta.Score, d.Data.Price.Final
+	return out, nil
+}
+
 func registerStore(mux *http.ServeMux) {
+	mux.HandleFunc("/api/storeinfo", func(w http.ResponseWriter, r *http.Request) {
+		src, id := r.URL.Query().Get("src"), r.URL.Query().Get("id")
+		key := "info|" + src + "|" + id
+		storeMu.Lock()
+		if c, ok := infoCache[key]; ok && time.Since(c.at) < time.Hour {
+			storeMu.Unlock()
+			writeJSON(w, map[string]any{"ok": true, "info": c.info})
+			return
+		}
+		storeMu.Unlock()
+		info, err := fetchStoreInfo(src, id)
+		if err != nil {
+			writeJSON(w, map[string]any{"ok": false})
+			return
+		}
+		storeMu.Lock()
+		infoCache[key] = struct {
+			at   time.Time
+			info storeInfo
+		}{time.Now(), info}
+		storeMu.Unlock()
+		writeJSON(w, map[string]any{"ok": true, "info": info})
+	})
 	mux.HandleFunc("/api/store", func(w http.ResponseWriter, r *http.Request) {
 		cat := r.URL.Query().Get("cat")
 		term := strings.TrimSpace(r.URL.Query().Get("q"))
@@ -233,8 +428,8 @@ func registerStore(mux *http.ServeMux) {
 			items, err = steamSearch(term)
 		case cat == "free":
 			items, err = steamFree()
-		case cat == "gamepass":
-			items, err = gamePass()
+		case gpLists[cat] != "":
+			items, err = gamePass(cat)
 		case cat == "top_sellers" || cat == "new_releases" || cat == "specials" || cat == "coming_soon":
 			items, err = steamFeatured(cat)
 		default:

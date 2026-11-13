@@ -296,10 +296,10 @@ const AV3 = (() => {
       const head = c.dataset.head === '1', big = c.classList.contains('avbig');
       gl.viewport(0, 0, w, h); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       const yaw = big ? AV3.yaw : head ? Math.sin(t * .6) * .28 : (c.dataset.yaw ? +c.dataset.yaw : 0) + Math.sin(t * .5) * .28;
-      const cy = head ? 3.85 : 2.75, d = head ? fit(1.25, 1.25, w / h) : fit(3.15, big ? 2.4 : 1.9, w / h);
+      const cy = head ? 3.85 : 3.0, d = head ? fit(1.25, 1.25, w / h) : fit(3.55, 2.7, w / h);
       CAMP = [0, cy, d]; VP = mul(persp(fov, w / h, .5, 60), T(0, -cy, -d));
       gl.uniformMatrix4fv(U.vp, false, VP); gl.uniform3fv(U.cam, CAMP);
-      figure(a, pose(t, dt, head ? 'idle' : emote, yaw), head);
+      figure(a, pose(t, dt, head ? 'idle' : (AV3.force || emote), yaw), head);
       const x = c.getContext('2d'); x.clearRect(0, 0, w, h); x.drawImage(cv, 0, glH - h, w, h, 0, 0, w, h);
     });
   };
@@ -317,14 +317,14 @@ const AV3 = (() => {
     frame(now);
   };
   requestAnimationFrame(loop);
-  return { yaw: 0, keys: {} };
+  return { yaw: 0, keys: {}, force: null };
 })();
 
 if (AV3) {
   const _flat = avatarSVG;
   avatarSVG = function (a, cls, head) {
     const big = /\bavbig\b/.test(cls || '');
-    return `<canvas class="av av3 ${cls || ''}" data-head="${head ? 1 : 0}" width="${head ? 120 : big ? 240 : 200}" height="${head ? 120 : big ? 300 : 340}"></canvas>`;
+    return `<canvas class="av av3 ${cls || ''}" data-head="${head ? 1 : 0}" width="${head ? 120 : big ? 300 : 300}" height="${head ? 120 : big ? 300 : 340}"></canvas>`;
   };
   document.addEventListener('keydown', (e) => { const d = document.getElementById('avdlg'); if (!d || !d.open) return; const k = e.key.toLowerCase(); if (k === 'q' || k === 'e') AV3.keys[k] = true; });
   document.addEventListener('keyup', (e) => { const k = e.key.toLowerCase(); if (k === 'q' || k === 'e') AV3.keys[k] = false; });

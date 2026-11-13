@@ -139,7 +139,7 @@ const EMU_STORE = [
   { n: 'Azahar', sys: 'Nintendo 3DS', url: 'https://azahar-emu.org/', preset: 'azahar', d: 'Nintendo 3DS emulator, the maintained successor to Citra.' },
   { n: 'xemu', sys: 'Original Xbox', url: 'https://xemu.app/', d: 'Original Xbox emulator.' }
 ];
-const STORE_TABS = [['top_sellers', 'Top sellers'], ['new_releases', 'New releases'], ['specials', 'On sale'], ['free', 'Free to play'], ['gamepass', 'Game Pass'], ['retro', 'Retro classics'], ['emu', 'Emulators']];
+const STORE_TABS = [['top_sellers', 'Top sellers'], ['new_releases', 'New releases'], ['specials', 'On sale'], ['coming_soon', 'Coming soon'], ['free', 'Free to play'], ['gamepass', 'Game Pass'], ['retro', 'Retro classics'], ['emu', 'Emulators']];
 // Classic games, for browsing. Arcade can't download them: you add your own game files with the matching emulator.
 const LB = 'https://thumbnails.libretro.com/';
 const P = (arr) => arr.map((x) => { const [n, f, y] = x.split('|'); let file = f; if (!file) { file = n.replace(/: /g, ' - ').replace(/^The (.*?)( - |$)/, '$1, The$2'); file = file.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\u2019/g, "'") + ' (USA)'; } return [n, file, +y]; });
@@ -163,13 +163,15 @@ const RETRO = [
 const retroFlat = RETRO.flatMap(([con, emu, sys, games, note]) => games.map(([n, f, y]) => ({ n, con, emu, y, note: note || '', img: LB + encodeURIComponent(sys) + '/Named_Boxarts/' + encodeURIComponent(f.replace(/[&*\/:`<>?\\|"]/g, '_')) + '.png' })));
 
 let retroSys = '';
-let storeTab = 'top_sellers', storeQ = '', storeData = {}, storeErr = '';
-const sKey = () => storeQ ? 'q:' + storeQ : storeTab;
+let storeTab = 'top_sellers', storeQ = '', storeData = {}, storeErr = '', gpSub = 'gamepass', storeSort = '';
+const GP_SUBS = [['gamepass', 'All on PC'], ['gp_new', 'Recently added'], ['gp_popular', 'Most popular'], ['gp_soon', 'Coming soon'], ['gp_leaving', 'Leaving soon'], ['gp_ea', 'EA Play'], ['gp_console', 'Console games']];
+const storeCat = () => storeTab === 'gamepass' ? gpSub : storeTab;
+const sKey = () => storeQ ? 'q:' + storeQ : storeCat();
 async function loadStore() {
   const key = sKey();
   if (storeData[key] !== undefined) return;
   storeData[key] = null;
-  const r = await fetch('/api/store?' + (storeQ ? 'q=' + encodeURIComponent(storeQ) : 'cat=' + storeTab)).then(x => x.json()).catch(() => null);
+  const r = await fetch('/api/store?' + (storeQ ? 'q=' + encodeURIComponent(storeQ) : 'cat=' + storeCat())).then(x => x.json()).catch(() => null);
   storeErr = r && r.ok === false ? (r.error || '') : (r ? '' : "Couldn't reach the store.");
   storeData[key] = (r && r.items) || [];
   if (view === 'store') render();
@@ -179,7 +181,7 @@ function storeTile(it) {
   const imgSrc = it.img || `https://cdn.akamai.steamstatic.com/steam/apps/${it.id}/library_600x900_2x.jpg`;
   const price = `<span class="badge price">${esc(it.price || '')}${it.off ? ' · -' + it.off + '%' : ''}</span>`;
   const own = !it.img && S.items.some(i => steamId(i) === it.id);
-  return `<button class="tile game stile" data-sid="${esc(it.id)}" data-sname="${esc(it.name)}" data-sprice="${esc(it.price || '')}" data-ssrc="${esc(it.src || 'steam')}" data-simg="${esc(it.img || '')}" data-a="${a}" data-b="${b}" style="--ta:${a}"><div class="art" style="--ta:${a};--tb:${b}"><span class="glyph">${esc((it.name[0] || '?').toUpperCase())}</span><img src="${esc(imgSrc)}" alt="" loading="lazy" referrerpolicy="no-referrer">${price}${own ? '<span class="badge own">IN LIBRARY</span>' : ''}</div><div class="cap"><b>${esc(it.name)}</b><small>Steam</small></div></button>`;
+  return `<button class="tile game stile" data-sid="${esc(it.id)}" data-sname="${esc(it.name)}" data-sprice="${esc(it.price || '')}" data-ssrc="${esc(it.src || 'steam')}" data-simg="${esc(it.img || '')}" data-a="${a}" data-b="${b}" style="--ta:${a}"><div class="art" style="--ta:${a};--tb:${b}"><span class="glyph">${esc((it.name[0] || '?').toUpperCase())}</span><img src="${esc(imgSrc)}" alt="" loading="lazy" referrerpolicy="no-referrer">${price}${own ? '<span class="badge own">IN LIBRARY</span>' : ''}</div><div class="cap"><b>${esc(it.name)}</b><small>${it.src === 'gp' ? 'Game Pass' : 'Steam'}</small></div></button>`;
 }
 function retroTile(g) {
   const i = retroFlat.indexOf(g), [a, b] = cols(g.n);
@@ -201,9 +203,29 @@ function store() {
   const key = sKey(), items = storeData[key];
   if (items === undefined) { loadStore(); return h + '<p class="hint">Loading…</p>'; }
   if (items === null) return h + '<p class="hint">Loading…</p>';
+  if (storeTab === 'gamepass' && !storeQ) h += '<div class="chips tabs sub">' + GP_SUBS.map(([k, t]) => `<button class="chip ${k === gpSub ? 'on' : ''}" data-act="gpsub" data-k="${k}">${t}</button>`).join('') + '</div>';
   if (!items.length) return h + `<div class="empty">${esc(storeErr || 'Nothing found.')}</div>`;
-  return h + `<div class="grid">${items.map(storeTile).join('')}</div>`;
+  let list = items.slice();
+  const price = (x) => /^free/i.test(x.price || '') ? 0 : parseFloat(String(x.price || '').replace(/[^0-9.]/g, '')) || 0;
+  if (storeSort === 'az') list.sort((x, y) => x.name.localeCompare(y.name));
+  else if (storeSort === 'low') list.sort((x, y) => price(x) - price(y));
+  else if (storeSort === 'off') list.sort((x, y) => (y.off || 0) - (x.off || 0));
+  const hero = !storeQ && !storeSort && storeTab !== 'gamepass' && list.find(x => x.price && x.id);
+  let hh = '';
+  if (hero) {
+    const [a, b] = cols(hero.name);
+    hh = `<button class="shero stile" data-sid="${esc(hero.id)}" data-sname="${esc(hero.name)}" data-sprice="${esc(hero.price || '')}" data-ssrc="steam" data-simg="" data-a="${a}" data-b="${b}"><img src="https://cdn.akamai.steamstatic.com/steam/apps/${esc(hero.id)}/library_hero.jpg" alt="" referrerpolicy="no-referrer" onerror="this.src='https://cdn.akamai.steamstatic.com/steam/apps/${esc(hero.id)}/header.jpg'"><span class="shtxt"><small>${storeTab === 'coming_soon' ? 'Coming soon' : 'Featured'}</small><b>${esc(hero.name)}</b><em>${esc(hero.price)}${hero.off ? ' \u00b7 -' + hero.off + '%' : ''}</em></span></button>`;
+  }
+  const sorts = [['', 'Default'], ['az', 'A\u2013Z']].concat(list.some(x => x.price && x.src !== 'gp') ? [['low', 'Price'], ['off', 'Discount']] : []);
+  const bar = `<div class="stbar"><input id="stf" type="search" placeholder="Filter these ${list.length} games" autocomplete="off"><span class="chips">${sorts.map(([k, t]) => `<button class="chip ${storeSort === k ? 'on' : ''}" data-act="stsort" data-k="${k}">${t}</button>`).join('')}</span><small id="stcount">${list.length} games</small></div>`;
+  return h + hh + bar + `<div class="grid" id="stgrid">${list.map(storeTile).join('')}</div>`;
 }
+document.addEventListener('input', (e) => {
+  if (!e.target || e.target.id !== 'stf') return;
+  const q = e.target.value.trim().toLowerCase(); let n = 0;
+  $$('#stgrid .stile').forEach(t => { const on = !q || (t.dataset.sname || '').toLowerCase().includes(q); t.hidden = !on; if (on) n++; });
+  const c = $('#stcount'); if (c) c.textContent = n + ' games';
+});
 const sdlg = $('#sdlg');
 let storePick = null;
 function openStoreItem(t) {
@@ -215,12 +237,21 @@ function openStoreItem(t) {
   $('#sopen').textContent = gp ? 'Open in Microsoft Store' : 'Open in Steam';
   const own = !gp && S.items.find(i => steamId(i) === storePick.id);
   $('#sdesc').textContent = gp ? 'Included with Game Pass on PC. Opens the Microsoft Store, where you can install it. Installed games show up here after you tap Scan all my games.' : own ? 'This game is already in your library.' : 'Opens in the Steam app, where you can buy or install it. Installed games show up here after you tap Scan all my games.';
+  $('#smeta').textContent = ''; $('#sshots').innerHTML = '';
   if (!sdlg.open) sdlg.showModal();
   $('#sopen').focus();
+  const pid = storePick.id;
+  fetch('/api/storeinfo?src=' + (gp ? 'gp' : 'steam') + '&id=' + encodeURIComponent(pid)).then(r => r.json()).then(r => {
+    if (!r || !r.ok || !storePick || storePick.id !== pid) return;
+    const i = r.info, bits = [i.dev, i.date, (i.genres || []).join(', '), i.score ? 'Metacritic ' + i.score : ''].filter(Boolean);
+    $('#smeta').textContent = bits.join(' \u00b7 ');
+    if (i.desc) $('#sdesc').textContent = i.desc + (gp ? '' : own ? ' (Already in your library.)' : '');
+    $('#sshots').innerHTML = (i.shots || []).map(u => `<img src="${esc(u)}" alt="" loading="lazy" referrerpolicy="no-referrer">`).join('');
+  }).catch(() => { });
 }
 function openRetro(g) {
   storePick = null;
-  $('#sname').textContent = g.n; $('#sprice').textContent = g.con + ' \u00b7 ' + g.y;
+  $('#sname').textContent = g.n; $('#smeta').textContent = ''; $('#sshots').innerHTML = ''; $('#sprice').textContent = g.con + ' \u00b7 ' + g.y;
   $('#scover').innerHTML = `<img src="${esc(g.img)}" alt="" referrerpolicy="no-referrer">`;
   $('#sinstall').hidden = true; $('#sopen').hidden = true; $('#sgoemu').hidden = false; $('#sgoemu').textContent = 'Find ' + g.emu;
   $('#sdesc').textContent = 'A classic for the ' + g.con + '. Arcade can\u2019t download games for you. If you own it, add your game file with ' + g.emu + ': get the emulator here, then use Add games from a folder.' + (g.note ? ' ' + g.note : '');
@@ -300,7 +331,9 @@ async function openAppInside(it) {
 
 // ---------- appearance ----------
 const ACCENTS = [['Green', ['#107c10', '#159c15', '#9bf00b']], ['Blue', ['#0f6cbd', '#2b88d8', '#6cb8ff']], ['Purple', ['#7a3fd1', '#9a5ff0', '#cfa8ff']], ['Red', ['#c42b1c', '#e0463a', '#ff9a8f']], ['Orange', ['#d9730d', '#f08a24', '#ffc27a']], ['Pink', ['#d6336c', '#ee5a8f', '#ffa8c8']], ['Mono', ['#5c5c5c', '#8a8a8a', '#ffffff']]];
-const BGS = [['Charcoal', '#0f0f0f'], ['Black', '#000000'], ['Slate', '#11161d'], ['Navy', '#0a1022'], ['Plum', '#150f1d'], ['Forest', '#0a140c'], ['Crimson', '#1a0d0f']];
+const BGS = [['Charcoal', '#0f0f0f'], ['Black', '#000000'], ['Slate', '#11161d'], ['Navy', '#0a1022'], ['Plum', '#150f1d'], ['Forest', '#0a140c'], ['Crimson', '#1a0d0f'],
+  ['Graphite', '#26282d'], ['Steel', '#2b3644'], ['Midnight', '#0d1b3a'], ['Ocean', '#0a3a5c'], ['Royal', '#14307a'], ['Teal', '#06303a'], ['Emerald', '#0b3d2a'], ['Moss', '#2c3a22'], ['Wine', '#3a0f1f'], ['Rose', '#4a1530'], ['Violet', '#251447'], ['Indigo', '#2a2366'], ['Sunset', '#4a2008'], ['Rust', '#5a2a14'], ['Coffee', '#2e1f17'], ['Stone', '#4a4a4a']];
+const BGS_LIGHT = [['Snow', '#f2f2f2'], ['Mist', '#e0e4ea'], ['Sand', '#d8cdb4'], ['Sky', '#bcd8f2'], ['Mint', '#c6e8d4'], ['Blush', '#f0d4dc'], ['Lilac', '#d9d0ee'], ['Silver', '#b8bcc2']];
 const TILE_PX = { s: 120, m: 150, l: 190 };
 function applyTheme() {
   const t = (S.settings && S.settings.theme) || {}, r = document.documentElement.style;
@@ -314,6 +347,7 @@ function applyTheme() {
   r.setProperty('--tr', t.round ? '14px' : '2px');
   r.setProperty('--bgimg', t.bgimg ? `url("${toURL(t.bgimg)}")` : 'none');
   document.body.classList.toggle('hasbg', !!t.bgimg);
+  { const h = String(t.bg || '#0f0f0f').replace('#', ''), v = [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16) || 0); document.body.classList.toggle('bglight', (v[0] * .2126 + v[1] * .7152 + v[2] * .0722) / 255 > .6); }
   document.body.classList.toggle('caps-on', !!t.caps);
 }
 function appearance() {
@@ -323,7 +357,7 @@ function appearance() {
   const curAc = (t.ac && t.ac[0]) || (!t.ac && !t.acHex ? ACCENTS[0][1][0] : '');
   return '<div class="mixh">Appearance</div>' +
     row('Accent color', 'Buttons, highlights and the selection outline.', ACCENTS.map(([n, c], i) => `<button class="sw ${curAc === c[0] ? 'on' : ''}" style="--sw:${c[1]}" title="${n}" aria-label="${n}" data-act="theme" data-k="ac" data-v="${i}"></button>`).join('') + `<input type="color" class="swpick" data-theme="acHex" value="${esc(t.acHex || '#107c10')}" title="Custom color" aria-label="Custom accent color">`) +
-    row('Background color', 'The color behind everything.', BGS.map(([n, c]) => `<button class="sw ${(t.bg || '#0f0f0f') === c ? 'on' : ''}" style="--sw:${c}" title="${n}" aria-label="${n}" data-act="theme" data-k="bg" data-v="${c}"></button>`).join('') + `<input type="color" class="swpick" data-theme="bg" value="${esc(t.bg || '#0f0f0f')}" title="Custom color" aria-label="Custom background color">`) +
+    row('Background color', 'The color behind everything.', BGS.concat(typeof uiStyle === 'function' && uiStyle() === 'nsw' ? BGS_LIGHT : []).map(([n, c]) => `<button class="sw ${(t.bg || '#0f0f0f') === c ? 'on' : ''}" style="--sw:${c}" title="${n}" aria-label="${n}" data-act="theme" data-k="bg" data-v="${c}"></button>`).join('') + `<input type="color" class="swpick" data-theme="bg" value="${esc(t.bg || '#0f0f0f')}" title="Custom color" aria-label="Custom background color">`) +
     row('Background picture', t.bgimg ? esc(t.bgimg) : 'Use any image behind the app (darkened so text stays readable).', `<button class="btn" data-act="bgpick">Choose</button>` + (t.bgimg ? '<button class="btn" data-act="theme" data-k="bgimg" data-v="">Remove</button>' : '')) +
     row('Glow', 'The soft accent light in the corner.', seg('glow', [[0, 'Off'], [16, 'Soft'], [30, 'Normal'], [50, 'Strong']], t.glow === undefined ? 30 : t.glow)) +
     row('Tile size', 'How big game and app tiles are.', seg('size', [['s', 'Small'], ['m', 'Medium'], ['l', 'Large']], t.size || 'm')) +
@@ -534,7 +568,9 @@ document.addEventListener('click', async (e) => {
     if (act === 'goto') { view = el.dataset.v; appFrame = null; render(); $('#main').scrollTop = 0; return; }
     if (act === 'gsearch') { view = 'games'; render(); $('#q').focus(); return; }
     if (act === 'gsettings') { view = 'settings'; render(); return; }
-    if (act === 'sttab') { storeTab = el.dataset.k; storeQ = ''; return render(); }
+    if (act === 'sttab') { storeTab = el.dataset.k; storeQ = ''; storeSort = ''; return render(); }
+    if (act === 'gpsub') { gpSub = el.dataset.k; storeSort = ''; return render(); }
+    if (act === 'stsort') { storeSort = el.dataset.k; return render(); }
     if (act === 'patchnotes') return showPatchNotes(true);
     if (act === 'rsys') { retroSys = el.dataset.k === 'All' ? '' : el.dataset.k; return render(); }
     if (act === 'stclear') { storeQ = ''; return render(); }

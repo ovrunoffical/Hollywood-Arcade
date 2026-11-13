@@ -106,6 +106,6 @@ body.ui-x360n::before { content: ''; position: fixed; inset: 0; z-index: 0; poin
 /* artwork fitting */
 .bcv img.hr, .nti img.hr { object-fit: cover; object-position: center 30%; }
 .bcv img.cv, .nti img.cv, .dka img.cv { object-fit: cover; object-position: center 12%; }
-.bav { position: absolute; left: 24.5vw; top: 24vh; height: 59vh; z-index: 4; pointer-events: none; opacity: 0; transform: translateY(2vh); transition: opacity .35s, transform .35s; filter: drop-shadow(0 1.6vh 1.6vh rgba(0, 0, 0, .35)); }
+.bav { position: absolute; left: calc(24.5vw - 8.7vh); top: 24vh; height: 59vh; z-index: 4; pointer-events: none; opacity: 0; transform: translateY(2vh); transition: opacity .35s, transform .35s; filter: drop-shadow(0 1.6vh 1.6vh rgba(0, 0, 0, .35)); }
 .bav.show { opacity: 1; transform: none; } .bav svg, .bav canvas { height: 100%; width: auto; }
 .nwho .nav { width: 6.4vh; height: 6vh; border-radius: 3px; background: color-mix(in srgb, var(--xg) 60%, #fff 10%); align-self: center; }
