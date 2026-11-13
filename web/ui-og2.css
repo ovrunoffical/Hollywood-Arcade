@@ -1,0 +1,68 @@
+/* Orb, take two: big orb home + framed list screens. Only applies when body has .ui-og. */
+.og.ox .og-orb.ox-big { --os: 66vh; left: 2vw; top: 50%; width: var(--os); height: var(--os); transform: translateY(-50%); }
+.ox-mark { position: absolute; left: 50%; top: 50%; width: 42%; transform: translate(-50%, -50%); animation: ogfloat 6s ease-in-out infinite alternate; }
+.ox-h rect { fill: color-mix(in srgb, #031a06 72%, transparent); }
+.ox-h { filter: drop-shadow(0 0 .6vh color-mix(in srgb, #fffbb0 55%, transparent)); }
+
+.ox-list { position: absolute; left: 46vw; right: 3vw; top: 50%; height: 0; }
+.ox-it { position: absolute; left: 0; top: -5.2vh; width: 100%; height: 10.4vh; display: flex; align-items: center; gap: 1.2vw; padding: 0; border: 0; background: none; cursor: pointer; font-family: var(--ogfont);
+  opacity: 0; visibility: hidden; pointer-events: none; --tx: 0vw;
+  transform: translate(var(--tx), calc((var(--i) - var(--sel)) * 14vh)); transition: transform .38s cubic-bezier(.2, .8, .2, 1), opacity .3s, visibility .3s;
+  filter: drop-shadow(0 0 1.4vh color-mix(in srgb, var(--xg2) 55%, transparent)); }
+.ox-it[data-d="0"] { opacity: 1; visibility: visible; pointer-events: auto; --tx: 2.4vw; filter: drop-shadow(0 0 2.4vh color-mix(in srgb, var(--xhi) 60%, transparent)); }
+.ox-it[data-d="1"], .ox-it[data-d="-1"] { opacity: .92; visibility: visible; pointer-events: auto; --tx: 0vw; }
+.ox-it[data-d="2"], .ox-it[data-d="-2"] { opacity: .42; visibility: visible; pointer-events: auto; --tx: 1.2vw; }
+.ox-it:focus-visible { outline: none; }
+.ox-orb { flex: none; width: 9.6vh; height: 9.6vh; border-radius: 50%;
+  background: radial-gradient(circle at 34% 26%, rgba(225, 255, 175, .6), transparent 30%), radial-gradient(circle at 50% 58%, rgba(0, 28, 0, .94) 0 48%, color-mix(in srgb, var(--xg2) 62%, transparent) 76%, color-mix(in srgb, var(--xhi) 72%, transparent));
+  box-shadow: inset 0 0 0 .4vh color-mix(in srgb, var(--xhi) 72%, transparent), inset 0 -1vh 1.8vh color-mix(in srgb, var(--xg2) 70%, transparent); transition: transform .25s, background .25s; }
+.ox-it[data-d="0"] .ox-orb { transform: scale(1.14); background: radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .8), transparent 30%), radial-gradient(circle at 50% 58%, color-mix(in srgb, var(--xhi) 70%, #fff) 0 34%, var(--xhi) 58%, color-mix(in srgb, var(--xg2) 80%, #000)); }
+.ox-bar { position: relative; isolation: isolate; display: flex; align-items: center; flex: 1; max-width: 42vw; height: 8.8vh; padding: 0 2.4vw; background: var(--oglite);
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px)); }
+.ox-bar::before { content: ''; position: absolute; inset: 2px; z-index: -1; background: var(--ogdeep); clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px)); }
+.ox-bar b { font: 700 4vh var(--ogfont); letter-spacing: .12em; text-transform: uppercase; color: var(--xhi); text-shadow: 0 0 1.6vh color-mix(in srgb, var(--xhi) 55%, transparent); white-space: nowrap; }
+.ox-it[data-d="0"] .ox-bar::before { background: linear-gradient(180deg, color-mix(in srgb, var(--xhi) 85%, #fff), var(--xhi) 55%, color-mix(in srgb, var(--xhi) 78%, #6f8000)); }
+.ox-it[data-d="0"] .ox-bar b { color: #06140a; text-shadow: none; }
+
+/* ---------- Games / Apps / Music screens ---------- */
+.ox-pvwrap { position: absolute; left: 3vw; top: 4.5vh; width: 41vw; height: 43vh; display: grid; place-items: center; }
+.ox-pv { position: relative; width: 41vh; height: 41vh; border-radius: 50%; box-shadow: 0 0 5vh color-mix(in srgb, var(--xhi) 42%, transparent), inset 0 0 0 .7vh color-mix(in srgb, var(--xhi) 72%, transparent); background: radial-gradient(circle, rgba(0, 20, 8, .9), color-mix(in srgb, var(--xg) 40%, #000)); }
+.ox-pv::before { content: ''; position: absolute; inset: -1.6vh; border-radius: 50%; border: .5vh solid color-mix(in srgb, var(--xhi) 32%, transparent); }
+.ox-pv::after { content: ''; position: absolute; inset: 2vh; border-radius: 50%; pointer-events: none; background: radial-gradient(circle at 32% 22%, rgba(255, 255, 255, .34), transparent 38%); }
+.ox-pvimg { position: absolute; inset: 2vh; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 40% 34%, color-mix(in srgb, var(--xg2) 60%, #000), #00140a); }
+.ox-pvimg img { width: 100%; height: 100%; object-fit: cover; object-position: center 22%; display: block; }
+.ox-pvimg img.ico { object-fit: contain; padding: 16%; }
+.ox-let { display: grid; place-items: center; height: 100%; font: 700 15vh var(--ogfont); color: var(--xhi); text-shadow: 0 0 3vh color-mix(in srgb, var(--xhi) 60%, transparent); }
+.ox-disc { display: block; width: 100%; height: 100%; background: radial-gradient(circle, #08140a 0 8%, transparent 9% 15%, #0003 16%), conic-gradient(from 20deg, #d2dbd2, #7f8d7f, #eef4ee, #8b988b, #d2dbd2); }
+
+.ox-fr { position: absolute; isolation: isolate; background: var(--oglite); clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 26px 100%, 0 calc(100% - 26px)); }
+.ox-fr::before { content: ''; position: absolute; inset: 2px; z-index: -1; background: color-mix(in srgb, #00140a 86%, var(--xg) 14%); clip-path: polygon(0 0, calc(100% - 25px) 0, 100% 25px, 100% 100%, 25px 100%, 0 calc(100% - 25px)); }
+.ox-infofr { left: 3.5vw; top: 51vh; width: 40vw; height: 31vh; }
+.ox-in { height: 100%; padding: 2.4vh 2vw; overflow: hidden; font-family: var(--ogfont); }
+.ox-in h2 { margin: 0 0 1vh; font: 700 3.2vh/1.15 var(--ogfont); letter-spacing: .08em; text-transform: uppercase; color: var(--xhi); text-shadow: 0 0 1.4vh color-mix(in srgb, var(--xhi) 45%, transparent); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ox-chips { margin-bottom: .8vh; }
+.ox-chips span { display: inline-block; margin: 0 .6vw .6vh 0; padding: .3vh 1vw; background: color-mix(in srgb, var(--xg) 40%, #000); color: var(--xhi); font-size: 1.75vh; letter-spacing: .06em; text-transform: uppercase; }
+.ox-in p { margin: .6vh 0 1vh; font-size: 2vh; line-height: 1.4; color: color-mix(in srgb, var(--xhi) 35%, #fff); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.ox-btns .btn { padding: .8vh 1.6vw; font-size: 1.8vh; }
+
+.ox-listfr { left: 46vw; top: 4vh; width: 51vw; height: 83vh; }
+.ox-hd { display: flex; align-items: baseline; gap: 1.2vw; margin: 0 1.6vw; padding: 2.2vh .6vw 1.2vh; border-bottom: 2px solid color-mix(in srgb, var(--xhi) 45%, transparent); font-family: var(--ogfont); }
+.ox-hd b { font: 700 3.6vh var(--ogfont); letter-spacing: .14em; text-transform: uppercase; color: var(--xhi); text-shadow: 0 0 1.6vh color-mix(in srgb, var(--xhi) 50%, transparent); }
+.ox-hd em { font-style: normal; font-size: 2vh; color: color-mix(in srgb, var(--xhi) 70%, transparent); }
+.ox-tools { margin-left: auto; display: flex; gap: .8vw; }
+.ox-tb { padding: .8vh 1.1vw; background: color-mix(in srgb, #00140a 80%, var(--xg) 20%); border: 1px solid color-mix(in srgb, var(--xg2) 75%, transparent); color: var(--xhi); font: 600 1.7vh var(--ogfont); letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+.ox-tb:hover, .ox-tb:focus-visible { background: var(--xhi); color: #06140a; outline: none; }
+.ox-lst { position: absolute; left: 1.6vw; right: 1.6vw; top: 10.8vh; bottom: 2vh; overflow-y: auto; scrollbar-width: none; }
+.ox-lst::-webkit-scrollbar { display: none; }
+.ox-row { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 1vw; height: 6.4vh; padding: 0 1.4vw; border: 0; background: transparent; color: var(--xhi); font: 600 2.5vh var(--ogfont); letter-spacing: .07em; text-transform: uppercase; text-align: left; cursor: pointer; }
+.ox-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ox-row small { flex: none; opacity: .62; font-size: 1.6vh; letter-spacing: .08em; }
+.ox-row.on span::before { content: '\25b6  '; }
+.ox-row.act { color: color-mix(in srgb, var(--xhi) 55%, #fff); }
+.ox-row:not(.act) + .ox-row.act { margin-top: 1.6vh; border-top: 2px solid color-mix(in srgb, var(--xhi) 38%, transparent); }
+.ox-row:focus, .ox-row:focus-visible { outline: none; color: #06140a; background: linear-gradient(180deg, color-mix(in srgb, var(--xhi) 85%, #fff), var(--xhi) 58%, color-mix(in srgb, var(--xhi) 78%, #6f8000));
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px)); }
+.ox-none { padding: 4vh 2vw; color: var(--xhi); opacity: .7; font-size: 2.2vh; }
+.ox-keys { left: 4vw !important; bottom: 2.4vh !important; }
+body.ox-scr-on .og-head { display: none; }
+@media (prefers-reduced-motion: reduce) { .ox-mark { animation: none; } .ox-it { transition: none; } }
