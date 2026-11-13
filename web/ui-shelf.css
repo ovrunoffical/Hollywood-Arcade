@@ -16,8 +16,8 @@ body.ui-nsw #main > h1.title { display: none; }
 .nsme:focus-visible { outline: none; box-shadow: 0 0 0 .5vh var(--xg); }
 .nsclock { position: absolute; right: calc(4.4 * var(--vu)); top: 5.6vh; font-size: 3.4vh; font-weight: 600; letter-spacing: .04em; }
 .nstitle { position: absolute; left: calc(7.8 * var(--vu)); top: 14.4vh; max-width: calc(80 * var(--vu)); font-size: 3.6vh; color: var(--xg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nsrow { position: absolute; left: 0; top: 21vh; display: flex; gap: calc(1.2 * var(--vu)); transform: translateX(calc(calc(7.8 * var(--vu)) - var(--j, 0) * (25vh + calc(1.2 * var(--vu))))); transition: transform .3s cubic-bezier(.2, .8, .2, 1); }
-.nst { position: relative; flex: 0 0 25vh; width: 25vh; height: 37.5vh; padding: 0; border: 0; background: none; cursor: pointer; }
+.nsrow { position: absolute; left: 0; top: 21vh; display: flex; gap: calc(1.2 * var(--vu)); transform: translateX(var(--x, 0px)); transition: transform .3s cubic-bezier(.2, .8, .2, 1); }
+.nst { position: relative; flex: 0 0 auto; width: calc(37.5vh * var(--ar, .75)); height: 37.5vh; padding: 0; border: 0; background: none; cursor: pointer; }
 .nsa { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(135deg, #c9ced6, #aab1bb); box-shadow: 0 .4vh 1.4vh rgba(0, 0, 0, .18); }
 .nsa > i { position: absolute; inset: 0; display: grid; place-items: center; font-style: normal; font-size: 9vh; color: rgba(255, 255, 255, .7); }
 .nsa img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; }

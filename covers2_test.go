@@ -14,10 +14,13 @@ func TestLbParse(t *testing.T) {
 <GameImage><DatabaseID>11</DatabaseID><FileName>a-eu.jpg</FileName><Type>Box - Front</Type><Region>Europe</Region></GameImage>
 <GameImage><DatabaseID>11</DatabaseID><FileName>a-us.jpg</FileName><Type>Box - Front</Type><Region>North America</Region></GameImage>
 <GameImage><DatabaseID>11</DatabaseID><FileName>back.jpg</FileName><Type>Box - Back</Type></GameImage>
+<GameImage><DatabaseID>11</DatabaseID><FileName>logo.png</FileName><Type>Clear Logo</Type></GameImage>
+<GameImage><DatabaseID>11</DatabaseID><FileName>disc.png</FileName><Type>Disc</Type></GameImage>
+<GameImage><DatabaseID>11</DatabaseID><FileName>fan.jpg</FileName><Type>Fanart - Background</Type></GameImage>
 <GameImage><DatabaseID>12</DatabaseID><FileName>m.jpg</FileName><Type>Box - Front</Type></GameImage>
 </LaunchBox>`
 	idx := lbParse(strings.NewReader(x))
-	if r := idx[lbNorm("Simpsons Hit & Run")]; len(r) != 1 || r[0].File != "a-us.jpg" {
+	if r := idx[lbNorm("Simpsons Hit & Run")]; len(r) != 1 || r[0].Front != "a-us.jpg" || r[0].Logo != "logo.png" || r[0].Disc != "disc.png" || r[0].Fan != "fan.jpg" {
 		t.Fatalf("simpsons: %+v", r)
 	}
 	if r := idx[lbNorm("Madden NFL 27")]; len(r) != 1 || r[0].Plat != "Windows" {

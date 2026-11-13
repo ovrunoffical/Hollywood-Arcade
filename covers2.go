@@ -27,32 +27,60 @@ var (
 	lbClient = &http.Client{Timeout: 20 * time.Minute}
 )
 
-// findCover tries TheGamesDB, then LaunchBox. Wikipedia runs after this in fetchMeta.
-func findCover(m *gameMeta, id, name, rom, tgdbKey string) string {
+// findArt fills in the cover, clear logo, disc and fanart from TheGamesDB and LaunchBox. Wikipedia runs after this in fetchMeta.
+func findArt(m *gameMeta, id, name, tgdbKey string) {
 	if name == "" {
-		return ""
+		return
 	}
-	if tgdbKey != "" {
-		for _, u := range tgdbFronts(name, tgdbKey) {
-			if c := downloadArt(u, id); c != "" {
-				addSrc(m, "TheGamesDB")
-				return c
+	get := func(u, suffix string) string {
+		if u == "" {
+			return ""
+		}
+		return downloadArt(u, id+suffix)
+	}
+	for _, r := range lbRows(name) {
+		if m.Cover == "" && r.Front != "" {
+			if m.Cover = get(lbImgURL+"/"+r.Front, ""); m.Cover != "" {
+				addSrc(m, "LaunchBox")
 			}
 		}
-		m.note("TheGamesDB: no cover for \"" + name + "\"")
+		if m.Logo == "" && r.Logo != "" {
+			m.Logo = get(lbImgURL+"/"+r.Logo, "-logo")
+		}
+		if m.Disc == "" && r.Disc != "" {
+			m.Disc = get(lbImgURL+"/"+r.Disc, "-disc")
+		}
+		if m.Fan == "" && r.Fan != "" {
+			m.Fan = get(lbImgURL+"/"+r.Fan, "-fan")
+		}
 	}
-	for _, u := range lbFronts(name) {
-		if c := downloadArt(u, id); c != "" {
-			addSrc(m, "LaunchBox")
-			return c
+	if tgdbKey != "" && (m.Cover == "" || m.Logo == "" || m.Fan == "") {
+		t := tgdbArt(name, tgdbKey)
+		if m.Cover == "" {
+			for _, u := range t.Fronts {
+				if m.Cover = get(u, ""); m.Cover != "" {
+					addSrc(m, "TheGamesDB")
+					break
+				}
+			}
+		}
+		if m.Logo == "" {
+			m.Logo = get(t.Logo, "-logo")
+		}
+		if m.Fan == "" {
+			m.Fan = get(t.Fan, "-fan")
 		}
 	}
 	if !lbReady() {
-		m.note("LaunchBox: the game list is still downloading, try again in a few minutes")
-	} else {
-		m.note("LaunchBox: no cover for \"" + name + "\"")
+		m.Retry = true
 	}
-	return ""
+	if m.Cover == "" {
+		if !lbReady() {
+			m.note("LaunchBox: the game list is still downloading, try again in a few minutes")
+		} else {
+			m.note("No cover found for \"" + name + "\" on LaunchBox or TheGamesDB")
+		}
+	}
 }
 
 // ---------- TheGamesDB ----------
@@ -112,9 +140,69 @@ func tgdbFronts(name, key string) []string {
 	return out
 }
 
+type tgdbSet struct {
+	Fronts    []string
+	Logo, Fan string
+}
+
+// tgdbArt returns front box art plus, when the site has them, a clear logo and fanart.
+func tgdbArt(name, key string) tgdbSet {
+	out := tgdbSet{Fronts: tgdbFronts(name, key)}
+	if key == "" || name == "" {
+		return out
+	}
+	var r struct {
+		Data struct {
+			Games []struct {
+				ID   int    `json:"id"`
+				Name string `json:"game_name"`
+			} `json:"games"`
+		} `json:"data"`
+	}
+	if getJSON(tgdbURL+"/v1/Games/ByGameName?apikey="+url.QueryEscape(key)+"&name="+url.QueryEscape(name), nil, &r) != nil {
+		return out
+	}
+	best, id := 0.0, 0
+	for _, g := range r.Data.Games {
+		if sc := titleScore(metaName(g.Name), name); sc > best && sc >= .7 {
+			best, id = sc, g.ID
+		}
+	}
+	if id == 0 {
+		return out
+	}
+	var im struct {
+		Data struct {
+			Base struct {
+				Original string `json:"original"`
+			} `json:"base_url"`
+			Images map[string][]struct {
+				Type     string `json:"type"`
+				Filename string `json:"filename"`
+			} `json:"images"`
+		} `json:"data"`
+	}
+	if getJSON(fmt.Sprintf("%s/v1/Games/Images?apikey=%s&games_id=%d&filter%%5Btype%%5D=clearlogo,fanart", tgdbURL, url.QueryEscape(key), id), nil, &im) != nil {
+		return out
+	}
+	for _, x := range im.Data.Images[fmt.Sprint(id)] {
+		switch x.Type {
+		case "clearlogo":
+			if out.Logo == "" {
+				out.Logo = im.Data.Base.Original + x.Filename
+			}
+		case "fanart":
+			if out.Fan == "" {
+				out.Fan = im.Data.Base.Original + x.Filename
+			}
+		}
+	}
+	return out
+}
+
 // ---------- LaunchBox ----------
 
-type lbRow struct{ Plat, File string }
+type lbRow struct{ Plat, Front, Logo, Disc, Fan string }
 
 var (
 	lbMu       sync.Mutex
@@ -130,7 +218,7 @@ func lbNorm(s string) string {
 	return reNorm.ReplaceAllString(s, "")
 }
 
-func lbPath() string { return filepath.Join(cfgDir, "launchbox.idx") }
+func lbPath() string { return filepath.Join(cfgDir, "launchbox2.idx") }
 
 func lbReady() bool {
 	lbMu.Lock()
@@ -170,7 +258,8 @@ func lbEnsure() {
 	}()
 }
 
-func lbFronts(name string) []string {
+// lbRows finds a game's rows in the index, PC entries first.
+func lbRows(name string) []lbRow {
 	lbEnsure()
 	lbMu.Lock()
 	idx := lbIdx
@@ -189,20 +278,31 @@ func lbFronts(name string) []string {
 		if len(rows) == 0 {
 			continue
 		}
-		var out []string
-		for _, r := range rows { // PC first, then the rest
+		var out []lbRow
+		for _, r := range rows {
 			if strings.EqualFold(r.Plat, "Windows") {
-				out = append(out, lbImgURL+"/"+r.File)
+				out = append(out, r)
 			}
 		}
 		for _, r := range rows {
 			if !strings.EqualFold(r.Plat, "Windows") {
-				out = append(out, lbImgURL+"/"+r.File)
+				out = append(out, r)
 			}
 		}
 		return out
 	}
 	return nil
+}
+
+// lbFronts lists box-front picture links for a game (used by the cover picker).
+func lbFronts(name string) []string {
+	var out []string
+	for _, r := range lbRows(name) {
+		if r.Front != "" {
+			out = append(out, lbImgURL+"/"+r.Front)
+		}
+	}
+	return out
 }
 
 func lbBuild(src string) (map[string][]lbRow, error) {
@@ -260,7 +360,8 @@ func lbParse(r io.Reader) map[string][]lbRow {
 		Region     string `xml:"Region"`
 	}
 	games := map[string]game{}
-	best := map[string]image{}
+	best := map[string]map[string]image{} // database id -> kind -> best picture
+	kinds := map[string]string{"Box - Front": "front", "Clear Logo": "logo", "Disc": "disc", "Fanart - Background": "fan"}
 	rank := func(region string) int {
 		switch strings.ToLower(region) {
 		case "north america", "united states":
@@ -289,19 +390,27 @@ func lbParse(r io.Reader) map[string][]lbRow {
 			}
 		case "GameImage":
 			var im image
-			if dec.DecodeElement(&im, &se) == nil && im.Type == "Box - Front" && im.FileName != "" {
-				if cur, have := best[im.DatabaseID]; !have || rank(im.Region) < rank(cur.Region) {
-					best[im.DatabaseID] = im
-				}
+			if dec.DecodeElement(&im, &se) != nil || im.FileName == "" {
+				continue
+			}
+			k, ok := kinds[im.Type]
+			if !ok {
+				continue
+			}
+			if best[im.DatabaseID] == nil {
+				best[im.DatabaseID] = map[string]image{}
+			}
+			if cur, have := best[im.DatabaseID][k]; !have || rank(im.Region) < rank(cur.Region) {
+				best[im.DatabaseID][k] = im
 			}
 		}
 	}
 	out := map[string][]lbRow{}
-	for id, im := range best {
+	for id, byKind := range best {
 		if g, ok := games[id]; ok {
 			k := lbNorm(g.Name)
 			if k != "" {
-				out[k] = append(out[k], lbRow{g.Platform, im.FileName})
+				out[k] = append(out[k], lbRow{g.Platform, byKind["front"].FileName, byKind["logo"].FileName, byKind["disc"].FileName, byKind["fan"].FileName})
 			}
 		}
 	}
@@ -318,7 +427,7 @@ func lbSave(path string, idx map[string][]lbRow) {
 	w := bufio.NewWriter(f)
 	for k, rows := range idx {
 		for _, r := range rows {
-			fmt.Fprintf(w, "%s\t%s\t%s\n", k, r.Plat, r.File)
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", k, r.Plat, r.Front, r.Logo, r.Disc, r.Fan)
 		}
 	}
 	w.Flush()
@@ -336,9 +445,9 @@ func lbLoad(path string) map[string][]lbRow {
 	sc := bufio.NewScanner(f)
 	sc.Buffer(make([]byte, 1<<16), 1<<20)
 	for sc.Scan() {
-		p := strings.SplitN(sc.Text(), "\t", 3)
-		if len(p) == 3 {
-			out[p[0]] = append(out[p[0]], lbRow{p[1], p[2]})
+		p := strings.Split(sc.Text(), "\t")
+		if len(p) == 6 {
+			out[p[0]] = append(out[p[0]], lbRow{p[1], p[2], p[3], p[4], p[5]})
 		}
 	}
 	if len(out) == 0 {

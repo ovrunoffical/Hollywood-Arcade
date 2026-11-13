@@ -57,7 +57,7 @@ function artHTML(it, extra = '', wide = false) {
   const [a, b] = cols(it.name);
   const isIco = it.category === 'app' && !it.art && !it.cover && it.icon && !wide;
   const src = isIco ? toURL(it.icon) : wide ? heroSrc(it) : it.cover ? toURL(it.cover) : it.art ? toURL(it.art) : '';
-  return `<div class="art${isIco ? ' ico' : ''}" style="--ta:${a};--tb:${b}"><span class="glyph">${esc((it.name[0] || '?').toUpperCase())}</span>${!src ? '' : isIco || wide ? `<img src="${esc(src)}" alt="" loading="lazy">` : `<img class="cvbg" src="${esc(src)}" alt="" aria-hidden="true" loading="lazy"><img class="cv" src="${esc(src)}" alt="" loading="lazy">`}${extra}</div>`;
+  return `<div class="art${isIco ? ' ico' : ''}" style="--ta:${a};--tb:${b}"><span class="glyph">${esc((it.name[0] || '?').toUpperCase())}</span>${!src ? '' : isIco || wide ? `<img src="${esc(src)}" alt="" loading="lazy">` : `<img class="cv" src="${esc(src)}" alt="" loading="lazy">`}${extra}</div>`;
 }
 function tile(it, o = {}) {
   const [a, b] = cols(it.name);
@@ -1183,7 +1183,7 @@ async function fetchAppInfo(it) {
   const r = await fetch('/api/appmeta', { method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id: it.id, name: it.name, kind: it.kind || '', target: it.target || '' }) }).then(x => x.json()).catch(() => null);
   if (!r) return false;
-  it.metaAt = Date.now(); it.metaV = 5; it.appV = 2; it.metaLog = (r.meta && r.meta.log) || [];
+  it.metaAt = Date.now(); it.metaV = 6; it.appV = 2; it.metaLog = (r.meta && r.meta.log) || [];
   if (!r.ok) return false;
   const m = r.meta;
   if (m.icon) it.icon = m.icon;
@@ -1197,10 +1197,13 @@ async function fetchInfo(it) {
   const r = await fetch('/api/metadata', { method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id: it.id, name: it.name, appid: steamId(it), rawgKey: s.rawgKey || '', sgdbKey: '', igdbId: s.igdbId || '', igdbSecret: s.igdbSecret || '', tgdbKey: s.tgdbKey || '', rom: it.rom || '' }) }).then(x => x.json()).catch(() => null);
   if (!r) return false;
-  it.metaAt = Date.now(); it.metaV = 5; it.metaLog = (r.meta && r.meta.log) || [];
+  it.metaAt = Date.now(); it.metaV = r.meta && r.meta.retry ? 5 : 6; it.metaLog = (r.meta && r.meta.log) || [];
   if (!r.ok) return false;
   const m = r.meta;
   if (m.cover && !it.coverLock) it.cover = m.cover;
+  if (m.logo) it.logo = m.logo;
+  if (m.disc) it.disc = m.disc;
+  if (m.fan) it.fan = m.fan;
   if (m.desc) it.desc = m.desc;
   it.genres = m.genres || []; it.year = m.year || ''; it.dev = m.dev || ''; it.rating = m.rating || 0; it.score = m.score || 0; it.hero = m.hero || ''; it.shots = m.shots || []; it.infoFrom = (m.sources || []).join(', ');
   return true;
@@ -1208,7 +1211,7 @@ async function fetchInfo(it) {
 let metaBusy = false;
 async function runMeta(force) {
   if (metaBusy) return toast('Already fetching game info\u2026');
-  const list = S.items.filter(i => (i.category === 'game' || i.category === 'app') && (force || !i.metaAt || i.metaV !== 5 || (i.category === 'app' && i.appV !== 2)));
+  const list = S.items.filter(i => (i.category === 'game' || i.category === 'app') && (force || !i.metaAt || i.metaV !== 6 || (i.category === 'app' && i.appV !== 2)));
   if (!list.length) return force ? toast('Add some games or apps first') : undefined;
   metaBusy = true; let done = 0, found = 0, next = 0;
   const worker = async () => {

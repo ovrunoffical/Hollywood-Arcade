@@ -92,9 +92,13 @@ type gameMeta struct {
 	Rating    float64  `json:"rating,omitempty"`
 	Score     int      `json:"score,omitempty"`
 	Hero      string   `json:"hero,omitempty"`
+	Logo      string   `json:"logo,omitempty"`
+	Disc      string   `json:"disc,omitempty"`
+	Fan       string   `json:"fan,omitempty"`
 	Shots     []string `json:"shots,omitempty"`
 	Sources   []string `json:"sources,omitempty"`
 	Log       []string `json:"log,omitempty"`
+	Retry     bool     `json:"retry,omitempty"` // art lists were not ready yet: ask again later
 }
 
 func (m *gameMeta) note(s string) { m.Log = append(m.Log, s) }
@@ -422,9 +426,7 @@ func fetchMeta(id, name, appid, rawgKey, sgdbKey, igdbID, igdbSecret, rom, tgdbK
 		}
 	}
 	// 5b) cover art: TheGamesDB (the person's key), then LaunchBox, then Wikipedia below
-	if m.Cover == "" {
-		m.Cover = findCover(&m, id, name, rom, tgdbKey)
-	}
+	findArt(&m, id, name, tgdbKey)
 	// 5) Wikipedia (no key): last-resort description + picture for anything with an article
 	if name != "" && (m.Desc == "" || m.Cover == "") {
 		var s struct {

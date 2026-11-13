@@ -8,11 +8,12 @@ const is360 = () => uiStyle() === 'x360', is360n = () => uiStyle() === 'x360n';
 const attrsOf = (e) => e.style ? `data-v33="style" data-v="${e.style}"` : e.act ? `data-act="${e.act}"${e.id ? ` data-id="${esc(e.id)}"` : ''}` : `data-act="goto" data-v="${e.v}"${e.plug ? ` data-plug="${esc(e.plug)}"` : ''}`;
 const coverOf = (it) => { const isIco = it.category === 'app' && !it.art && !it.cover && it.icon; return isIco ? '' : it.cover ? toURL(it.cover) : it.art ? toURL(it.art) : ''; };
 
-// Artwork that fits: landscape art (hero) fills a wide tile; a tall cover is shown whole over a blurred copy of itself instead of being cropped.
+// Artwork that fits: the whole cover, never cropped, stretched or blurred
 function artImgHTML(it) {
   const c = coverOf(it); if (!c) return '';
-  return `<img class="cvbg" src="${esc(c)}" alt="" aria-hidden="true" loading="lazy"><img class="cv" src="${esc(c)}" alt="" loading="lazy">`;   // the whole cover, with a soft blurred copy behind it
+  return `<img class="cv" src="${esc(c)}" alt="" loading="lazy">`;
 }
+const logoOf = (it) => it && it.logo ? toURL(it.logo) : '', discOf = (it) => it && it.disc ? toURL(it.disc) : '', fanOf = (it) => it && it.fan ? toURL(it.fan) : '';
 // a made-up cover for games with no art: a colour from the name, the title and where it is from
 function phHTML(it) {
   const [a, b] = typeof cols === 'function' ? cols(it.name) : ['#4a6fd0', '#27408f'];
@@ -20,7 +21,7 @@ function phHTML(it) {
   return `<span class="ph" data-l="${esc((it.name[0] || '?').toUpperCase())}" style="--ta:${a};--tb:${b}"><b>${esc(it.name)}</b>${src ? `<small>${esc(src)}</small>` : ''}</span>`;
 }
 // if a cover picture fails to load, fall back to the made-up cover
-document.addEventListener('error', (e) => { const im = e.target; if (im instanceof HTMLImageElement && (im.classList.contains('cv') || im.classList.contains('cvbg'))) { const p = im.closest('.hc'); if (p) p.classList.remove('hc'); im.remove(); } }, true);
+document.addEventListener('error', (e) => { const im = e.target; if (im instanceof HTMLImageElement && (im.classList.contains('cv'))) { const p = im.closest('.hc'); if (p) p.classList.remove('hc'); im.remove(); } }, true);
 
 const logoSVG = '<svg class="x3logo" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="50"/><g><rect x="25" y="20" width="12" height="60" rx="3"/><rect x="63" y="20" width="12" height="60" rx="3"/><rect x="33" y="44" width="34" height="12"/></g></svg>';
 
@@ -74,18 +75,29 @@ function nCover(e, cls, big) {
   return `<button class="nti gr ${cls}" ${attrsOf(e)}><span class="ng">${xsvg(e.ic)}</span><span class="nl"><b>${esc(e.label)}</b>${e.sub ? `<small>${esc(e.sub)}</small>` : ''}</span></button>`;
 }
 function nTabs() { return [{ id: 'home', label: 'home' }, ...xmbCats().map(c => ({ id: c.id, label: c.label.toLowerCase() }))]; }
+// a wide box: the game's clear logo over its fan art (or just its name on a colour when it has no logo)
+function nWide(it, cls, sub) {
+  const [a, b] = typeof cols === 'function' ? cols(it.name) : ['#4a6fd0', '#27408f'];
+  const lg = logoOf(it), fn = fanOf(it);
+  return `<button class="nti wl ${cls}" ${attrsOf({ act: 'play', id: it.id })} style="--ta:${a};--tb:${b}">${fn ? `<img class="fan" src="${esc(fn)}" alt="" loading="lazy">` : ''}${lg ? `<img class="lg" src="${esc(lg)}" alt="${esc(it.name)}" loading="lazy">` : `<span class="wlt">${esc(it.name)}</span>`}<span class="nl"><b>${esc(it.name)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</span></button>`;
+}
 function nPane(tab) {
   if (tab === 'home') {
     const g = [...S.items.filter(x => x.category === 'game')].sort((a, b) => (b.lastPlayed || 0) - (a.lastPlayed || 0) || (b.cover ? 1 : 0) - (a.cover ? 1 : 0));
-    const meta = (it) => [it.source ? String(it.source).replace(/^./, c => c.toUpperCase()) : '', it.lastPlayed ? 'Played recently' : ''].filter(Boolean).join(' · ');
-    const play = (it, pre) => ({ act: 'play', id: it.id, label: it.name, sub: pre ? 'Continue playing' + (it.source ? ' · ' + String(it.source).replace(/^./, c => c.toUpperCase()) : '') : meta(it), it });
+    const src = (it) => it.source ? String(it.source).replace(/^./, c => c.toUpperCase()) : '';
+    const meta = (it) => [src(it), it.lastPlayed ? 'Played recently' : ''].filter(Boolean).join(' · ');
     const run = window.__running;
-    const gm = (n, cls, pre) => g[n] ? nCover(play(g[n], pre), cls) : '';
-    const res = run && run.running ? nCover({ act: 'resume', label: run.name || 'Game', sub: 'Playing now · resume', ic: 'games' }, 'a') : (g[0] ? nCover(play(g[0], 'Play '), 'a') : nCover({ act: 'scanAll', label: 'Scan my games', ic: 'games' }, 'a'));
-    return res + gm(1, 'h') + gm(2, 's1') + gm(3, 's2') +
+    const first = g[0];
+    const res = run && run.running ? nCover({ act: 'resume', label: run.name || 'Game', sub: 'Playing now · resume', ic: 'games' }, 'a')
+      : first ? nWide(first, 'a', 'Continue playing' + (src(first) ? ' · ' + src(first) : ''))
+        : nCover({ act: 'scanAll', label: 'Scan my games', ic: 'games' }, 'a');
+    const rest = g.slice(run && run.running ? 0 : 1);
+    const wideG = rest.find(x => logoOf(x));
+    const shelf = rest.filter(x => x !== wideG).slice(0, 8).map(it => nCover({ act: 'play', id: it.id, label: it.name, sub: meta(it), it }, 'sh')).join('');
+    return res + (shelf ? `<div class="nshelf">${shelf}</div>` : '') +
       nCover({ v: 'ach', label: 'Achievements', ic: 'ach' }, 'p') + nCover({ v: 'store', label: 'Store', ic: 'store' }, 'q') +
       nCover({ v: 'apps', label: 'Apps', ic: 'apps' }, 'r') + nCover({ v: 'watch', label: 'Watch', ic: 'watch' }, 'w') +
-      (g[4] ? gm(4, 'g') : nCover({ v: 'games', label: 'Games', ic: 'games' }, 'g')) + nCover({ v: 'music', label: 'Music', ic: 'music' }, 'm');
+      (wideG ? nWide(wideG, 'g', meta(wideG)) : nCover({ v: 'games', label: 'Games', ic: 'games' }, 'g')) + nCover({ v: 'music', label: 'Music', ic: 'music' }, 'm');
   }
   return xmbItems(tab).map((e, i) => nCover(e, i === 0 ? 'first' : '')).join('');
 }
@@ -137,7 +149,7 @@ document.addEventListener('focusin', (e) => {
       if (nb) { bSelectBlade(nb.id); $('.bcards .bc')?.focus({ preventScroll: true }); } else if (dir === 'down') return _m.apply(this, arguments);
       return;
     }
-    const tabs = $$('.ntabs .nt'), tiles = $$('.npane .nti');
+    const tabs = $$('.ntabs .nt'), tiles = $$('.npane .nti:not([hidden])');
     const onTab = a && a.classList && a.classList.contains('nt');
     if (onTab) {
       const ti = tabs.indexOf(a);

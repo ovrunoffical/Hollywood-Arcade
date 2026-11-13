@@ -31,6 +31,7 @@ function oxPreviewImg(it) {
   if (!it) return '<i class="ox-disc"></i>';
   if (it.kind === 'track') return it.cover ? `<img src="${esc(it.cover)}" alt="">` : '<i class="ox-disc"></i>';
   if (it.category === 'app' && !it.cover && !it.art && it.icon) return `<img class="ico" src="${esc(toURL(it.icon))}" alt="">`;
+  if (typeof discOf === 'function' && discOf(it)) return `<img class="dsc" src="${esc(discOf(it))}" alt="">`;
   const a = typeof artImgHTML === 'function' ? artImgHTML(it) : '';
   return a || (typeof phHTML === 'function' ? phHTML(it) : '');
 }
@@ -46,7 +47,7 @@ function oxInfo(row) {
 function oxShow(k) {
   const row = oxRows[k]; if (!row) return;
   const pv = document.getElementById('oxpv'), inf = document.getElementById('oxinfo');
-  if (pv) pv.innerHTML = oxPreviewImg(row.it);
+  if (pv) { pv.innerHTML = oxPreviewImg(row.it); pv.classList.toggle('hasd', !!(row.it && typeof discOf === 'function' && discOf(row.it))); }
   if (inf) inf.innerHTML = oxInfo(row);
 }
 function oxScreen(title, count, rows, head) {

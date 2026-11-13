@@ -1,7 +1,6 @@
-/* Hollywood Arcade 3.2: covers are shown whole, captions stay off the art, missing art gets a made-up cover */
-img.cvbg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(14px) brightness(.55) saturate(1.25); transform: scale(1.2); }
+/* Hollywood Arcade 3.2: covers are shown whole and at their own shape: no cropping, no stretching, no blur. */
 img.cv { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain !important; object-position: center !important; }
-.nsa img.cvbg, .dka img.cvbg { filter: blur(12px) brightness(.6) saturate(1.2); }
+[hidden] { display: none !important; }
 .ph { position: absolute; inset: 0; container-type: size; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4cqh; padding: 8%; text-align: center; color: #fff; overflow: hidden; background: linear-gradient(150deg, var(--ta, #4a6fd0), var(--tb, #27408f)); }
 .ph::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 26% 18%, rgba(255, 255, 255, .3), transparent 56%); pointer-events: none; }
 .ph b { position: relative; font-weight: 700; font-size: clamp(11px, min(11cqw, 16cqh), 34px); line-height: 1.12; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; text-shadow: 0 1px 6px rgba(0, 0, 0, .35); }
@@ -9,35 +8,53 @@ img.cv { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: co
 .art .ph { z-index: 0; }
 .nsa .ph { background: linear-gradient(150deg, color-mix(in srgb, var(--ta, #8b95a5) 70%, #fff), color-mix(in srgb, var(--tb, #6c7787) 70%, #fff)); }
 
+/* library grids and rails: a fixed height, and a width that follows each cover's own shape */
+body { --gh: calc(var(--tile, 150px) * 1.333); }
+.grid:not(.apps) { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 18px 12px; }
+.grid:not(.apps) .tile:not(.app):not(.wide):not(.sq), .rail .tile:not(.app):not(.wide):not(.sq) { flex: 0 0 auto; width: calc(var(--gh) * var(--ar, .75)); }
+.tile:not(.app):not(.wide):not(.sq) .art { aspect-ratio: var(--ar, .75); }
+.art.land::before, .gcover.land::before { display: none !important; }
+.art.land img.cv, .gcover.land img { object-fit: contain; }
+.art .ph { z-index: 0; }
+body.ui-alt .tile:has(.art img.cv) .badge { opacity: 0; transition: opacity .12s; }
+body.ui-alt .tile:hover .badge, body.ui-alt .tile:focus-visible .badge { opacity: 1; }
+
 /* Tiles: tiles with a real cover show no caption until selected; the outline stays inside the tile */
 .nti.hc::after { display: none; }
 .nti.hc .nl { left: 0; right: 0; bottom: 0; padding: .8vh calc(.9 * var(--vu)); background: rgba(0, 0, 0, .82); transform: translateY(101%); transition: transform .18s; }
 .nti.hc:hover .nl, .nti.hc:focus .nl { transform: none; }
 .nti:hover, .nti:focus { transform: none; box-shadow: none; outline: .5vh solid #fff; outline-offset: -.5vh; }
 .nti .nlt { display: none; }
+.nti .ph b, .nti .ph small, .bcv .ph b, .bcv .ph small { display: none; }
+.nti .ph::after, .bcv .ph::after { content: attr(data-l); position: relative; font: 700 min(34cqw, 40cqh) / 1 var(--x3font, inherit); opacity: .55; }
+.nti.cv.hc { background: #1c1f24; }
+/* Tiles home: the shelf of covers (each at its own shape) and the wide logo boxes */
+.npane.is-home { --sh: calc(2 * var(--th) + .5 * var(--vu)); }
+.nshelf .nti { flex: 0 0 auto; height: var(--sh); width: calc(var(--sh) * var(--ar, .75)); }
+.npane.is-list { display: flex; flex-wrap: wrap; align-content: flex-start; }
+.npane.is-list .nti { flex: 0 0 auto; height: 21vh; width: calc(21vh * var(--ar, .75)); }
+.npane.is-list .nti.gr { width: var(--tw); height: var(--th); }
+.nti.wl { background: linear-gradient(150deg, var(--ta, #4a6fd0), var(--tb, #27408f)); }
+.nti.wl img.fan { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.5); }
+.nti.wl img.lg { position: absolute; left: 8%; top: 8%; width: 84%; height: 66%; object-fit: contain; filter: drop-shadow(0 .4vh .9vh rgba(0, 0, 0, .65)); }
+.nti.wl .wlt { position: absolute; left: 8%; top: 8%; width: 84%; height: 66%; display: grid; place-items: center; text-align: center; font-weight: 700; font-size: clamp(16px, 9cqw, 4.4vh); line-height: 1.1; text-shadow: 0 .3vh .9vh rgba(0, 0, 0, .55); overflow: hidden; }
+.nti.wl::after { content: ''; position: absolute; inset: 62% 0 0 0; background: linear-gradient(transparent, rgba(0, 0, 0, .7)); }
+.nti.wl .nl b { display: none; }
 
-/* Blades: only the selected card shows its caption, in a strip under the art */
+/* Blades: the whole cover sits on the green card; only the selected card shows its caption, in a strip */
+.bcv { background: none; }
+.bcv img.cv { z-index: 1; }
 .bc:has(.bcv.hc)::after { display: none; }
 .bc:has(.bcv.hc) .bcl { display: none; }
-.bc.sel:has(.bcv.hc) .bcl { display: flex; left: 0; right: 0; bottom: 0; padding: 1vh calc(1.2 * var(--vu)); background: rgba(0, 20, 0, .85); text-shadow: none; }
-.bc .bcv .ph b { font-size: clamp(11px, min(9cqw, 14cqh), 30px); }
+.bc.sel:has(.bcv.hc) .bcl { display: flex; left: 0; right: 0; bottom: 0; padding: 1vh calc(1.2 * var(--vu)); background: rgba(0, 20, 0, .85); text-shadow: none; z-index: 2; }
 .bcl b { font-size: clamp(13px, 2.5vh, 30px); }
 .bcl small { font-size: clamp(11px, 1.8vh, 20px); }
 
-/* Orb: the preview is a real disc, with a whole cover sitting inside it and a hole in the middle */
+/* Orb: a game with a disc picture shows the disc itself; otherwise the whole box sits on a plain round plate */
 .ox-pvwrap { top: 5vh; height: 40vh; }
 .ox-pv { width: 31vh; height: 31vh; }
-.ox-pvimg img.cvbg { filter: blur(10px) brightness(.5) saturate(1.2); }
-.ox-pvimg img.cv { inset: 9% 19%; width: 62%; height: 82%; border-radius: 1.2%; box-shadow: 0 .6vh 1.6vh rgba(0, 0, 0, .45); }
-.ox-pvimg .ph { inset: 9% 19%; }
-.ox-pvimg::after { content: ''; position: absolute; left: 50%; top: 50%; width: 17%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none;
-  background: radial-gradient(circle, #02140a 0 34%, rgba(255, 255, 255, .85) 36% 41%, rgba(0, 0, 0, .35) 43% 52%, transparent 54%); box-shadow: 0 0 0 .5vh rgba(255, 255, 255, .22); }
 .ox-pv::before { inset: -1.2vh; }
-
-/* where a caption already names the game, the made-up cover shows just a big letter */
-.nti .ph b, .nti .ph small, .bcv .ph b, .bcv .ph small { display: none; }
-.nti .ph::after, .bcv .ph::after { content: attr(data-l); position: relative; font: 700 min(34cqw, 40cqh) / 1 var(--x3font, inherit); opacity: .55; }
-/* the old grids: whole covers too */
-.art img.cv, .art img.cvbg { z-index: 0; }
-body.ui-alt .tile:has(.art img.cv) .badge { opacity: 0; transition: opacity .12s; }
-body.ui-alt .tile:hover .badge, body.ui-alt .tile:focus-visible .badge { opacity: 1; }
+.ox-pvimg img.cv { inset: 8% 14%; width: 72%; height: 84%; border-radius: 1%; box-shadow: 0 .6vh 1.6vh rgba(0, 0, 0, .45); }
+.ox-pvimg .ph { inset: 8% 14%; }
+.ox-pvimg img.dsc { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+.ox-pvimg.hasd { background: none; }
