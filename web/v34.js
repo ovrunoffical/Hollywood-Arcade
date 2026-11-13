@@ -30,7 +30,7 @@ function xmbCats() {
 
 function xmbThumb(it) {
   const isIco = it.category === 'app' && !it.art && !it.cover && it.icon;
-  const src = isIco ? toURL(it.icon) : it.cover ? toURL(it.cover) : it.art ? toURL(it.art) : it.appid ? `https://cdn.akamai.steamstatic.com/steam/apps/${it.appid}/library_600x900_2x.jpg` : '';
+  const src = isIco ? toURL(it.icon) : it.cover ? toURL(it.cover) : it.art ? toURL(it.art) : '';
   return `<span class="xic thumb${isIco ? ' ico' : ''}"><b>${esc((it.name[0] || '?').toUpperCase())}</b>${src ? `<img src="${esc(src)}" alt="" loading="lazy">` : ''}</span>`;
 }
 

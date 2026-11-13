@@ -33,7 +33,7 @@ function dkInfo(e) {
 }
 function dkTile(e, i) {
   const src = e.it ? coverOf(e.it) : '';
-  const art = e.it ? `<span class="dka"><i>${esc((e.it.name[0] || '?').toUpperCase())}</i>${artImgHTML(e.it, false)}</span>` : `<span class="dka fn">${xsvg(e.ic)}</span>`;
+  const art = e.it ? `<span class="dka">${phHTML(e.it)}${artImgHTML(e.it)}</span>` : `<span class="dka fn">${xsvg(e.ic)}</span>`;
   return `<button class="dkt" data-i="${i}" ${dkAttrs(e)}>${art}<span class="dkb">${e.it || e.resume ? 'Start' : 'Open'}</span><span class="dkn">${esc(e.label)}</span></button>`;
 }
 function deckHome() {

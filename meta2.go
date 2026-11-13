@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -287,7 +286,7 @@ func headOK(u string) bool {
 }
 
 // coverCandidates gathers every picture the free sources have for a game so the person can choose.
-func coverCandidates(name, appid, rom, rawgKey, sgdbKey, igdbID, igdbSecret string) []coverOpt {
+func coverCandidates(name, tgdbKey string) []coverOpt {
 	name = metaName(name)
 	var mu sync.Mutex
 	var out []coverOpt
@@ -308,51 +307,6 @@ func coverCandidates(name, appid, rom, rawgKey, sgdbKey, igdbID, igdbSecret stri
 		wg.Add(1)
 		go func() { defer wg.Done(); defer func() { recover() }(); f() }()
 	}
-	run(func() { // Steam
-		id := appid
-		if id == "" && rom == "" {
-			id = steamSearchID(name)
-		}
-		if id == "" {
-			return
-		}
-		base := steamCDN + "/steam/apps/" + id + "/"
-		for _, f := range [][2]string{{"library_600x900_2x.jpg", "portrait"}, {"library_600x900.jpg", "portrait"}, {"header.jpg", "wide"}, {"capsule_616x353.jpg", "wide"}, {"library_hero.jpg", "wide"}} {
-			f := f
-			run(func() {
-				if headOK(base + f[0]) {
-					add(base+f[0], "Steam", f[1])
-				}
-			})
-		}
-	})
-	run(func() { // Epic
-		for i, h := range epicSearch(name) {
-			if i > 2 {
-				break
-			}
-			add(h.Tall, "Epic", "portrait")
-			add(h.Wide, "Epic", "wide")
-		}
-	})
-	run(func() { // GOG
-		var g struct {
-			Products []struct {
-				Title string `json:"title"`
-				Cover string `json:"coverVertical"`
-				Horiz string `json:"coverHorizontal"`
-			} `json:"products"`
-		}
-		if getJSON(gogURL+"/v1/catalog?limit=5&countryCode=US&locale=en-US&currencyCode=USD&query=like%3A"+url.QueryEscape(name), nil, &g) != nil {
-			return
-		}
-		for _, p := range g.Products {
-			if titleScore(metaName(p.Title), name) >= .7 {
-				add(p.Cover, "GOG", "portrait")
-				add(p.Horiz, "GOG", "wide")
-			}
-		}
-	})
 	run(func() { // Wikipedia
 		var s struct {
 			Query struct {
@@ -381,105 +335,16 @@ func coverCandidates(name, appid, rom, rawgKey, sgdbKey, igdbID, igdbSecret stri
 			}
 		}
 	})
-	if sgdbKey != "" {
-		run(func() { // SteamGridDB: many community covers
-			h := map[string]string{"Authorization": "Bearer " + sgdbKey}
-			var s struct {
-				Data []struct {
-					ID int `json:"id"`
-				} `json:"data"`
-			}
-			if getJSON(sgdbURL+"/api/v2/search/autocomplete/"+url.PathEscape(name), h, &s) != nil || len(s.Data) == 0 {
-				return
-			}
-			var g struct {
-				Data []struct {
-					URL string `json:"url"`
-				} `json:"data"`
-			}
-			if getJSON(fmt.Sprintf("%s/api/v2/grids/game/%d?dimensions=600x900,342x482", sgdbURL, s.Data[0].ID), h, &g) == nil {
-				for i, x := range g.Data {
-					if i < 14 {
-						add(x.URL, "SteamGridDB", "portrait")
-					}
-				}
-			}
-		})
-	}
-	if rawgKey != "" {
-		run(func() {
-			var s struct {
-				Results []struct {
-					Image string `json:"background_image"`
-				} `json:"results"`
-			}
-			if getJSON(rawgURL+"/api/games?page_size=2&search_precise=true&key="+url.QueryEscape(rawgKey)+"&search="+url.QueryEscape(name), nil, &s) == nil {
-				for _, r := range s.Results {
-					add(r.Image, "RAWG", "wide")
-				}
-			}
-		})
-	}
-	if igdbID != "" && igdbSecret != "" {
-		run(func() {
-			tok := igdbToken(igdbID, igdbSecret)
-			if tok == "" {
-				return
-			}
-			q := `search "` + strings.NewReplacer(`"`, ``, `\`, ``).Replace(name) + `"; fields cover.image_id,screenshots.image_id,artworks.image_id; limit 1;`
-			req, _ := http.NewRequest("POST", igdbURL+"/v4/games", strings.NewReader(q))
-			req.Header.Set("Client-ID", igdbID)
-			req.Header.Set("Authorization", "Bearer "+tok)
-			resp, err := httpc.Do(req)
-			if err != nil {
-				return
-			}
-			defer resp.Body.Close()
-			var rs []struct {
-				Cover struct {
-					ID string `json:"image_id"`
-				} `json:"cover"`
-				Shots []struct {
-					ID string `json:"image_id"`
-				} `json:"screenshots"`
-				Art []struct {
-					ID string `json:"image_id"`
-				} `json:"artworks"`
-			}
-			if resp.StatusCode != 200 || json.NewDecoder(io.LimitReader(resp.Body, 2<<20)).Decode(&rs) != nil || len(rs) == 0 {
-				return
-			}
-			if rs[0].Cover.ID != "" {
-				add(igdbImgURL+"/igdb/image/upload/t_cover_big_2x/"+rs[0].Cover.ID+".jpg", "IGDB", "portrait")
-			}
-			for i, s := range rs[0].Shots {
-				if i < 3 {
-					add(igdbImgURL+"/igdb/image/upload/t_screenshot_big/"+s.ID+".jpg", "IGDB", "wide")
-				}
-			}
-			for i, s := range rs[0].Art {
-				if i < 2 {
-					add(igdbImgURL+"/igdb/image/upload/t_1080p/"+s.ID+".jpg", "IGDB", "wide")
-				}
-			}
-		})
-	}
-	if rom != "" {
-		run(func() {
-			ext := strings.ToLower(filepath.Ext(rom))
-			base := strings.TrimSuffix(filepath.Base(rom), filepath.Ext(rom))
-			for _, sys := range libretroSystems[ext] {
-				for _, n := range []string{base, name + " (USA)", name + " (World)", name + " (Europe)", name} {
-					for _, k := range [][2]string{{"Named_Boxarts", "portrait"}, {"Named_Titles", "wide"}, {"Named_Snaps", "wide"}} {
-						u := libretroURL + "/" + url.PathEscape(sys) + "/" + k[0] + "/" + url.PathEscape(reLibBad.Replace(n)) + ".png"
-						if headOK(u) {
-							add(u, "Libretro", k[1])
-						}
-					}
-				}
-			}
-		})
-	}
+	run(func() { // TheGamesDB (the person's key)
+		for _, u := range tgdbFronts(name, tgdbKey) {
+			add(u, "TheGamesDB", "portrait")
+		}
+	})
+	run(func() { // LaunchBox
+		for _, u := range lbFronts(name) {
+			add(u, "LaunchBox", "portrait")
+		}
+	})
 	done := make(chan struct{})
 	go func() { wg.Wait(); close(done) }()
 	select {
@@ -493,6 +358,7 @@ func coverCandidates(name, appid, rom, rawgKey, sgdbKey, igdbID, igdbSecret stri
 }
 
 func registerCovers(mux *http.ServeMux) {
+	time.AfterFunc(25*time.Second, lbEnsure) // fetch the LaunchBox game list in the background
 	mux.HandleFunc("/api/covers", func(w http.ResponseWriter, r *http.Request) {
 		var raw map[string]string
 		readJSON(r, &raw)
@@ -500,7 +366,7 @@ func registerCovers(mux *http.ServeMux) {
 			writeJSON(w, map[string]any{"ok": false, "covers": []coverOpt{}})
 			return
 		}
-		c := coverCandidates(raw["name"], raw["appid"], raw["rom"], raw["rawgKey"], raw["sgdbKey"], raw["igdbId"], raw["igdbSecret"])
+		c := coverCandidates(raw["name"], raw["tgdbKey"])
 		if c == nil {
 			c = []coverOpt{}
 		}

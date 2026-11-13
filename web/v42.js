@@ -31,8 +31,8 @@ function oxPreviewImg(it) {
   if (!it) return '<i class="ox-disc"></i>';
   if (it.kind === 'track') return it.cover ? `<img src="${esc(it.cover)}" alt="">` : '<i class="ox-disc"></i>';
   if (it.category === 'app' && !it.cover && !it.art && it.icon) return `<img class="ico" src="${esc(toURL(it.icon))}" alt="">`;
-  const a = typeof artImgHTML === 'function' ? artImgHTML(it, true) : '';
-  return a || `<span class="ox-let">${esc((it.name[0] || '?').toUpperCase())}</span>`;
+  const a = typeof artImgHTML === 'function' ? artImgHTML(it) : '';
+  return a || (typeof phHTML === 'function' ? phHTML(it) : '');
 }
 function oxInfo(row) {
   if (!row) return '';

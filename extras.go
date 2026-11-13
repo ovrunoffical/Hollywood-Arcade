@@ -117,7 +117,7 @@ var (
 
 func init() {
 	if b := os.Getenv("HA_TEST_API"); b != "" {
-		steamStoreURL, steamCDN, rawgURL, sgdbURL, igdbURL, igdbImgURL, twitchURL, wikiURL, appleURL, gogURL, libretroURL, epicURL, gpListURL, dcURL = b, b, b, b, b, b, b, b, b, b, b, b, b, b
+		steamStoreURL, steamCDN, rawgURL, sgdbURL, igdbURL, igdbImgURL, twitchURL, wikiURL, appleURL, gogURL, libretroURL, epicURL, gpListURL, dcURL, tgdbURL, lbMetaURL, lbImgURL = b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b+"/Metadata.zip", b
 		steamAPIURL, steamComURL, raURL, raMediaURL, xblURL, ghAPIURL = b, b, b, b, b, b
 	}
 }
@@ -134,7 +134,7 @@ func okImageHost(raw string) bool {
 		return false
 	}
 	h := strings.ToLower(u.Hostname())
-	for _, s := range []string{"steamstatic.com", "steampowered.com", "akamaihd.net", "rawg.io", "steamgriddb.com", "igdb.com", "wikimedia.org", "wikipedia.org", "gog-statics.com", "gog.com", "libretro.com", "mzstatic.com", "apple.com", "epicgames.com", "unrealengine.com"} {
+	for _, s := range []string{"steamstatic.com", "steampowered.com", "akamaihd.net", "rawg.io", "steamgriddb.com", "igdb.com", "wikimedia.org", "wikipedia.org", "gog-statics.com", "gog.com", "libretro.com", "thegamesdb.net", "launchbox-app.com", "mzstatic.com", "apple.com", "epicgames.com", "unrealengine.com"} {
 		if h == s || strings.HasSuffix(h, "."+s) {
 			return true
 		}
@@ -201,7 +201,7 @@ func downloadArt(u, id string) string {
 
 func addSrc(m *gameMeta, s string) { m.Sources = append(m.Sources, s) }
 
-func fetchMeta(id, name, appid, rawgKey, sgdbKey, igdbID, igdbSecret, rom string) gameMeta {
+func fetchMeta(id, name, appid, rawgKey, sgdbKey, igdbID, igdbSecret, rom, tgdbKey string) gameMeta {
 	var m gameMeta
 	orig := name
 	name = metaName(name)
@@ -249,17 +249,6 @@ func fetchMeta(id, name, appid, rawgKey, sgdbKey, igdbID, igdbSecret, rom string
 			if mm := regexp.MustCompile(`(19|20)\d\d`).FindString(d.Release.Date); mm != "" {
 				m.Year = mm
 			}
-			m.Cover = steamArt(appid, "library_600x900_2x.jpg", id)
-			if m.Cover == "" {
-				m.Cover = steamArt(appid, "library_600x900.jpg", id)
-			}
-			if m.Cover == "" {
-				m.Cover = steamArt(appid, "portrait.png", id)
-			}
-
-			if m.Cover == "" && d.Header != "" {
-				m.Cover = downloadArt(d.Header, id)
-			}
 			m.Score = d.Meta.Score
 			for i, sh := range d.Shots {
 				if i < 4 && okImageHost(sh.Thumb) {
@@ -272,30 +261,9 @@ func fetchMeta(id, name, appid, rawgKey, sgdbKey, igdbID, igdbSecret, rom string
 			m.note("Steam: store page " + appid + " unavailable (region/age gate or offline)")
 		}
 	}
-	// 2) SteamGridDB (needs the person's free key): best portrait art for any game
-	if sgdbKey != "" && name != "" {
-		h := map[string]string{"Authorization": "Bearer " + sgdbKey}
-		var s struct {
-			Data []struct {
-				ID int `json:"id"`
-			} `json:"data"`
-		}
-		if getJSON(sgdbURL+"/api/v2/search/autocomplete/"+url.PathEscape(name), h, &s) == nil && len(s.Data) > 0 {
-			var g struct {
-				Data []struct {
-					URL string `json:"url"`
-				} `json:"data"`
-			}
-			if getJSON(fmt.Sprintf("%s/api/v2/grids/game/%d?dimensions=600x900", sgdbURL, s.Data[0].ID), h, &g) == nil && len(g.Data) > 0 {
-				if c := downloadArt(g.Data[0].URL, id); c != "" {
-					m.Cover = c
-					addSrc(&m, "SteamGridDB")
-				}
-			}
-		}
-	}
+	_ = sgdbKey // cover art now comes only from TheGamesDB, LaunchBox and Wikipedia
 	// 3) RAWG (needs the person's free key): description, genres, year for anything
-	if rawgKey != "" && name != "" && (m.Desc == "" || m.Cover == "" || len(m.Genres) == 0) {
+	if rawgKey != "" && name != "" && (m.Desc == "" || len(m.Genres) == 0) {
 		var s struct {
 			Results []struct {
 				ID       int     `json:"id"`
@@ -309,9 +277,6 @@ func fetchMeta(id, name, appid, rawgKey, sgdbKey, igdbID, igdbSecret, rom string
 		}
 		if getJSON(rawgURL+"/api/games?page_size=1&search_precise=true&key="+url.QueryEscape(rawgKey)+"&search="+url.QueryEscape(name), nil, &s) == nil && len(s.Results) > 0 {
 			r := s.Results[0]
-			if m.Cover == "" && r.Image != "" {
-				m.Cover = downloadArt(r.Image, id)
-			}
 			if m.Year == "" && len(r.Released) >= 4 {
 				m.Year = r.Released[:4]
 			}
@@ -337,7 +302,7 @@ func fetchMeta(id, name, appid, rawgKey, sgdbKey, igdbID, igdbSecret, rom string
 		}
 	}
 	// 4) IGDB (free Twitch app id + secret): good descriptions, scores and screenshots
-	if igdbID != "" && igdbSecret != "" && name != "" && (m.Desc == "" || m.Cover == "" || len(m.Shots) == 0 || m.Score == 0) {
+	if igdbID != "" && igdbSecret != "" && name != "" && (m.Desc == "" || len(m.Shots) == 0 || m.Score == 0) {
 		if tok := igdbToken(igdbID, igdbSecret); tok != "" {
 			q := `search "` + strings.NewReplacer(`"`, ``, `\`, ``).Replace(name) + `"; fields name,summary,first_release_date,genres.name,total_rating,involved_companies.developer,involved_companies.company.name,cover.image_id,screenshots.image_id; limit 1;`
 			req, _ := http.NewRequest("POST", igdbURL+"/v4/games", strings.NewReader(q))
@@ -393,9 +358,6 @@ func fetchMeta(id, name, appid, rawgKey, sgdbKey, igdbID, igdbSecret, rom string
 						}
 					}
 				}
-				if m.Cover == "" && r.Cover.ID != "" {
-					m.Cover = downloadArt(igdbImgURL+"/igdb/image/upload/t_cover_big/"+r.Cover.ID+".jpg", id)
-				}
 				if len(m.Shots) == 0 {
 					for i, s := range r.Shots {
 						if i < 4 {
@@ -408,7 +370,7 @@ func fetchMeta(id, name, appid, rawgKey, sgdbKey, igdbID, igdbSecret, rom string
 		}
 	}
 	// 5a) GOG catalog (no key)
-	if name != "" && rom == "" && (m.Desc == "" || m.Cover == "") {
+	if name != "" && rom == "" && m.Desc == "" {
 		var g struct {
 			Products []struct {
 				Title  string   `json:"title"`
@@ -428,13 +390,6 @@ func fetchMeta(id, name, appid, rawgKey, sgdbKey, igdbID, igdbSecret, rom string
 				if titleScore(metaName(p.Title), name) < .7 {
 					continue
 				}
-				img := p.Cover
-				if img == "" {
-					img = p.Horiz
-				}
-				if m.Cover == "" && img != "" {
-					m.Cover = downloadArt(img, id)
-				}
 				if m.Year == "" && len(p.Date) >= 4 {
 					m.Year = p.Date[:4]
 				}
@@ -452,18 +407,9 @@ func fetchMeta(id, name, appid, rawgKey, sgdbKey, igdbID, igdbSecret, rom string
 		}
 	}
 	// 5c) Epic Games Store (no key): tall box art, description and developer for Epic games (Fortnite and friends)
-	if name != "" && rom == "" && (m.Cover == "" || m.Desc == "") {
+	if name != "" && rom == "" && m.Desc == "" {
 		if hits := epicSearch(name); len(hits) > 0 {
 			h := hits[0]
-			if m.Cover == "" {
-				for _, u := range []string{h.Tall, h.Wide, h.Thumb} {
-					if u != "" {
-						if m.Cover = downloadArt(u, id); m.Cover != "" {
-							break
-						}
-					}
-				}
-			}
 			if m.Desc == "" && h.Desc != "" {
 				m.Desc = h.Desc
 			}
@@ -475,12 +421,9 @@ func fetchMeta(id, name, appid, rawgKey, sgdbKey, igdbID, igdbSecret, rom string
 			m.note("Epic: no store listing for \"" + name + "\"")
 		}
 	}
-	// 5b) Libretro box art for ROMs (no key)
-	if rom != "" && m.Cover == "" {
-		if c := libretroArt(id, name, rom); c != "" {
-			m.Cover = c
-			addSrc(&m, "Libretro")
-		}
+	// 5b) cover art: TheGamesDB (the person's key), then LaunchBox, then Wikipedia below
+	if m.Cover == "" {
+		m.Cover = findCover(&m, id, name, rom, tgdbKey)
 	}
 	// 5) Wikipedia (no key): last-resort description + picture for anything with an article
 	if name != "" && (m.Desc == "" || m.Cover == "") {
@@ -659,7 +602,7 @@ func registerExtras(mux *http.ServeMux) {
 			writeJSON(w, result{false, "missing game"})
 			return
 		}
-		m := fetchMeta(o.ID, o.Name, o.AppID, o.RawgKey, o.SgdbKey, raw["igdbId"], raw["igdbSecret"], raw["rom"])
+		m := fetchMeta(o.ID, o.Name, o.AppID, o.RawgKey, o.SgdbKey, raw["igdbId"], raw["igdbSecret"], raw["rom"], raw["tgdbKey"])
 		writeJSON(w, map[string]any{"ok": len(m.Sources) > 0 || m.Cover != "", "meta": m})
 	})
 	registerApple(mux)

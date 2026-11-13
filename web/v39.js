@@ -14,7 +14,7 @@ function nsEntries() {
 }
 const nsAttrs = (e) => e.act ? `data-act="${e.act}"${e.id ? ` data-id="${esc(e.id)}"` : ''}` : `data-act="goto" data-v="${e.v}"`;
 function nsTile(e, i) {
-  const art = e.it ? `<span class="nsa"><i>${esc((e.it.name[0] || '?').toUpperCase())}</i>${artImgHTML(e.it, false)}</span>` : `<span class="nsa fn">${xsvg(e.all ? 'games' : 'games')}</span>`;
+  const art = e.it ? `<span class="nsa">${phHTML(e.it)}${artImgHTML(e.it)}</span>` : `<span class="nsa fn">${xsvg(e.all ? 'games' : 'games')}</span>`;
   return `<button class="nst" data-i="${i}" ${nsAttrs(e)} aria-label="${esc(e.label)}">${art}</button>`;
 }
 function nsRound() {

@@ -26,21 +26,21 @@ body.ui-ps4 #main > h1.title { display: none; }
 .dksc { display: inline-flex; align-items: center; gap: calc(.6 * var(--vu)); }
 .dkclock { margin-left: calc(1 * var(--vu)); letter-spacing: .02em; }
 
-.dkrow { position: absolute; left: 0; top: 19vh; display: flex; align-items: flex-start; gap: calc(.25 * var(--vu)); transform: translateX(calc(calc(21.8 * var(--vu)) - var(--i, 0) * calc(10.85 * var(--vu)))); transition: transform .3s cubic-bezier(.2, .8, .2, 1); }
-.dkt { position: relative; flex: 0 0 calc(10.6 * var(--vu)); width: calc(10.6 * var(--vu)); padding: 0; border: 3px solid transparent; background: none; color: #fff; font: inherit; text-align: left; cursor: pointer; margin: 0; box-sizing: content-box; transition: width .25s cubic-bezier(.2, .8, .2, 1), flex-basis .25s cubic-bezier(.2, .8, .2, 1); margin-left: -3px; margin-right: -3px; }
-.dka { position: relative; display: block; width: 100%; height: calc(10.6 * var(--vu)); overflow: hidden; background: linear-gradient(135deg, #3d5fb8, #1d3a86); transition: height .25s cubic-bezier(.2, .8, .2, 1); }
+.dkrow { position: absolute; left: 0; top: 19vh; display: flex; align-items: flex-start; gap: calc(.25 * var(--vu)); transform: translateX(calc(calc(21.8 * var(--vu)) - var(--i, 0) * calc(8.85 * var(--vu)))); transition: transform .3s cubic-bezier(.2, .8, .2, 1); }
+.dkt { position: relative; flex: 0 0 calc(8.6 * var(--vu)); width: calc(8.6 * var(--vu)); padding: 0; border: 3px solid transparent; background: none; color: #fff; font: inherit; text-align: left; cursor: pointer; margin: 0; box-sizing: content-box; transition: width .25s cubic-bezier(.2, .8, .2, 1), flex-basis .25s cubic-bezier(.2, .8, .2, 1); margin-left: -3px; margin-right: -3px; }
+.dka { position: relative; display: block; width: 100%; height: calc(11.5 * var(--vu)); overflow: hidden; background: linear-gradient(135deg, #3d5fb8, #1d3a86); transition: height .25s cubic-bezier(.2, .8, .2, 1); }
 .dka > i { position: absolute; inset: 0; display: grid; place-items: center; font-style: normal; font-size: 7vh; color: rgba(255, 255, 255, .4); }
 .dka img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .dka.fn { display: grid; place-items: center; background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 55%, #fff 8%), color-mix(in srgb, var(--bg) 80%, #000 20%)); }
 .dka.fn svg { width: 46%; height: 46%; color: #fff; }
-.dkb { display: none; height: calc(3.9 * var(--vu)); align-items: center; justify-content: center; background: #1948b8; font-size: 2.6vh; }
+.dkb { display: none; height: calc(3.4 * var(--vu)); align-items: center; justify-content: center; background: #1948b8; font-size: 2.6vh; }
 .dkn { position: absolute; left: calc(100% + calc(1.2 * var(--vu))); bottom: calc(.2 * var(--vu)); opacity: 0; max-width: calc(52 * var(--vu)); font-size: 5.4vh; font-weight: 300; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 2px 10px rgba(0, 0, 0, .3); transition: opacity .2s; }
-.dkt.sel { flex-basis: calc(17.9 * var(--vu)); width: calc(17.9 * var(--vu)); border-color: rgba(255, 255, 255, .95); z-index: 3; margin-top: calc(-.15 * var(--vu)); }
-.dkt.sel .dka { height: calc(17.9 * var(--vu)); } .dkt.sel .dkb { display: flex; } .dkt.sel .dkn { opacity: 1; }
+.dkt.sel { flex-basis: calc(12.4 * var(--vu)); width: calc(12.4 * var(--vu)); border-color: rgba(255, 255, 255, .95); z-index: 3; margin-top: calc(-.15 * var(--vu)); }
+.dkt.sel .dka { height: calc(16.5 * var(--vu)); } .dkt.sel .dkb { display: flex; } .dkt.sel .dkn { opacity: 1; }
 .dkt:focus-visible { outline: none; }
 
 
-.dkinfo { position: absolute; left: calc(21.8 * var(--vu)); top: 62vh; width: calc(62 * var(--vu)); font-size: 2.4vh; font-weight: 300; }
+.dkinfo { position: absolute; left: calc(21.8 * var(--vu)); top: 60vh; width: calc(62 * var(--vu)); font-size: 2.4vh; font-weight: 300; }
 .dkh { font-size: 2.7vh; padding-bottom: .9vh; border-bottom: 1px solid rgba(255, 255, 255, .3); margin: 1.6vh 0 1.4vh; } .dkh:first-child { margin-top: 0; }
 .dkline { opacity: .85; padding-left: calc(2 * var(--vu)); }
 .dkach { padding-left: calc(2 * var(--vu)); margin-bottom: 1vh; }

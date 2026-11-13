@@ -56,8 +56,8 @@ const heroSrc = (it) => it.hero ? toURL(it.hero) : steamId(it) ? `https://cdn.ak
 function artHTML(it, extra = '', wide = false) {
   const [a, b] = cols(it.name);
   const isIco = it.category === 'app' && !it.art && !it.cover && it.icon && !wide;
-  const src = isIco ? toURL(it.icon) : wide ? heroSrc(it) : it.cover ? toURL(it.cover) : it.art ? toURL(it.art) : it.appid ? `https://cdn.akamai.steamstatic.com/steam/apps/${it.appid}/library_600x900_2x.jpg` : '';
-  return `<div class="art${isIco ? ' ico' : ''}" style="--ta:${a};--tb:${b}"><span class="glyph">${esc((it.name[0] || '?').toUpperCase())}</span>${src ? `<img src="${esc(src)}" alt="" loading="lazy">` : ''}${extra}</div>`;
+  const src = isIco ? toURL(it.icon) : wide ? heroSrc(it) : it.cover ? toURL(it.cover) : it.art ? toURL(it.art) : '';
+  return `<div class="art${isIco ? ' ico' : ''}" style="--ta:${a};--tb:${b}"><span class="glyph">${esc((it.name[0] || '?').toUpperCase())}</span>${!src ? '' : isIco || wide ? `<img src="${esc(src)}" alt="" loading="lazy">` : `<img class="cvbg" src="${esc(src)}" alt="" aria-hidden="true" loading="lazy"><img class="cv" src="${esc(src)}" alt="" loading="lazy">`}${extra}</div>`;
 }
 function tile(it, o = {}) {
   const [a, b] = cols(it.name);
@@ -308,7 +308,7 @@ function settings() {
     row('IGDB client ID', 'Free: dev.twitch.tv, register an app. Best descriptions, scores, screenshots.', `<input class="keyin" data-set="igdbId" value="${esc(s.igdbId || '')}" placeholder="Client ID" autocomplete="off">`) +
     row('IGDB client secret', 'From the same Twitch app page.', `<input class="keyin" type="password" data-set="igdbSecret" value="${esc(s.igdbSecret || '')}" placeholder="Client secret" autocomplete="off">`) +
     row('RAWG key', 'Free at rawg.io/apidocs: descriptions, genres, release year.', `<input class="keyin" data-set="rawgKey" value="${esc(s.rawgKey || '')}" placeholder="Paste key" autocomplete="off">`) +
-    row('SteamGridDB key', 'Free in your steamgriddb.com profile: best cover art.', `<input class="keyin" data-set="sgdbKey" value="${esc(s.sgdbKey || '')}" placeholder="Paste key" autocomplete="off">`) +
+    row('TheGamesDB key', 'Free key from thegamesdb.net (cover art). Covers also come from LaunchBox and Wikipedia without a key.', `<input class="keyin" data-set="tgdbKey" value="${esc(s.tgdbKey || '')}" placeholder="Paste key" autocomplete="off">`) +
     row('Use as my Windows shell', s.shellMode ? 'On: after you sign in, Hollywood Arcade replaces the desktop and taskbar. Power menu has "Windows desktop" and a restore file was saved next to the exe.' : 'Replaces the Windows desktop and taskbar for your account, like a console. Windows stays underneath so every game still works. Easy to undo.', s.shellMode ? `<button class="btn" data-act="shell-off">Turn off</button>` : `<button class="btn ${shellArm ? 'primary' : ''}" data-act="shell-on">${shellArm ? 'Tap again to confirm' : 'Turn on'}</button>`) +
     emuSettings() + `<p class="hint" style="margin-top:18px">Controller (PS5 or Xbox): D-pad or left stick moves, \u2715/A opens, \u25cb/B goes back, \u25a1/X shows game info, \u25b3/Y edits, L1/R1 switch sections, L2/R2 change song, Options plays or pauses, Create opens Power, the touchpad (held), L3+R3 (held) or the PS button opens the Guide, right stick scrolls. Press Ctrl+Alt+H on a keyboard to open the music and volume panel over a game.</p>`;
 }
@@ -1195,7 +1195,7 @@ async function fetchInfo(it) {
   if (it.category === 'app') return fetchAppInfo(it);
   const s = S.settings;
   const r = await fetch('/api/metadata', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: it.id, name: it.name, appid: steamId(it), rawgKey: s.rawgKey || '', sgdbKey: s.sgdbKey || '', igdbId: s.igdbId || '', igdbSecret: s.igdbSecret || '', rom: it.rom || '' }) }).then(x => x.json()).catch(() => null);
+    body: JSON.stringify({ id: it.id, name: it.name, appid: steamId(it), rawgKey: s.rawgKey || '', sgdbKey: '', igdbId: s.igdbId || '', igdbSecret: s.igdbSecret || '', tgdbKey: s.tgdbKey || '', rom: it.rom || '' }) }).then(x => x.json()).catch(() => null);
   if (!r) return false;
   it.metaAt = Date.now(); it.metaV = 5; it.metaLog = (r.meta && r.meta.log) || [];
   if (!r.ok) return false;
@@ -1231,7 +1231,7 @@ function openInfo(id) {
   const [a, b] = cols(it.name);
   const isApp = it.category === 'app';
   $('#gcover').classList.toggle('ico', isApp && !it.cover && !it.art && !!it.icon);
-  const src = isApp && !it.cover && !it.art && it.icon ? toURL(it.icon) : it.cover ? toURL(it.cover) : it.art ? toURL(it.art) : steamId(it) ? `https://cdn.akamai.steamstatic.com/steam/apps/${steamId(it)}/library_600x900_2x.jpg` : '';
+  const src = isApp && !it.cover && !it.art && it.icon ? toURL(it.icon) : it.cover ? toURL(it.cover) : it.art ? toURL(it.art) : '';
   $('#gcover').style.background = `linear-gradient(135deg, ${a}, ${b})`;
   $('#gcover').innerHTML = esc((it.name[0] || '?').toUpperCase()) + (src ? `<img src="${esc(src)}" alt="">` : '');
   $('#gname').textContent = it.name;
@@ -1254,9 +1254,9 @@ let coverFor = null;
 $('#gcovers').addEventListener('click', async () => {
   const it = S.items.find(i => i.id === infoId); if (!it) return;
   coverFor = it; const s = S.settings;
-  $('#cgrid').innerHTML = ''; $('#cstatus').textContent = 'Looking through Steam, Epic, GOG, Wikipedia' + (s.sgdbKey || s.igdbId || s.rawgKey ? ' and your keyed sources' : '') + '\u2026';
+  $('#cgrid').innerHTML = ''; $('#cstatus').textContent = 'Looking through LaunchBox, Wikipedia' + (s.tgdbKey ? ' and TheGamesDB' : '') + '\u2026';
   if (!cdlg.open) cdlg.showModal();
-  const r = await fetch('/api/covers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: it.name, appid: steamId(it), rom: it.rom || '', rawgKey: s.rawgKey || '', sgdbKey: s.sgdbKey || '', igdbId: s.igdbId || '', igdbSecret: s.igdbSecret || '' }) }).then(x => x.json()).catch(() => null);
+  const r = await fetch('/api/covers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: it.name, appid: steamId(it), rom: it.rom || '', tgdbKey: s.tgdbKey || '' }) }).then(x => x.json()).catch(() => null);
   if (coverFor !== it) return;
   const list = (r && r.covers) || [];
   $('#cstatus').textContent = list.length ? 'Pick the one you like. Tall pictures look best.' : (r ? 'Nothing found for this name. Use your own picture, or rename the game to its store title.' : "Couldn't search. Check your internet.");

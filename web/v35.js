@@ -6,16 +6,22 @@
 let bld = 'games', bpan = 0, bPrev = '', ntab = 'home', nOnTile = false, nPrev = '';
 const is360 = () => uiStyle() === 'x360', is360n = () => uiStyle() === 'x360n';
 const attrsOf = (e) => e.style ? `data-v33="style" data-v="${e.style}"` : e.act ? `data-act="${e.act}"${e.id ? ` data-id="${esc(e.id)}"` : ''}` : `data-act="goto" data-v="${e.v}"${e.plug ? ` data-plug="${esc(e.plug)}"` : ''}`;
-const coverOf = (it) => { const isIco = it.category === 'app' && !it.art && !it.cover && it.icon; return isIco ? '' : it.cover ? toURL(it.cover) : it.art ? toURL(it.art) : it.appid ? `https://cdn.akamai.steamstatic.com/steam/apps/${it.appid}/library_600x900_2x.jpg` : ''; };
+const coverOf = (it) => { const isIco = it.category === 'app' && !it.art && !it.cover && it.icon; return isIco ? '' : it.cover ? toURL(it.cover) : it.art ? toURL(it.art) : ''; };
 
 // Artwork that fits: landscape art (hero) fills a wide tile; a tall cover is shown whole over a blurred copy of itself instead of being cropped.
-function artImgHTML(it, wide) {
-  const sid = (typeof steamId === 'function') ? steamId(it) : '';
-  const land = it.hero ? toURL(it.hero) : sid ? `https://cdn.akamai.steamstatic.com/steam/apps/${sid}/library_hero.jpg` : (it.shots && it.shots[0]) ? toURL(it.shots[0]) : '';
-  if (wide && land) return `<img class="hr" src="${esc(land)}" alt="" loading="lazy">`;
+function artImgHTML(it) {
   const c = coverOf(it); if (!c) return '';
-  return `<img class="cv" src="${esc(c)}" alt="" loading="lazy">`;   // a cover fills the tile from the top, never letterboxed
+  return `<img class="cvbg" src="${esc(c)}" alt="" aria-hidden="true" loading="lazy"><img class="cv" src="${esc(c)}" alt="" loading="lazy">`;   // the whole cover, with a soft blurred copy behind it
 }
+// a made-up cover for games with no art: a colour from the name, the title and where it is from
+function phHTML(it) {
+  const [a, b] = typeof cols === 'function' ? cols(it.name) : ['#4a6fd0', '#27408f'];
+  const src = it.category === 'app' ? '' : String(it.source || '').replace(/^./, (c) => c.toUpperCase());
+  return `<span class="ph" data-l="${esc((it.name[0] || '?').toUpperCase())}" style="--ta:${a};--tb:${b}"><b>${esc(it.name)}</b>${src ? `<small>${esc(src)}</small>` : ''}</span>`;
+}
+// if a cover picture fails to load, fall back to the made-up cover
+document.addEventListener('error', (e) => { const im = e.target; if (im instanceof HTMLImageElement && (im.classList.contains('cv') || im.classList.contains('cvbg'))) { const p = im.closest('.hc'); if (p) p.classList.remove('hc'); im.remove(); } }, true);
+
 const logoSVG = '<svg class="x3logo" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="50"/><g><rect x="25" y="20" width="12" height="60" rx="3"/><rect x="63" y="20" width="12" height="60" rx="3"/><rect x="33" y="44" width="34" height="12"/></g></svg>';
 
 // ================= 2005 blades =================
@@ -31,7 +37,7 @@ function bPanelHTML(e, i) {
     return `<button class="bc profile" data-i="${i}" ${attrsOf(e)}><span class="bpf"><b class="bn">${esc(name)}</b><span class="bsc">${sc.toLocaleString()} <i>★</i></span><small>Latest games</small><span class="bth">${last.map(g => xmbThumb(g)).join('')}</span><b class="bsi">Signed in</b><small>Hollywood Arcade</small></span></button>`;
   }
   const src = e.it ? coverOf(e.it) : '';
-  const body = e.it ? `<span class="bcv"><b>${esc((e.it.name[0] || '?').toUpperCase())}</b>${artImgHTML(e.it, true)}</span>` : `<span class="bic">${xsvg(e.ic)}</span>`;
+  const body = e.it ? `<span class="bcv${coverOf(e.it) ? ' hc' : ''}">${phHTML(e.it)}${artImgHTML(e.it)}</span>` : `<span class="bic">${xsvg(e.ic)}</span>`;
   return `<button class="bc" data-i="${i}" ${attrsOf(e)}>${body}<span class="bcl"><b>${esc(e.label)}</b>${e.sub ? `<small>${esc(e.sub)}</small>` : ''}</span></button>`;
 }
 function bHome() {
@@ -64,7 +70,7 @@ function bSelectBlade(id) {
 // ================= 2011 tiles =================
 function nCover(e, cls, big) {
   const src = e.it ? coverOf(e.it) : '';
-  if (e.it) return `<button class="nti cv ${cls}" ${attrsOf(e)}><i class="nlt">${esc((e.it.name[0] || '?').toUpperCase())}</i>${artImgHTML(e.it, true)}<span class="nl"><b>${esc(e.label)}</b>${e.sub ? `<small>${esc(e.sub)}</small>` : ''}</span></button>`;
+  if (e.it) return `<button class="nti cv${coverOf(e.it) ? ' hc' : ''} ${cls}" ${attrsOf(e)}>${phHTML(e.it)}${artImgHTML(e.it)}<span class="nl"><b>${esc(e.label)}</b>${e.sub ? `<small>${esc(e.sub)}</small>` : ''}</span></button>`;
   return `<button class="nti gr ${cls}" ${attrsOf(e)}><span class="ng">${xsvg(e.ic)}</span><span class="nl"><b>${esc(e.label)}</b>${e.sub ? `<small>${esc(e.sub)}</small>` : ''}</span></button>`;
 }
 function nTabs() { return [{ id: 'home', label: 'home' }, ...xmbCats().map(c => ({ id: c.id, label: c.label.toLowerCase() }))]; }
