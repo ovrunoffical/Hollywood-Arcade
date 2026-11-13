@@ -1,0 +1,84 @@
+/* Interface style: PS3-style cross menu (look-alike, our own icons and artwork). Only applies with body.ui-xmb.
+   The background colour setting is the base colour; the accent colour tints the ribbons and the highlight. */
+
+#xmbbg { display: none; }
+body.ui-xmb {
+  --xfont: 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --xsoft: color-mix(in srgb, #fff 82%, var(--xhi) 18%);
+  background: var(--bg);
+  font-family: var(--xfont);
+}
+body.ui-xmb #xmbbg { display: block; position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  background:
+    radial-gradient(ellipse 70% 60% at 82% 6%, color-mix(in srgb, #fff 24%, transparent), transparent 65%),
+    radial-gradient(ellipse 90% 70% at 10% 105%, color-mix(in srgb, #000 40%, transparent), transparent 70%),
+    linear-gradient(160deg, color-mix(in srgb, var(--bg) 78%, #fff 22%), var(--bg) 55%, color-mix(in srgb, var(--bg) 70%, #000 30%)); }
+.stars { position: absolute; inset: 0; opacity: .8;
+  background-image: radial-gradient(1.5px 1.5px at 8% 62%, #fff, transparent), radial-gradient(1px 1px at 17% 71%, #fff, transparent), radial-gradient(1.5px 1.5px at 26% 58%, #fff, transparent), radial-gradient(1px 1px at 37% 66%, #fff, transparent), radial-gradient(2px 2px at 48% 59%, #fff, transparent), radial-gradient(1px 1px at 58% 70%, #fff, transparent), radial-gradient(1.5px 1.5px at 69% 63%, #fff, transparent), radial-gradient(1px 1px at 78% 72%, #fff, transparent), radial-gradient(1.5px 1.5px at 88% 66%, #fff, transparent), radial-gradient(1px 1px at 94% 60%, #fff, transparent), radial-gradient(1px 1px at 12% 45%, #fff, transparent), radial-gradient(1.5px 1.5px at 72% 30%, #fff, transparent), radial-gradient(1px 1px at 33% 24%, #fff, transparent);
+  animation: xtwinkle 7s ease-in-out infinite alternate; }
+@keyframes xtwinkle { from { opacity: .35; } to { opacity: .9; } }
+.rib { transform-origin: 50% 58%; position: absolute; inset: 0; width: 100%; height: 100%; filter: blur(1.5px) drop-shadow(0 0 14px color-mix(in srgb, var(--xhi) 45%, #fff)); mix-blend-mode: screen; animation: xwave 16s ease-in-out infinite alternate; }
+.rib.r2 { animation-duration: 22s; animation-direction: alternate-reverse; }
+.rib.r3 { animation-duration: 29s; }
+@keyframes xwave { from { transform: translate(-3%, 8px) scaleY(.5); } to { transform: translate(3%, -22px) scaleY(.66); } }
+
+body.ui-xmb .mesh, body.ui-xmb #homebg { display: none !important; }
+body.ui-xmb .shell, body.ui-xmb .player { position: relative; z-index: 1; }
+body.ui-xmb .player { position: fixed; z-index: 5; border-radius: 0; background: color-mix(in srgb, var(--bg) 70%, transparent); border: 0; border-top: 1px solid rgba(255, 255, 255, .22); backdrop-filter: blur(10px); }
+body.ui-xmb .side { display: none !important; }
+body.ui-xmb .shell { grid-template-columns: 1fr; }
+body.ui-xmb .stage { padding-left: 4vw; padding-right: 4vw; }
+body.ui-xmb.onhome main { padding: 0; }
+
+/* ---------- the cross ---------- */
+.xmb { position: fixed; inset: 0 0 96px 0; z-index: 2; font-family: var(--xfont); color: #fff; overflow: hidden; --cw: 11vw; }
+.xmb-stat { position: absolute; top: 6.5vh; right: 0; width: 34vw; height: 5.4vh; min-height: 40px; display: flex; align-items: center; justify-content: space-between; gap: 1.5vw; padding: 0 2vw; border: 2px solid rgba(255, 255, 255, .38); border-right: 0; border-radius: 4px 0 0 4px; background: linear-gradient(180deg, rgba(255, 255, 255, .2), rgba(255, 255, 255, .06)); font-size: clamp(14px, 2.2vh, 22px); text-shadow: 0 0 8px rgba(255, 255, 255, .6); }
+.xs-who { opacity: .85; font-size: .8em; } .xs-clock { margin-left: auto; letter-spacing: .04em; }
+
+.xmb-cats { position: absolute; top: 24vh; left: 0; display: flex; transform: translateX(calc(30vw - (var(--sel) + .5) * var(--cw))); transition: transform .38s cubic-bezier(.2, .8, .2, 1); }
+.xmc { flex: 0 0 var(--cw); width: var(--cw); height: 17vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 1.2vh; background: none; border: 0; color: #fff; font: inherit; cursor: pointer; padding: 0; opacity: .55; transition: opacity .3s, transform .3s; }
+.xci { display: grid; place-items: center; width: 7.5vh; height: 7.5vh; filter: drop-shadow(0 0 8px rgba(255, 255, 255, .35)); transition: transform .3s; color: var(--xsoft); }
+.xci svg { width: 100%; height: 100%; }
+.xcl { font-size: clamp(14px, 2.1vh, 21px); opacity: 0; transition: opacity .3s; text-shadow: 0 0 8px rgba(255, 255, 255, .7); white-space: nowrap; }
+.xmc.sel { opacity: 1; } .xmc.sel .xci { transform: scale(1.35); filter: drop-shadow(0 0 16px rgba(255, 255, 255, .7)); } .xmc.sel .xcl { opacity: 1; }
+.xmc:focus-visible, .xmi:focus-visible { outline: none; box-shadow: none; }
+
+.xmb-clip { position: absolute; left: 0; right: 0; top: 36vh; bottom: 0; overflow: hidden; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 7%, #000 88%, transparent 100%); mask-image: linear-gradient(180deg, transparent 0, #000 7%, #000 88%, transparent 100%); }
+.xmb-items { --g: 9.4vh; position: absolute; left: calc(30vw - 4.5vh); top: 0; width: 60vw; transform: translateY(calc(10vh - var(--cur) * var(--g))); transition: transform .3s cubic-bezier(.2, .8, .2, 1); }
+.xmb-items.swap { animation: xswap .35s ease both; }
+@keyframes xswap { from { opacity: 0; } to { opacity: 1; } }
+.xmi { display: flex; align-items: center; gap: 2.2vw; width: 100%; height: var(--g); background: none; border: 0; color: #fff; font: inherit; text-align: left; cursor: pointer; padding: 0; opacity: .6; transition: opacity .25s; }
+.xmi.cur { opacity: 1; }
+.xmi.cur ~ .xmi { transform: translateY(3.6vh); }
+.xmi { transition: opacity .25s, transform .3s; }
+.xmi:not(.cur) .xic { transform: scale(.72); }
+.xic { flex: 0 0 9vh; width: 9vh; height: 9vh; display: grid; place-items: center; color: var(--xsoft); filter: drop-shadow(0 0 8px rgba(255, 255, 255, .3)); transition: transform .3s; position: relative; }
+.xic svg { width: 78%; height: 78%; }
+.xic.thumb { border-radius: 10px; overflow: hidden; background: linear-gradient(135deg, rgba(255, 255, 255, .3), rgba(255, 255, 255, .08)); box-shadow: 0 0 0 2px rgba(255, 255, 255, .35); }
+.xic.thumb b { font-size: 3.4vh; opacity: .8; }
+.xic.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.xic.thumb.ico img { object-fit: contain; padding: 12%; }
+.xmi.cur .xic { transform: scale(1.12); }
+.xtx { display: flex; flex-direction: column; min-width: 0; }
+.xtx b { font-weight: 400; font-size: clamp(16px, 2.7vh, 28px); text-shadow: 0 0 10px rgba(255, 255, 255, .5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xtx small { font-size: clamp(12px, 1.9vh, 19px); opacity: .85; height: 0; overflow: hidden; transition: height .2s; }
+.xmi.cur .xtx small { height: 2.6vh; }
+.xmi.cur .xtx b { text-shadow: 0 0 14px rgba(255, 255, 255, .9); }
+
+/* ---------- every other screen ---------- */
+body.ui-xmb .og-head { display: flex; align-items: center; gap: 24px; margin: 6px 0 22px; font-family: var(--xfont); }
+body.ui-xmb .ogback { height: 40px; padding: 0 22px; border: 1px solid rgba(255, 255, 255, .45); border-radius: 20px; background: rgba(255, 255, 255, .14); color: #fff; font: 400 15px var(--xfont); cursor: pointer; clip-path: none; isolation: auto; }
+body.ui-xmb .ogback::before { display: none; }
+body.ui-xmb .ogback:hover, body.ui-xmb .ogback:focus { background: rgba(255, 255, 255, .85); color: #1b1b2b; }
+body.ui-xmb .og-ttl { font-size: clamp(24px, 3.6vh, 36px); font-weight: 300; letter-spacing: .02em; text-transform: none; color: #fff; text-shadow: 0 0 14px rgba(255, 255, 255, .6); }
+body.ui-xmb .ogo { display: none; }
+body.ui-xmb #main > h1.title { display: none; }
+body.ui-xmb .xtitle, body.ui-xmb .mixh { font-family: var(--xfont); font-weight: 300; letter-spacing: .02em; text-shadow: 0 0 10px rgba(255, 255, 255, .45); }
+body.ui-xmb .tile .art { border-radius: 8px; }
+body.ui-xmb .tile:hover .art, body.ui-xmb .tile:focus-visible .art { box-shadow: 0 0 0 3px #fff, 0 0 30px rgba(255, 255, 255, .55), 0 18px 34px rgba(0, 0, 0, .4); }
+body.ui-xmb .btn, body.ui-xmb .chip { border-radius: 18px; background: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .4); color: #fff; }
+body.ui-xmb .btn.primary, body.ui-xmb .chip.on { background: rgba(255, 255, 255, .88); color: #1b1b2b; }
+body.ui-xmb .setting, body.ui-xmb .plrow, body.ui-xmb .lp { background: rgba(255, 255, 255, .09); border-color: rgba(255, 255, 255, .25); }
+
+@media (prefers-reduced-motion: reduce) { .rib, .stars, .xmb-cats, .xmb-items, .xmc, .xmi { animation: none; transition: none; } }
+body.ui-alt .player { left: 16px !important; }

@@ -5,7 +5,8 @@
 //   arcade : the current layout
 //   og     : the green orb menu of the original Xbox, with the Arcade logo in the middle
 
-const UI_STYLES = [['arcade', 'Arcade'], ['og', 'Original Xbox']];
+const UI_STYLES = [['arcade', 'Arcade'], ['og', 'Original Xbox'], ['xmb', 'PS3 (XMB)']];
+const STYLE_BG = { og: '#0a140c', xmb: '#2b2358' };
 const uiStyle = () => ((S.settings && S.settings.uiStyle) || 'arcade');
 const UI_TITLES = { games: 'Games', apps: 'Apps', store: 'Store', watch: 'Watch', ach: 'Achievements', music: 'Music', discord: 'Discord', settings: 'Settings', app: 'App', plug: 'Plugin' };
 let ogLast = 'games'; // the entry you came from, so coming back lands on it
@@ -47,10 +48,13 @@ function ogHead() {
   render = function () {
     const r = _r.apply(this, arguments);
     try {
-      const og = uiStyle() === 'og';
+      const st = uiStyle(), og = st === 'og';
       document.body.classList.toggle('ui-og', og);
-      if (og) {
+      document.body.classList.toggle('ui-xmb', st === 'xmb');
+      document.body.classList.toggle('ui-alt', st !== 'arcade');
+      if (st !== 'arcade') {
         if (view === 'home') {
+          if (!og) return r;
           const last = document.querySelector('.ogi.last') || document.querySelector('.ogi');
           if (last && (padOn || document.activeElement === document.body || !document.activeElement || !document.activeElement.isConnected)) last.focus({ preventScroll: true });
         } else {
@@ -66,7 +70,7 @@ function ogHead() {
 
 // Back goes to the menu (B on the controller, Esc on the keyboard)
 document.addEventListener('keydown', (e) => {
-  if (uiStyle() !== 'og' || e.key !== 'Escape') return;
+  if (uiStyle() === 'arcade' || e.key !== 'Escape') return;
   if (document.querySelector('dialog[open]') || /INPUT|SELECT|TEXTAREA/.test(document.activeElement ? document.activeElement.tagName : '')) return;
   if (view !== 'home') { view = 'home'; render(); }
 }, true);
@@ -81,11 +85,13 @@ function styleRow() {
 
 function setStyle(k) {
   const t = (S.settings.theme = S.settings.theme || {});
-  if (k === 'og' && (!t.bg || t.bg === '#0f0f0f')) { t.bg = '#0a140c'; t.ogBg = 1; }          // a deep green to start with
-  if (k !== 'og' && t.ogBg && t.bg === '#0a140c') { t.bg = '#0f0f0f'; delete t.ogBg; }          // and back again, unless you changed it
+  const auto = Object.values(STYLE_BG);
+  if (!t.bg || t.bg === '#0f0f0f' || (t.styleBg && auto.includes(t.bg))) {   // only swap the background if you haven't picked your own
+    if (STYLE_BG[k]) { t.bg = STYLE_BG[k]; t.styleBg = 1; } else { t.bg = '#0f0f0f'; delete t.styleBg; }
+  }
   S.settings.uiStyle = k;
-  save(); view = k === 'og' ? 'home' : view; render();
-  toast(k === 'og' ? 'Original Xbox style. Press B or Esc to go back to the menu.' : 'Arcade style');
+  save(); view = k !== 'arcade' ? 'home' : view; render();
+  toast(k === 'og' ? 'Original Xbox style. Press B or Esc to go back to the menu.' : k === 'xmb' ? 'PS3 style. Left and right change category, up and down pick, B goes back.' : 'Arcade style');
 }
 document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-v33="style"]'); if (!b) return;
