@@ -15,17 +15,17 @@ body.ui-nsw #main > h1.title { display: none; }
 .nsme canvas, .nsme svg { width: 100%; height: 100%; display: block; }
 .nsme:focus-visible { outline: none; box-shadow: 0 0 0 .5vh var(--xg); }
 .nsclock { position: absolute; right: 4.4vw; top: 5.6vh; font-size: 3.4vh; font-weight: 600; letter-spacing: .04em; }
-.nstitle { position: absolute; left: 7.8vw; top: 15.6vh; max-width: 80vw; font-size: 3.6vh; color: var(--xg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nsrow { position: absolute; left: 0; top: 22vh; display: flex; gap: 1.2vw; transform: translateX(calc(7.8vw - var(--j, 0) * 21.2vw)); transition: transform .3s cubic-bezier(.2, .8, .2, 1); }
-.nst { position: relative; flex: 0 0 20vw; width: 20vw; height: 20vw; padding: 0; border: 0; background: none; cursor: pointer; }
+.nstitle { position: absolute; left: 7.8vw; top: 14.4vh; max-width: 80vw; font-size: 3.6vh; color: var(--xg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nsrow { position: absolute; left: 0; top: 21vh; display: flex; gap: 1.2vw; transform: translateX(calc(7.8vw - var(--j, 0) * (25vh + 1.2vw))); transition: transform .3s cubic-bezier(.2, .8, .2, 1); }
+.nst { position: relative; flex: 0 0 25vh; width: 25vh; height: 37.5vh; padding: 0; border: 0; background: none; cursor: pointer; }
 .nsa { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(135deg, #c9ced6, #aab1bb); box-shadow: 0 .4vh 1.4vh rgba(0, 0, 0, .18); }
 .nsa > i { position: absolute; inset: 0; display: grid; place-items: center; font-style: normal; font-size: 9vh; color: rgba(255, 255, 255, .7); }
-.nsa img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.nsa img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; }
 .nsa.fn { display: grid; place-items: center; } .nsa.fn svg { width: 40%; height: 40%; color: #fff; }
 .nst.sel::after, .nst:focus-visible::after { content: ''; position: absolute; inset: -1.2vh; border: .6vh solid var(--xg); box-shadow: inset 0 0 0 .5vh var(--bg); pointer-events: none; animation: nsring 1.4s ease-in-out infinite alternate; }
 .nst:focus-visible { outline: none; }
 @keyframes nsring { from { border-color: var(--xg); } to { border-color: var(--xhi); } }
-.nsrnd { position: absolute; left: 0; right: 0; top: 66vh; display: flex; justify-content: center; gap: 2.4vw; }
+.nsrnd { position: absolute; left: 0; right: 0; top: 67vh; display: flex; justify-content: center; gap: 2.4vw; }
 .nsr { width: 10vh; height: 10vh; border-radius: 50%; border: .4vh solid transparent; background: #fff; color: var(--c); display: grid; place-items: center; cursor: pointer; box-shadow: 0 .3vh 1vh rgba(0, 0, 0, .2); padding: 0; transition: transform .15s; }
 .nsr svg { width: 46%; height: 46%; }
 .nsr:hover, .nsr:focus-visible { outline: none; border-color: var(--xg); transform: scale(1.08); box-shadow: 0 0 0 .5vh var(--bg), 0 0 0 1vh var(--xg); }

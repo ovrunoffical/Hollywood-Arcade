@@ -751,3 +751,22 @@ main { padding-bottom: 150px; }
 .sshots { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px; }
 .sshots img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: rgba(255, 255, 255, .06); }
 dialog#sdlg { width: min(760px, 94vw); max-height: 92vh; overflow: auto; }
+
+/* the floating controller hints are gone: see Settings -> Controls */
+#padhints { display: none !important; }
+.ctlsheet { border: 1px solid var(--line); border-radius: var(--tr, 2px); overflow: hidden; margin-bottom: 18px; }
+.ctlh, .ctlr { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 12px; padding: 10px 16px; align-items: center; }
+.ctlh { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); background: var(--glass); }
+.ctlr { border-top: 1px solid var(--line); font-size: 14px; } .ctlr b { font-weight: 500; }
+.ctlr kbd { font: inherit; font-size: 13px; padding: 2px 9px; border-radius: 4px; background: var(--glass-strong); border: 1px solid var(--line); display: inline-block; }
+
+/* color wheel */
+.cwbox { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; justify-content: center; margin: 10px 0 4px; }
+.cwwheel { position: relative; width: 250px; height: 250px; border-radius: 50%; cursor: crosshair; touch-action: none; background: radial-gradient(circle closest-side, #fff, rgba(255, 255, 255, 0)), conic-gradient(from 90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); }
+.cwwheel i { position: absolute; inset: 0; border-radius: 50%; background: #000; opacity: 0; pointer-events: none; }
+.cwwheel b { position: absolute; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px rgba(0, 0, 0, .5); pointer-events: none; }
+.cwside { display: grid; gap: 10px; min-width: 230px; } .cwside label { display: grid; gap: 4px; font-size: 13px; color: var(--dim); }
+.cwside input[type=range] { width: 100%; } .cwside input:not([type=range]) { height: 36px; padding: 0 10px; font-family: monospace; }
+.cwsw { height: 44px; border-radius: var(--tr, 4px); border: 2px solid rgba(255, 255, 255, .4); }
+.cwbtn { display: inline-flex; align-items: center; gap: 8px; }
+.cwico { width: 18px; height: 18px; border-radius: 50%; background: conic-gradient(#f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); display: inline-block; }
