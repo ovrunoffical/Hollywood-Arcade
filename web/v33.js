@@ -19,7 +19,7 @@ function ogEntries() {
   e.push({ v: 'games', label: 'Games' }, { v: 'apps', label: 'Apps' }, { v: 'store', label: 'Store' }, { v: 'watch', label: 'Watch' },
     { v: 'music', label: 'Music' }, { v: 'discord', label: 'Discord' },
     ...Object.keys(typeof PLUG !== 'undefined' ? PLUG.pages : {}).map(id => ({ v: 'plug', plug: id, label: PLUG.pages[id].title })),
-    { act: 'gsearch', label: 'Search' }, { act: 'looks', label: 'Change look' }, { v: 'settings', label: 'Settings' }, { act: 'power-menu', label: 'Power' });
+    { act: 'gsearch', label: 'Search' }, { act: 'looks', label: 'Change look' }, { v: 'profile', label: 'Profile' }, { v: 'settings', label: 'Settings' }, { act: 'power-menu', label: 'Power' });
   return e;
 }
 

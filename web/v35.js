@@ -52,7 +52,7 @@ function bHome() {
     <nav class="bl" aria-label="Blades">${cats.map((c, i) => `<button class="bli${i === si ? ' sel' : ''}${i > si ? ' aft' : ''}" tabindex="-1" data-i="${i}" data-cat="${esc(c.id)}" style="--k:${i - si}">${esc(c.label)}</button>`).join('')}</nav>
     <div class="bcards" id="bcards" style="--p:${bpan}">${pans.map(bPanelHTML).join('')}</div>
     <div class="bav${bld === 'games' && bpan === 0 ? ' show' : ''}">${typeof avatarSVG === 'function' ? avatarSVG() : ''}</div>
-    <div class="bhint"><i>A</i> Select<i>B</i> Back</div>${typeof avatarSVG === 'function' ? avatarSVG(null, 'x3pf', true) : logoSVG}
+    <div class="bhint"><i>A</i> Select<i>B</i> Back<i>L3</i> Profile</div>${typeof avatarSVG === 'function' ? avatarSVG(null, 'x3pf', true) : logoSVG}
   </div>`;
 }
 function bSync() {
@@ -113,7 +113,7 @@ function nHome() {
     <nav class="ntabs" aria-label="Tabs">${tabs.map(t => `<button class="nt${t.id === ntab ? ' sel' : ''}" data-tab="${esc(t.id)}">${esc(t.label)}</button>`).join('')}</nav>
     <button class="nsearch" data-act="gsearch" aria-label="Search"><svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">${XI.search}</svg></button>
     <div class="npane ${ntab === 'home' ? 'is-home' : 'is-list'}" id="npane">${nPane(ntab)}</div>
-    <div class="nhint"><i>A</i> Select<i>B</i> Back</div>
+    <div class="nhint"><i>A</i> Select<i>B</i> Back<i>L3</i> Profile</div>
   </div>`;
 }
 // the tab highlight follows instantly; the pane below is rebuilt once the selection settles, so holding left/right stays smooth

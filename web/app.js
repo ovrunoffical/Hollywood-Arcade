@@ -833,6 +833,7 @@ document.addEventListener('visibilitychange', () => { padResync = true; });
     once(7, () => (playMode === 'system' || tracks.length) && nextTrack());
     once(8, () => { padReturn = document.activeElement; openPower(); });
     once(9, togglePlay);
+    once(10, () => { if (!dlg() && view !== 'profile') { view = 'profile'; render(); } });   // left stick press: your profile
     const ry = st.ry;
     if (Math.abs(ry) > .25) { any = true; (dlg() || $('#main')).scrollBy(0, ry * 22); }
     if (any) { setPadMode(true); padLast = now; }
