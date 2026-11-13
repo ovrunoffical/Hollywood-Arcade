@@ -16,6 +16,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -99,6 +100,11 @@ func findBrowser() string {
 		c = append(c,
 			filepath.Join(base, "Microsoft", "Edge", "Application", "msedge.exe"),
 			filepath.Join(base, "Google", "Chrome", "Application", "chrome.exe"))
+	}
+	if runtime.GOOS == "darwin" {
+		for _, n := range []string{"Microsoft Edge", "Google Chrome", "Brave Browser", "Chromium"} {
+			c = append(c, "/Applications/"+n+".app/Contents/MacOS/"+n)
+		}
 	}
 	for _, p := range c {
 		if _, err := os.Stat(p); err == nil {
