@@ -1,0 +1,18 @@
+/* Hollywood Arcade 3.2: size scale for tiles and metadata in the new interface styles */
+body.ui-alt .tile { container-type: inline-size; }
+body.ui-alt .tile .cap b { font-size: clamp(12px, 8.6cqw, 28px); line-height: 1.2; }
+body.ui-alt .tile .cap small { font-size: clamp(12px, 6.8cqw, 20px); }
+body.ui-alt .tile .glyph { font-size: 34cqw; }
+body.ui-alt .tile.app .glyph { font-size: 36cqw; }
+body.ui-alt .tile .badge { font-size: clamp(10px, 6cqw, 16px); }
+body.ui-alt .tile .info { width: clamp(22px, 15cqw, 38px); height: clamp(22px, 15cqw, 38px); font-size: clamp(13px, 8cqw, 20px); }
+body.ui-alt .tile.game .cap { padding: 14cqw 6cqw 5cqw; }
+body.ui-alt .tile.game:not(:has(.art img)) .cap { padding: 6cqw; }
+/* Orb screens: keep small text readable on short windows */
+.ox-chips span { font-size: max(12px, 1.75vh); }
+.ox-tb { font-size: max(12px, 1.7vh); }
+.ox-row small { font-size: max(12px, 1.6vh); }
+.ox-btns .btn { font-size: max(12px, 1.8vh); }
+.ox-let { font-size: min(15vh, 110px); }
+/* horizontal layout units: follow a 16:9 stage so ultrawide and tall windows keep their proportions */
+:root { --vu: min(1vw, 1.7778vh); }

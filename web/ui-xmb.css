@@ -27,15 +27,15 @@ body.ui-xmb .shell, body.ui-xmb .player { position: relative; z-index: 1; }
 body.ui-xmb .player { position: fixed; z-index: 5; border-radius: 0; background: color-mix(in srgb, var(--bg) 70%, transparent); border: 0; border-top: 1px solid rgba(255, 255, 255, .22); backdrop-filter: blur(10px); }
 body.ui-xmb .side { display: none !important; }
 body.ui-xmb .shell { grid-template-columns: 1fr; }
-body.ui-xmb .stage { padding-left: 4vw; padding-right: 4vw; }
+body.ui-xmb .stage { padding-left: calc(4 * var(--vu)); padding-right: calc(4 * var(--vu)); }
 body.ui-xmb.onhome main { padding: 0; }
 
 /* ---------- the cross ---------- */
-.xmb { position: fixed; inset: 0 0 96px 0; z-index: 2; font-family: var(--xfont); color: #fff; overflow: hidden; --cw: 11vw; }
-.xmb-stat { position: absolute; top: 6.5vh; right: 0; width: 34vw; height: 5.4vh; min-height: 40px; display: flex; align-items: center; justify-content: space-between; gap: 1.5vw; padding: 0 2vw; border: 2px solid rgba(255, 255, 255, .38); border-right: 0; border-radius: 4px 0 0 4px; background: linear-gradient(180deg, rgba(255, 255, 255, .2), rgba(255, 255, 255, .06)); font-size: clamp(14px, 2.2vh, 22px); text-shadow: 0 0 8px rgba(255, 255, 255, .6); }
+.xmb { position: fixed; inset: 0 0 96px 0; z-index: 2; font-family: var(--xfont); color: #fff; overflow: hidden; --cw: calc(11 * var(--vu)); }
+.xmb-stat { position: absolute; top: 6.5vh; right: 0; width: calc(34 * var(--vu)); height: 5.4vh; min-height: 40px; display: flex; align-items: center; justify-content: space-between; gap: calc(1.5 * var(--vu)); padding: 0 calc(2 * var(--vu)); border: 2px solid rgba(255, 255, 255, .38); border-right: 0; border-radius: 4px 0 0 4px; background: linear-gradient(180deg, rgba(255, 255, 255, .2), rgba(255, 255, 255, .06)); font-size: clamp(14px, 2.2vh, 22px); text-shadow: 0 0 8px rgba(255, 255, 255, .6); }
 .xs-who { opacity: .85; font-size: .8em; } .xs-clock { margin-left: auto; letter-spacing: .04em; }
 
-.xmb-cats { position: absolute; top: 24vh; left: 0; display: flex; transform: translateX(calc(30vw - (var(--sel) + .5) * var(--cw))); transition: transform .38s cubic-bezier(.2, .8, .2, 1); }
+.xmb-cats { position: absolute; top: 24vh; left: 0; display: flex; transform: translateX(calc(calc(30 * var(--vu)) - (var(--sel) + .5) * var(--cw))); transition: transform .38s cubic-bezier(.2, .8, .2, 1); }
 .xmc { flex: 0 0 var(--cw); width: var(--cw); height: 17vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 1.2vh; background: none; border: 0; color: #fff; font: inherit; cursor: pointer; padding: 0; opacity: .55; transition: opacity .3s, transform .3s; }
 .xci { display: grid; place-items: center; width: 7.5vh; height: 7.5vh; filter: drop-shadow(0 0 8px rgba(255, 255, 255, .35)); transition: transform .3s; color: var(--xsoft); }
 .xci svg { width: 100%; height: 100%; }
@@ -44,10 +44,10 @@ body.ui-xmb.onhome main { padding: 0; }
 .xmc:focus-visible, .xmi:focus-visible { outline: none; box-shadow: none; }
 
 .xmb-clip { position: absolute; left: 0; right: 0; top: 36vh; bottom: 0; overflow: hidden; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 7%, #000 88%, transparent 100%); mask-image: linear-gradient(180deg, transparent 0, #000 7%, #000 88%, transparent 100%); }
-.xmb-items { --g: 9.4vh; position: absolute; left: calc(30vw - 4.5vh); top: 0; width: 60vw; transform: translateY(calc(10vh - var(--cur) * var(--g))); transition: transform .3s cubic-bezier(.2, .8, .2, 1); }
+.xmb-items { --g: 9.4vh; position: absolute; left: calc(calc(30 * var(--vu)) - 4.5vh); top: 0; width: calc(60 * var(--vu)); transform: translateY(calc(10vh - var(--cur) * var(--g))); transition: transform .3s cubic-bezier(.2, .8, .2, 1); }
 .xmb-items.swap { animation: xswap .35s ease both; }
 @keyframes xswap { from { opacity: 0; } to { opacity: 1; } }
-.xmi { display: flex; align-items: center; gap: 2.2vw; width: 100%; height: var(--g); background: none; border: 0; color: #fff; font: inherit; text-align: left; cursor: pointer; padding: 0; opacity: .6; transition: opacity .25s; }
+.xmi { display: flex; align-items: center; gap: calc(2.2 * var(--vu)); width: 100%; height: var(--g); background: none; border: 0; color: #fff; font: inherit; text-align: left; cursor: pointer; padding: 0; opacity: .6; transition: opacity .25s; }
 .xmi.cur { opacity: 1; }
 .xmi.cur ~ .xmi { transform: translateY(3.6vh); }
 .xmi { transition: opacity .25s, transform .3s; }
