@@ -19,7 +19,7 @@ function ogEntries() {
   e.push({ v: 'games', label: 'Games' }, { v: 'apps', label: 'Apps' }, { v: 'store', label: 'Store' }, { v: 'watch', label: 'Watch' },
     { v: 'ach', label: 'Achievements' }, { v: 'music', label: 'Music' }, { v: 'discord', label: 'Discord' },
     ...Object.keys(typeof PLUG !== 'undefined' ? PLUG.pages : {}).map(id => ({ v: 'plug', plug: id, label: PLUG.pages[id].title })),
-    { act: 'gsearch', label: 'Search' }, { v: 'settings', label: 'Settings' }, { act: 'power-menu', label: 'Power' });
+    { act: 'gsearch', label: 'Search' }, { act: 'looks', label: 'Change look' }, { v: 'settings', label: 'Settings' }, { act: 'power-menu', label: 'Power' });
   return e;
 }
 
@@ -84,7 +84,7 @@ document.addEventListener('keydown', (e) => {
 // ---- Settings: choose the style ----
 function styleRow() {
   const cur = uiStyle();
-  return '<div class="mixh">Style</div><div class="setting"><div><b>Interface style</b><small>How Arcade looks and how you move around it. Your accent and background colours still apply.</small></div><div class="ctl">' +
+  return '<div class="mixh">Style</div><div class="setting"><div><b>Interface style</b><small>How Arcade looks and how you move around it. Each look keeps its own colours.</small></div><div class="ctl">' +
     UI_STYLES.map(([k, n]) => `<button class="chip ${cur === k ? 'on' : ''}" data-v33="style" data-v="${k}">${n}</button>`).join('') + '</div></div>';
 }
 { const _sv = v2Settings; v2Settings = function () { return styleRow() + _sv(); }; }

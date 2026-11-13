@@ -43,7 +43,7 @@ function deckHome() {
   const btn = (attrs, svg, label) => `<button class="dkq" ${attrs} aria-label="${label}"><svg viewBox="0 0 24 24" fill="currentColor" width="26" height="26">${svg}</svg></button>`;
   return `<div class="deck" style="--i:${dk}">
     <div class="dktop">
-      <span class="dkl">${btn('data-act="gsearch"', XI.search, 'Search')}${btn('data-v22="notes"', '<path d="M12 22a2.400 2.400 0 0 0 2.400-2.400h-4.800A2.400 2.400 0 0 0 12 22zm7-6.400V11a7 7 0 0 0-5.500-6.800V3.500a1.500 1.500 0 0 0-3 0v.7A7 7 0 0 0 5 11v4.600l-2 2v1h18v-1z"/>', 'Notifications')}${btn('data-act="gsettings"', XI.settings, 'Settings')}${btn('data-act="power-menu"', XI.power, 'Power')}</span>
+      <span class="dkl">${btn('data-act="gsearch"', XI.search, 'Search')}${btn('data-act="looks"', XI.style || XI.settings || XI.search, 'Change look')}${btn('data-v22="notes"', '<path d="M12 22a2.400 2.400 0 0 0 2.400-2.400h-4.800A2.400 2.400 0 0 0 12 22zm7-6.400V11a7 7 0 0 0-5.500-6.800V3.500a1.500 1.500 0 0 0-3 0v.7A7 7 0 0 0 5 11v4.600l-2 2v1h18v-1z"/>', 'Notifications')}${btn('data-act="gsettings"', XI.settings, 'Settings')}${btn('data-act="power-menu"', XI.power, 'Power')}</span>
       <button class="dkq dkme" data-act="goto" data-v="ach">${avatarSVG(null, 'dkav', true)}<span>${esc(name)}</span></button>
       <span class="dksc"><svg viewBox="0 0 24 24" fill="currentColor" width="26" height="26">${XI.ach}</svg> ${sc.toLocaleString()}</span>
       <span class="dkclock" id="xclock">${clockText()}</span>

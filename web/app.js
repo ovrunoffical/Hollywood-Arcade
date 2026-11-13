@@ -574,6 +574,7 @@ document.addEventListener('click', async (e) => {
     const act = el.dataset.act;
     if (act === 'guide') return document.body.classList.toggle('guide');
     if (act === 'goto') { view = el.dataset.v; appFrame = null; render(); $('#main').scrollTop = 0; return; }
+    if (act === 'looks') return typeof v45Looks === 'function' ? v45Looks() : undefined;
     if (act === 'gsearch') { view = 'games'; render(); $('#q').focus(); return; }
     if (act === 'gsettings') { view = 'settings'; render(); return; }
     if (act === 'sttab') { storeTab = el.dataset.k; storeQ = ''; storeSort = ''; return render(); }

@@ -59,6 +59,7 @@ function xmbItems(cid) {
   else if (cid.startsWith('plug:')) out.push({ v: 'plug', plug: cid.slice(5), label: 'Open ' + ((PLUG.pages[cid.slice(5)] || {}).title || 'plugin'), ic: 'plug' });
   else if (cid === 'settings') {
     out.push(open('settings', 'Settings', 'Everything about Arcade', 'settings'));
+    out.push({ act: 'looks', label: 'Change look', sub: 'Pick how Arcade looks', ic: 'style' });
     for (const [k, n] of UI_STYLES) out.push({ style: k, label: 'Style: ' + n, sub: uiStyle() === k ? 'In use' : 'Switch to this look', ic: 'style' });
     out.push({ act: 'gsearch', label: 'Search', sub: 'Find a game', ic: 'search' }, { act: 'power-menu', label: 'Power', sub: 'Sleep, restart, shut down', ic: 'power' });
   }

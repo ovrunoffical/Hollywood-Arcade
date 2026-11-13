@@ -75,3 +75,22 @@ img.ic { position: absolute; left: 16%; top: 16%; width: 68%; height: 68%; objec
 
 /* Blades: your profile picture sits where the logo was */
 .blades .x3pf { position: absolute !important; right: calc(6.5 * var(--vu)); bottom: 4.6vh; width: 10vh; height: 10vh; border-radius: 50%; background: var(--xg); box-shadow: 0 .6vh 1.4vh rgba(0, 0, 0, .35); overflow: hidden; }
+
+/* v45: picture badges + Change look picker */
+.bpic { display: grid; place-items: center; border-radius: 50%; object-fit: cover; color: #fff; font-weight: 700; overflow: hidden; padding: 0 !important; box-sizing: border-box; }
+.bpic.pinit { font-size: 3vh; }
+.nwho .nav.bpic { width: 6vh; height: 6vh; border-radius: 50%; }
+.dkav.bpic { width: 5vh; height: 5vh; }
+.nsme .bpic { width: 100%; height: 100%; }
+.blades .x3pf.bpic { object-fit: cover; }
+.bpicp { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; display: inline-grid; place-items: center; }
+.lookgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 10px; }
+.lookc { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; text-align: left; padding: 10px; border-radius: 10px; background: rgba(255,255,255,.06); border: 2px solid transparent; color: inherit; font: inherit; cursor: pointer; }
+.lookc:focus-visible, .lookc:hover { border-color: var(--xhi, #fff); outline: none; }
+.lookc.on { border-color: var(--xg); }
+.lookc i { display: block; width: 100%; height: 56px; border-radius: 6px; position: relative; box-shadow: inset 0 0 0 1px rgba(255,255,255,.15); }
+.lookc u { position: absolute; left: 8px; bottom: 8px; width: 38%; height: 8px; border-radius: 4px; }
+.lookc small { opacity: .7; font-size: 12px; }
+.shelf .nslook { position: absolute; left: 10vh; top: 3.4vh; font: inherit; font-size: 1.8vh; padding: .8vh 1.6vh; border-radius: 2vh; border: 0; background: rgba(0,0,0,.08); color: inherit; cursor: pointer; }
+.shelf .nslook:focus-visible, .shelf .nslook:hover { background: var(--xg); color: #fff; outline: none; }
+@media (max-width: 800px) { .lookgrid { grid-template-columns: repeat(2, 1fr); } }

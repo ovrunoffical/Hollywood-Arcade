@@ -29,6 +29,7 @@ function shelfHome() {
   const name = typeof v21Name === 'function' ? v21Name() : 'Hollywood';
   return `<div class="shelf" style="--j:${Math.max(0, ns - 2)}">
     <button class="nsme" data-act="goto" data-v="ach" aria-label="${esc(name)}">${avatarSVG(null, 'nsav', true)}</button>
+    <button class="nslook" data-act="looks" aria-label="Change look">Change look</button>
     <span class="nsclock" id="xclock">${clockText()}</span>
     <div class="nstitle" id="nstitle">${esc(es[ns].label)}</div>
     <div class="nsrow" id="nsrow">${es.map(nsTile).join('')}</div>
