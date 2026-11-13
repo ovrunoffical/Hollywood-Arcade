@@ -1,7 +1,7 @@
 // v45: profile picture or avatar for the small badges, profile screen tabs, each look keeps its own colours, and the "Change look" picker
 (function () {
   'use strict';
-  const BADGE = /\b(nav|dkav|nsav|x3pf)\b/;
+  const BADGE = /\b(nav|dkav|nsav|x3pf|ogav)\b/;
   const badgePic = () => !!(S.settings && S.settings.badge === 'pic' && typeof curProfile === 'function' && curProfile());
 
   // ---- badge: avatar (default) or profile picture in the corner badges; the full-body avatar on Blades stays
@@ -38,17 +38,19 @@
 
   // ---- Change look: one picker for all seven looks, usable with the controller
   const LOOKS = { arcade: 'Classic grid', og: 'Glowing orb menu', xmb: 'Flowing categories', x360: 'Side-by-side blades', x360n: 'Big live tiles', ps4: 'One row of tiles', nsw: 'A clean shelf' };
-  window.v45Looks = function () {
+  window.v45LooksGrid = function (attrs) {
     const st = S.settings.styleTheme || {}, cur = uiStyle();
-    const card = ([k, n]) => {
-      const th = k === cur ? (S.settings.theme || {}) : (st[k] || defaults(k)), ac = (th.ac && th.ac[0]) || (th.acHex) || ACCENTS[ACC[k] || 0][1][0];
-      return `<button type="button" class="lookc${k === cur ? ' on' : ''}" data-v33="style" data-v="${k}"><i style="background:${th.bg || '#0f0f0f'}"><u style="background:${ac}"></u></i><b>${n}</b><small>${LOOKS[k]}</small></button>`;
-    };
-    v21show(`<h2>Change look</h2><p class="hint">Each look remembers its own colours.</p><div class="lookgrid">${UI_STYLES.map(card).join('')}</div>`, [{ label: 'Close' }], true);
+    return '<div class="lookgrid">' + UI_STYLES.map(([k, n]) => {
+      const th = k === cur ? (S.settings.theme || {}) : (st[k] || defaults(k)), ac = (th.ac && th.ac[0]) || th.acHex || ACCENTS[ACC[k] || 0][1][0];
+      return `<button type="button" class="lookc${k === cur ? ' on' : ''}" ${attrs} data-v="${k}"><i style="background:${th.bg || '#0f0f0f'}"><u style="background:${ac}"></u></i><b>${n}</b><small>${LOOKS[k]}</small></button>`;
+    }).join('') + '</div>';
+  };
+  window.v45Looks = function () {
+    v21show(`<h2>Change look</h2><p class="hint">Each look remembers its own colours.</p>${v45LooksGrid('data-v33="style"')}`, [{ label: 'Close' }], true);
   };
   document.addEventListener('click', (e) => {
     const c = e.target.closest('.lookc'); if (c && typeof v21dlg !== 'undefined' && v21dlg.open) v21dlg.close();
-    if (e.target.closest('.x3pf, .nwho')) { view = 'profile'; render(); return; }
+    if (e.target.closest('.x3pf, .nwho, .ogav')) { view = 'profile'; render(); return; }
     const b = e.target.closest('[data-v45]'); if (!b) return;
     e.stopPropagation();
     if (b.dataset.v45 === 'ptab') { profTab = b.dataset.v; render(); }
@@ -58,4 +60,14 @@
   }, true);
   // after the picture dialog closes, redraw so badges update
   if (typeof v21dlg !== 'undefined') v21dlg.addEventListener('close', () => { if (S.settings.badge === 'pic') { try { render(); } catch { /* ignore */ } } });
+
+  // ---- sounds for everything you can do: moving, scrolling, changing pages, launching, errors, switching look
+  let last = {};
+  const snd = (n, gap) => { const t = Date.now(); if (window.__guideOpen || t - (last[n] || 0) < gap) return; last[n] = t; try { SFX.play(n); } catch { /* ignore */ } };
+  const wrap = (name, sound, gap) => { const f = window[name]; if (typeof f !== 'function') return; window[name] = function () { snd(sound, gap); return f.apply(this, arguments); }; };
+  wrap('move', 'tick', 60); wrap('padSection', 'page', 120); wrap('nSelectTab', 'page', 120); { const f = setStyle; setStyle = function (k) { if (k !== uiStyle()) snd('swap', 400); return f.apply(this, arguments); }; }
+  document.addEventListener('scroll', () => snd('scroll', 90), true);
+  document.addEventListener('wheel', () => snd('scroll', 90), { capture: true, passive: true });
+  document.addEventListener('click', (e) => { const a = e.target.closest('[data-act="play"], [data-act="resume"]'); if (a) snd('launch', 600); }, true);
+  const _t = window.toast; window.toast = function (m) { if (/could not|couldn.t|failed|error|no .* found|not found/i.test(String(m))) snd('error', 300); return _t.apply(this, arguments); };
 })();

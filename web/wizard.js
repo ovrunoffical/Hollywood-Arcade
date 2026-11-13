@@ -1,6 +1,6 @@
 // Hollywood Arcade 2.2: the first-run setup, rebuilt as a guided tour. Replaces the steps in v2.js.
 const W = { pad: null, detected: '', timer: null, done: false };
-const wizSteps = ['Welcome', 'You', 'Controller', 'Games', 'Achievements', 'Look and sound', 'Watch', 'Privacy', 'Ready'];
+const wizSteps = ['Welcome', 'You', 'Controller', 'Games', 'Achievements', 'Pick your look', 'Colours and sound', 'Watch', 'Privacy', 'Ready'];
 const wizPadTip = {
   ps: 'In a game, hold <b>L3 + R3</b> (press both sticks in) in Steam games, or hold the <b>touchpad</b> in everything else, to open the Guide.',
   xbox: 'In any game, hold <b>L3 + R3</b> (press both sticks in) to open the Guide.',
@@ -36,7 +36,9 @@ WIZ.push(
     <div class="wizf"><label>Steam ID <small>(your Steam profile’s Game details must be Public)</small><input class="keyin" id="wizsteam" placeholder="7656119…" value="${esc(s.steamId || '')}" autocomplete="off"></label>
     <label>RetroAchievements user <small>(for retro games)</small><input class="keyin" id="wizrau" value="${esc(s.raUser || '')}" autocomplete="off"></label>
     <label>RetroAchievements Web API key<input class="keyin" id="wizrak" type="password" value="${esc(s.raKey || '')}" autocomplete="off"></label></div>`; },
-  // 5 look and sound
+  // 5 pick your look
+  () => `${wizProg()}<h2>Pick your look</h2><p class="hint">Seven ways to see your games. Choose one now, and change it any time with the Look button at the bottom or in Settings.</p>${v45LooksGrid('data-wiz="look"')}`,
+  // 6 colours and sound
   () => { const t = S.settings.theme || {}, cur = (t.ac && t.ac[0]) || (!t.ac && !t.acHex ? ACCENTS[0][1][0] : ''), snd = sndCfg();
     return `${wizProg()}<h2>Make it yours</h2><p class="hint">Changes show straight away.</p>
     <div class="setting"><div><b>Accent colour</b></div><div class="ctl">${ACCENTS.map(([n, c], i) => `<button type="button" class="sw${cur === c[0] ? ' on' : ''}" style="--sw:${c[1]}" title="${n}" aria-label="${n}" data-wiz="acc" data-i="${i}"></button>`).join('')}</div></div>
@@ -121,6 +123,7 @@ wizd.addEventListener('click', (e) => {
   if (k === 'pad') wizPick(b.dataset.k);
   else if (k === 'color') { const p = curProfile(); if (p) { p.color = b.dataset.c; delete p.pic; } wizSaveStep(); wizDraw(); }
   else if (k === 'photo') { wizSaveStep(); v21pickPicture(); }
+  else if (k === 'look') { setStyle(b.dataset.v); wizDraw(); }
   else if (k === 'acc') { const t = (S.settings.theme = S.settings.theme || {}); t.ac = ACCENTS[+b.dataset.i][1]; delete t.acHex; applyTheme(); wizDraw(); }
   else if (k === 'bg') { const t = (S.settings.theme = S.settings.theme || {}); t.bg = b.dataset.v; applyTheme(); wizDraw(); }
   else if (k === 'round') { const t = (S.settings.theme = S.settings.theme || {}); t.round = b.dataset.v ? 1 : 0; applyTheme(); wizDraw(); }

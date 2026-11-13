@@ -179,7 +179,7 @@ async function v2boot() {
   maybeWizard();
   if (S.settings.autoScan && S.settings.setupDone && typeof runScanAll === 'function') setTimeout(() => runScanAll().catch(() => {}), 6000);
   if (S.settings.autoUpdate !== false) setTimeout(() => checkUpdate(false), 8000);
-  setTimeout(() => SFX.play('startup'), 700);
+  if (!document.getElementById('splash')) setTimeout(() => SFX.play('startup'), 400);
   fetch('/api/guidebind', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bind: S.settings.guideDefault && S.settings.guideDefault !== 'auto' ? S.settings.guideDefault : 'chord', ps: (S.settings.guidePs || 13) - 1, touch: (S.settings.guideTouch || 14) - 1 }) }).catch(() => {});
   pollRunning();
   if (S.settings.jellyfinKey) jfSend();

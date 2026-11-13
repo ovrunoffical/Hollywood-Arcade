@@ -31,11 +31,19 @@
     close() { whoosh(0.28, 2400, 450, 0.45); },
     achieve() { [784, 988, 1319].forEach((f, i) => blip(f, f * 1.005, 0.24, 'triangle', 0.2, i * 0.1)); blip(1976, 1976, 0.55, 'sine', 0.1, 0.34); },
     toast() { blip(1175, 1175, 0.08, 'sine', 0.2); blip(1568, 1568, 0.12, 'sine', 0.18, 0.09); },
+    scroll() { blip(980, 900, 0.03, 'sine', 0.09); },
+    page() { blip(700, 1050, 0.08, 'triangle', 0.16); blip(1050, 1400, 0.07, 'sine', 0.1, 0.05); },
+    launch() { whoosh(0.5, 300, 3200, 0.4); [523, 784, 1046].forEach((f, i) => blip(f, f * 1.01, 0.3, 'triangle', 0.16, i * 0.08)); },
+    error() { blip(300, 220, 0.14, 'square', 0.1); blip(240, 160, 0.2, 'square', 0.1, 0.12); },
+    swap() { whoosh(0.4, 700, 1800, 0.3); blip(660, 990, 0.14, 'sine', 0.14, 0.12); blip(990, 1480, 0.18, 'sine', 0.12, 0.2); },
+    thud(n) { blip(260 + (n || 0) * 22, 70, 0.2, 'sine', 0.38); blip(2200, 900, 0.025, 'square', 0.05); },
+    swell() { whoosh(1.1, 200, 3200, 0.32); },
+    logo() { [523, 659, 784, 1046].forEach((f, i) => blip(f, f * 1.004, 1.1 - i * 0.1, 'sine', 0.15, i * 0.02)); [2093, 2637, 3136].forEach((f, i) => blip(f, f, 0.5, 'sine', 0.05, 0.12 + i * 0.1)); },
     startup() { [523, 659, 784, 1046].forEach((f, i) => blip(f, f * 1.01, 0.5 - i * 0.04, 'sine', 0.16, i * 0.11)); whoosh(0.7, 300, 3000, 0.25); }
   };
   window.SFX = {
     config(c) { if (c) cfg = { on: c.on !== false, vol: typeof c.vol === 'number' ? c.vol : 0.6, theme: c.theme || 'classic' }; },
-    play(name) { if (!cfg.on || cfg.theme === 'off') return; try { S[name] && S[name](); } catch { /* audio not available */ } },
+    play(name, arg) { if (!cfg.on || cfg.theme === 'off') return; try { S[name] && S[name](arg); } catch { /* audio not available */ } },
     names: Object.keys(S)
   };
 

@@ -80,7 +80,7 @@ function xmbHome() {
   const name = typeof v21Name === 'function' ? v21Name() : 'Hollywood';
   const sc = typeof arcScore === 'function' ? arcScore() : 0;
   return `<div class="xmb" style="--n:${cats.length}">
-    <div class="xmb-stat"><span class="xs-who">${esc(name)}</span><span class="xs-sc">★ ${sc.toLocaleString()}</span><span class="xs-clock" id="xclock">${clockText()}</span></div>
+    <div class="xmb-stat"><span class="xs-who">${avatarSVG(null, 'ogav', true)}</span><span class="xs-who">${esc(name)}</span><span class="xs-sc">★ ${sc.toLocaleString()}</span><span class="xs-clock" id="xclock">${clockText()}</span></div>
     <nav class="xmb-cats" style="--sel:${si}" aria-label="Categories">${cats.map((c, i) => `<button class="xmc${i === si ? ' sel' : ''}" data-i="${i}" data-cat="${esc(c.id)}"><span class="xci">${xsvg(c.ic || c.id)}</span><span class="xcl">${esc(c.label)}</span></button>`).join('')}</nav>
     <div class="xmb-clip"><div class="xmb-items" id="xmbi" style="--cur:${xmbItem}">${items.map(xmbItemHTML).join('')}</div></div>
   </div>`;

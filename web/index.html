@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="ui-cover.css">
 </head>
 <body>
-<div id="splash" aria-hidden="true"><div class="spl-in"><div class="spl-h"><i class="l" style="grid-area:1/1;--d:0ms"></i><i class="l" style="grid-area:2/1;--d:70ms"></i><i class="l" style="grid-area:3/1;--d:140ms"></i><i class="l" style="grid-area:4/1;--d:210ms"></i><i class="l" style="grid-area:5/1;--d:280ms"></i><i class="r" style="grid-area:5/5;--d:120ms"></i><i class="r" style="grid-area:4/5;--d:190ms"></i><i class="r" style="grid-area:3/5;--d:260ms"></i><i class="r" style="grid-area:2/5;--d:330ms"></i><i class="r" style="grid-area:1/5;--d:400ms"></i><i class="m" style="grid-area:3/2;--d:520ms"></i><i class="m" style="grid-area:3/3;--d:610ms"></i><i class="m" style="grid-area:3/4;--d:700ms"></i></div><div class="spl-name"><b>HOLLYWOOD</b><span>ARCADE</span></div></div></div>
+<div id="splash" aria-hidden="true"><div class="spl-in"><div class="spl-h"><i class="l" style="grid-area:1/1;--d:0ms"></i><i class="l" style="grid-area:2/1;--d:110ms"></i><i class="l" style="grid-area:3/1;--d:220ms"></i><i class="l" style="grid-area:4/1;--d:330ms"></i><i class="l" style="grid-area:5/1;--d:440ms"></i><i class="r" style="grid-area:5/5;--d:620ms"></i><i class="r" style="grid-area:4/5;--d:730ms"></i><i class="r" style="grid-area:3/5;--d:840ms"></i><i class="r" style="grid-area:2/5;--d:950ms"></i><i class="r" style="grid-area:1/5;--d:1060ms"></i><i class="m" style="grid-area:3/2;--d:1240ms"></i><i class="m" style="grid-area:3/3;--d:1340ms"></i><i class="m" style="grid-area:3/4;--d:1440ms"></i></div><div class="spl-name"><b>HOLLYWOOD</b><span>ARCADE</span></div></div></div>
 <script>
 (function () {
   var s = document.getElementById('splash'), t0 = Date.now(), off = false;
@@ -33,7 +33,11 @@
   var done = false;
   function bye() { if (done) return; done = true; s.classList.add('out'); setTimeout(function () { s.remove(); }, 600); }
   ['keydown', 'pointerdown', 'gamepadconnected'].forEach(function (ev) { window.addEventListener(ev, bye, { once: true }); });
-  setTimeout(bye, 2300);
+  // sounds follow the blocks: one thud as each lands, a swell, then the chord when the name appears
+  var cue = function (n, a, ms) { setTimeout(function () { if (!done && window.SFX) SFX.play(n, a); }, ms); };
+  [0, 110, 220, 330, 440, 620, 730, 840, 950, 1060, 1240, 1340, 1440].forEach(function (d, i) { cue('thud', i, d + 340); });
+  cue('swell', 0, 1500); cue('logo', 0, 2150);
+  setTimeout(bye, 4300);
 })();
 </script>
 <div class="mesh"></div>

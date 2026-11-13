@@ -24,24 +24,6 @@ function ogEntries() {
 }
 
 const OG_SLOTS = [[22, 60, 16], [36, 28, 13], [50, 76, 13], [67, 32, 14], [79, 62, 16], [89, 27, 11], [11, 26, 11], [30, 86, 11], [70, 86, 11], [56, 12, 11], [91, 78, 10], [8, 80, 10]];
-function ogHome() {
-  const name = typeof v21Name === 'function' ? v21Name() : 'Hollywood';
-  const sc = typeof arcScore === 'function' ? arcScore() : 0;
-  const ents = ogEntries();
-  const item = (e, i) => {
-    const s = OG_SLOTS[i] || [10 + (i - OG_SLOTS.length) * 9, 94, 9];
-    return `<button class="ogi${e.v && e.v === ogLast ? ' last' : ''}" ${e.act ? `data-act="${e.act}"` : `data-act="goto" data-v="${e.v}"`}${e.plug ? ` data-plug="${esc(e.plug)}"` : ''} style="--x:${s[0]};--y:${s[1]};--s:${s[2]}vh;--i:${i};--f:${e.label.length > 9 ? .115 : e.label.length > 6 ? .15 : .17}"><i class="ogo"></i><span class="ogl"><span>${esc(e.label)}</span></span></button>`;
-  };
-  return `<div class="og">
-    <i class="og-strands" aria-hidden="true"></i>
-    <div class="og-top"><span class="og-who"><b>${esc(name)}</b> <em>★ ${sc.toLocaleString()}</em></span><span class="og-clock" id="xclock">${clockText()}</span></div>
-    <div class="og-orb" aria-hidden="true"><i class="p p1"></i><i class="p p2"></i><i class="p p3"></i><div class="og-core"></div><svg class="og-logo" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="50"/><g><rect x="25" y="20" width="12" height="60" rx="3"/><rect x="63" y="20" width="12" height="60" rx="3"/><rect x="33" y="44" width="34" height="12"/></g></svg></div>
-    <nav class="og-field" aria-label="Main menu">${ents.map(item).join('')}</nav>
-    <div class="og-foot"><span class="ogk">a</span> select <span class="ogk b">b</span> back</div>
-  </div>`;
-}
-
-{ const _h = home; home = function () { return uiStyle() === 'og' ? ogHome() : _h.apply(this, arguments); }; }
 
 // the page header on every other screen in this style
 function ogHead() {

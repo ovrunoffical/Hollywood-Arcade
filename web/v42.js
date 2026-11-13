@@ -13,7 +13,7 @@ function oxHome() {
   const it = (e, i) => `<button class="ox-it" data-i="${i}" data-d="${i - oxSel}" style="--i:${i}" ${e.act ? `data-act="${e.act}"` : `data-act="goto" data-v="${e.v}"`}${e.plug ? ` data-plug="${esc(e.plug)}"` : ''}><i class="ox-orb"></i><span class="ox-bar"><b>${esc(e.label)}</b></span></button>`;
   return `<div class="og ox" id="oxhome">
     <i class="og-strands" aria-hidden="true"></i>
-    <div class="og-top"><span class="og-who"><b>${esc(name)}</b> <em>★ ${sc.toLocaleString()}</em></span><span class="og-clock" id="xclock">${clockText()}</span></div>
+    <div class="og-top"><span class="og-who">${avatarSVG(null, 'ogav', true)}<b>${esc(name)}</b> <em>★ ${sc.toLocaleString()}</em></span><span class="og-clock" id="xclock">${clockText()}</span></div>
     <div class="og-orb ox-big" aria-hidden="true"><i class="p p1"></i><i class="p p2"></i><i class="p p3"></i><div class="og-core"></div><div class="ox-mark">${OX_H}</div></div>
     <nav class="ox-list" style="--sel:${oxSel}" aria-label="Main menu">${ents.map(it).join('')}</nav>
     <div class="og-foot"><span class="ogk">a</span> select <span class="ogk b">b</span> back</div>
