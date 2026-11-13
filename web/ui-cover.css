@@ -91,3 +91,31 @@ img.ic { position: absolute; left: 16%; top: 16%; width: 68%; height: 68%; objec
 .lookc u { position: absolute; left: 8px; bottom: 8px; width: 38%; height: 8px; border-radius: 4px; }
 .lookc small { opacity: .7; font-size: 12px; }
 @media (max-width: 800px) { .lookgrid { grid-template-columns: repeat(2, 1fr); } }
+
+/* profile screen: header, tabs, game list */
+.profile { margin: -6px 0 0; }
+.phead { display: flex; align-items: center; gap: 18px; padding: 18px 28px; border-radius: 8px 8px 0 0; background: color-mix(in srgb, var(--xg) 45%, #000); }
+.pav { width: 70px; height: 70px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: color-mix(in srgb, var(--xg) 60%, #fff 10%); flex: none; }
+.pav > * { width: 100%; height: 100%; object-fit: cover; }
+.pwho b { display: block; font-size: 22px; font-weight: 600; } .pwho small { opacity: .8; font-size: 16px; }
+.ptabs { display: flex; gap: 34px; margin: 0 auto; transform: translateX(-70px); }
+.ptab, .pside { background: none; border: 0; color: inherit; font: inherit; font-size: 19px; padding: 6px 2px; cursor: pointer; opacity: .85; border-bottom: 3px solid transparent; }
+.ptab.on { font-weight: 700; opacity: 1; border-bottom-color: var(--xhi); }
+.ptab:focus-visible, .pside:focus-visible, .prow:focus-visible, .ptab:hover, .pside:hover { outline: 2px solid var(--xhi); outline-offset: 2px; opacity: 1; }
+.pgame { display: grid; grid-template-columns: 240px 1fr; min-height: 420px; background: rgba(0,0,0,.28); border-radius: 0 0 8px 8px; }
+.pnav { display: flex; flex-direction: column; gap: 4px; padding: 20px 0; }
+.pside { text-align: left; padding: 12px 22px; border: 0; border-right: 4px solid transparent; font-size: 17px; }
+.pside.on { background: rgba(255,255,255,.08); border-right-color: var(--xg2); font-weight: 600; opacity: 1; }
+.plist { padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.prow { display: flex; align-items: stretch; gap: 16px; background: rgba(255,255,255,.07); border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; padding: 0; border-radius: 4px; overflow: hidden; }
+.pra { position: relative; width: 96px; height: 96px; flex: none; background: rgba(0,0,0,.3); }
+.pra img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.prm { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 8px; min-width: 0; }
+.prm b { font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prs { display: flex; gap: 28px; opacity: .85; font-size: 15px; }
+.pbar { display: block; height: 4px; background: rgba(255,255,255,.18); } .pbar u { display: block; height: 100%; background: var(--xg2); }
+.ppct { align-self: center; padding-right: 18px; font-size: 26px; font-weight: 600; }
+.pbody { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; padding: 18px 0 0; }
+.pcoming { padding: 80px 0; text-align: center; background: rgba(0,0,0,.28); border-radius: 0 0 8px 8px; }
+.pcoming h2 { font-size: 26px; margin: 0 0 8px; } .pcoming p { font-size: 20px; opacity: .7; margin: 0; }
+.profile .toolbar { margin: 0 0 4px; }

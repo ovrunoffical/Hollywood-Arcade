@@ -95,7 +95,7 @@ document.addEventListener('mouseover', homeHover);
 
 function home() {
   const games = S.items.filter(i => i.category === 'game'), apps = S.items.filter(i => i.category === 'app');
-  const head = `<div class="xhead"><button class="xprofile" data-act="guide" aria-label="Menu">${typeof v21Avatar === 'function' ? v21Avatar() : '<img src="logo.png" alt="">'}<span><b>${esc(typeof v21Name === 'function' ? v21Name() : 'Hollywood')}</b><small><i class="g">\u2605</i> ${typeof arcScore === 'function' ? arcScore().toLocaleString() : 0} \u00b7 ${games.length} games \u00b7 ${apps.length} apps</small></span></button>
+  const head = `<div class="xhead"><button class="xprofile" data-act="goto" data-v="profile" aria-label="Profile">${typeof v21Avatar === 'function' ? v21Avatar() : '<img src="logo.png" alt="">'}<span><b>${esc(typeof v21Name === 'function' ? v21Name() : 'Hollywood')}</b><small><i class="g">\u2605</i> ${typeof arcScore === 'function' ? arcScore().toLocaleString() : 0} \u00b7 ${games.length} games \u00b7 ${apps.length} apps</small></span></button>
     <div class="xright"><button class="xsearch" data-act="gsearch">${SVG.search}<span>Search</span></button><button class="xgear xbell" data-v22="notes" aria-label="Notifications" title="Notifications"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 22a2.4 2.4 0 0 0 2.4-2.4h-4.8A2.4 2.4 0 0 0 12 22zm7-6.4V11a7 7 0 0 0-5.5-6.8V3.5a1.5 1.5 0 0 0-3 0v.7A7 7 0 0 0 5 11v4.6l-2 2v1h18v-1z"/></svg><i></i></button><button class="xgear" data-act="gsettings" aria-label="Settings">${SVG.gear}</button><span class="xclock" id="xclock">${clockText()}</span></div></div>`;
   if (!S.items.length) return head + `<div class="welcome"><h2>Your games, apps and music in one place.</h2><p>Start by pulling in what's already installed.</p><div class="toolbar"><button class="btn primary" data-act="scanAll">Scan my games</button><button class="btn" data-act="startMenu">Import Game Pass / Start menu</button><button class="btn" data-act="add-game">Add a game</button></div></div>`;
   const played = S.items.filter(i => i.lastPlayed).sort((a, b) => b.lastPlayed - a.lastPlayed);
@@ -376,7 +376,7 @@ function appearance() {
 function render() {
   applyTheme();
   $$('.nav').forEach(n => n.classList.toggle('on', n.dataset.view === view));
-  $('#main').innerHTML = ({ home, games, apps, store, watch: watchView, ach: typeof achView === 'function' ? achView : home, music, settings, discord, app: appview, plug: typeof plugView === 'function' ? plugView : home })[view]();
+  $('#main').innerHTML = ({ home, games, apps, store, watch: watchView, profile: profileView, music, settings, discord, app: appview, plug: typeof plugView === 'function' ? plugView : home })[view]();
   document.body.classList.toggle('onhome', view === 'home');
   document.body.classList.remove('guide');
   const cnt = (k, n) => { const c = $('.cnt[data-c=' + k + ']'); if (c) c.textContent = n || ''; };
@@ -718,7 +718,7 @@ const PADS = {
   ps: { x: '\u2715', o: '\u25cb', sq: '\u25a1', tri: '\u25b3', l1: 'L1', r1: 'R1', l2: 'L2', r2: 'R2', menu: 'Options', view: 'Create', r3: 'R3' },
   xbox: { x: 'A', o: 'B', sq: 'X', tri: 'Y', l1: 'LB', r1: 'RB', l2: 'LT', r2: 'RT', menu: 'Menu', view: 'View', r3: 'RS' }
 };
-const VIEWS = ['home', 'games', 'apps', 'store', 'watch', 'ach', 'music', 'discord', 'settings'];
+const VIEWS = ['home', 'games', 'apps', 'store', 'watch', 'profile', 'music', 'discord', 'settings'];
 let padKind = 'xbox', padOn = false, padHeld = {}, padDir = null, padNext = 0, padHint = '';
 let padDlg = false;
 const setPadMode = (on) => { if (padOn !== on) { padOn = on; document.body.classList.toggle('pad', on); padHint = ''; try { const h = $('#padhints'); on ? h.showPopover() : h.hidePopover(); } catch { /* old browser: hints stay hidden */ } } };

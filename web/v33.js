@@ -8,7 +8,7 @@
 const UI_STYLES = [['arcade', 'Arcade'], ['og', 'Orb'], ['xmb', 'Waves'], ['x360', 'Blades'], ['x360n', 'Tiles'], ['ps4', 'Deck'], ['nsw', 'Shelf']];
 const STYLE_BG = { og: '#0a140c', xmb: '#2b2358', x360: '#2a1008', x360n: '#7b7b7b', ps4: '#0f3fa8', nsw: '#ebebeb' };
 const uiStyle = () => ((S.settings && S.settings.uiStyle) || 'arcade');
-const UI_TITLES = { games: 'Games', apps: 'Apps', store: 'Store', watch: 'Watch', ach: 'Achievements', music: 'Music', discord: 'Discord', settings: 'Settings', app: 'App', plug: 'Plugin' };
+const UI_TITLES = { games: 'Games', apps: 'Apps', store: 'Store', watch: 'Watch', profile: 'Profile', music: 'Music', discord: 'Discord', settings: 'Settings', app: 'App', plug: 'Plugin' };
 let ogLast = 'games'; // the entry you came from, so coming back lands on it
 
 // ---- Orb: the glowing orb menu ----
@@ -17,7 +17,7 @@ function ogEntries() {
   const run = window.__running;
   if (run && run.running) e.push({ act: 'resume', label: 'Resume ' + (run.name || 'game') });
   e.push({ v: 'games', label: 'Games' }, { v: 'apps', label: 'Apps' }, { v: 'store', label: 'Store' }, { v: 'watch', label: 'Watch' },
-    { v: 'ach', label: 'Achievements' }, { v: 'music', label: 'Music' }, { v: 'discord', label: 'Discord' },
+    { v: 'music', label: 'Music' }, { v: 'discord', label: 'Discord' },
     ...Object.keys(typeof PLUG !== 'undefined' ? PLUG.pages : {}).map(id => ({ v: 'plug', plug: id, label: PLUG.pages[id].title })),
     { act: 'gsearch', label: 'Search' }, { act: 'looks', label: 'Change look' }, { v: 'settings', label: 'Settings' }, { act: 'power-menu', label: 'Power' });
   return e;

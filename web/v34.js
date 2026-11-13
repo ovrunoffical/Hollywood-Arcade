@@ -22,7 +22,7 @@ const xsvg = (k, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidd
 
 function xmbCats() {
   const c = [{ id: 'games', label: 'Games' }, { id: 'apps', label: 'Apps' }, { id: 'store', label: 'Store' }, { id: 'watch', label: 'Watch' },
-    { id: 'ach', label: 'Achievements' }, { id: 'music', label: 'Music' }, { id: 'discord', label: 'Discord' }];
+    { id: 'music', label: 'Music' }, { id: 'discord', label: 'Discord' }];
   if (typeof PLUG !== 'undefined') for (const id of Object.keys(PLUG.pages)) c.push({ id: 'plug:' + id, label: PLUG.pages[id].title, ic: 'plug', plug: id });
   c.push({ id: 'settings', label: 'Settings' });
   return c;
@@ -53,7 +53,6 @@ function xmbItems(cid) {
     for (const s of S.items.filter(i => i.category === 'store')) out.push({ act: 'play', id: s.id, label: s.name, sub: 'Store', it: s });
   }
   else if (cid === 'watch') out.push(open('watch', 'Open Watch', 'Jellyfin, live TV and more', 'watch'));
-  else if (cid === 'ach') out.push(open('ach', 'Achievements', '★ ' + (typeof arcScore === 'function' ? arcScore().toLocaleString() : 0), 'ach'));
   else if (cid === 'music') out.push(open('music', 'Open Music', 'Now playing', 'music'));
   else if (cid === 'discord') out.push(open('discord', 'Open Discord', '', 'discord'));
   else if (cid.startsWith('plug:')) out.push({ v: 'plug', plug: cid.slice(5), label: 'Open ' + ((PLUG.pages[cid.slice(5)] || {}).title || 'plugin'), ic: 'plug' });

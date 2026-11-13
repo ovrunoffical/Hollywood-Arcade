@@ -30,7 +30,7 @@ const logoSVG = '<svg class="x3logo" viewBox="0 0 100 100" aria-hidden="true"><c
 // ================= 2005 blades =================
 function bPanels(cid) {
   const p = xmbItems(cid);
-  if (cid === 'games') p.unshift({ profile: true, v: 'ach', label: 'Profile' });
+  if (cid === 'games') p.unshift({ profile: true, v: 'profile', label: 'Profile' });
   return p;
 }
 function bPanelHTML(e, i) {
@@ -97,7 +97,7 @@ function nPane(tab) {
     const wideG = rest.find(x => logoOf(x));
     const shelf = rest.filter(x => x !== wideG).slice(0, 8).map(it => nCover({ act: 'play', id: it.id, label: it.name, sub: meta(it), it }, 'sh')).join('');
     return res + (shelf ? `<div class="nshelf">${shelf}</div>` : '') +
-      nCover({ v: 'ach', label: 'Achievements', ic: 'ach' }, 'p') + nCover({ v: 'store', label: 'Store', ic: 'store' }, 'q') +
+      nCover({ v: 'store', label: 'Store', ic: 'store' }, 'q') +
       nCover({ v: 'apps', label: 'Apps', ic: 'apps' }, 'r') + nCover({ v: 'watch', label: 'Watch', ic: 'watch' }, 'w') +
       (wideG ? nWide(wideG, 'g', meta(wideG)) : nCover({ v: 'games', label: 'Games', ic: 'games' }, 'g')) + nCover({ v: 'music', label: 'Music', ic: 'music' }, 'm');
   }

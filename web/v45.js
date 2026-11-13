@@ -1,4 +1,4 @@
-// v45: profile picture or avatar for the small badges, each look keeps its own colours, and the "Change look" picker
+// v45: profile picture or avatar for the small badges, profile screen tabs, each look keeps its own colours, and the "Change look" picker
 (function () {
   'use strict';
   const BADGE = /\b(nav|dkav|nsav|x3pf)\b/;
@@ -48,9 +48,12 @@
   };
   document.addEventListener('click', (e) => {
     const c = e.target.closest('.lookc'); if (c && typeof v21dlg !== 'undefined' && v21dlg.open) v21dlg.close();
+    if (e.target.closest('.x3pf, .nwho')) { view = 'profile'; render(); return; }
     const b = e.target.closest('[data-v45]'); if (!b) return;
     e.stopPropagation();
-    if (b.dataset.v45 === 'badge') { S.settings.badge = b.dataset.v === 'pic' ? 'pic' : 'av'; save(); render(); }
+    if (b.dataset.v45 === 'ptab') { profTab = b.dataset.v; render(); }
+    else if (b.dataset.v45 === 'pside') { profSide = b.dataset.v; render(); }
+    else if (b.dataset.v45 === 'badge') { S.settings.badge = b.dataset.v === 'pic' ? 'pic' : 'av'; save(); render(); }
     else if (b.dataset.v45 === 'pick') { S.settings.badge = 'pic'; save(); v21pickPicture(); }
   }, true);
   // after the picture dialog closes, redraw so badges update

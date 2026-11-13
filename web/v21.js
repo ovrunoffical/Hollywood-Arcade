@@ -133,7 +133,7 @@ function arcCheck(silent) {
   if (!fresh.length) return;
   save();
   if (!silent) { try { SFX.play('toast'); } catch { /* ignore */ } toast('\u{1F3C6} Achievement unlocked: ' + fresh.map(f => f[0] + ' (+' + f[1] + ')').join(', ')); }
-  if (view === 'ach') render();
+  if (view === 'profile') render();
 }
 function arcFlag(k) { const f = (S.settings.arcFlags = S.settings.arcFlags || {}); if (!f[k]) { f[k] = Date.now(); arcCheck(); } }
 function arcScore() {
@@ -194,18 +194,27 @@ function ring(u, t, size) {
   const p = t ? Math.round(u / t * 100) : 0;
   return `<span class="ring${p >= 100 ? ' full' : ''}" style="--p:${p};--s:${size || 54}px"><b>${p}%</b></span>`;
 }
-function achView() {
+let profTab = 'gaming', profSide = 'ach';
+function profileView() {
   const ag = achGames().sort((a, b) => (b.ach.u / b.ach.t) - (a.ach.u / a.ach.t) || b.ach.at - a.ach.at);
-  const unl = ag.reduce((n, i) => n + i.ach.u, 0), tot = ag.reduce((n, i) => n + i.ach.t, 0), done = ag.filter(i => i.ach.u >= i.ach.t).length;
-  const got = S.settings.arcAch || {}, s = S.settings, prof = curProfile();
-  const stat = (n, l) => `<div class="astat"><b>${n}</b><small>${l}</small></div>`;
-  let h = `<h1 class="title">Achievements${prof && (S.profiles || []).length > 1 ? ` <small class="hint">${esc(prof.name)}</small>` : ''}</h1><div class="astats">${stat(arcScore().toLocaleString(), 'Arcade score')}${stat(unl.toLocaleString() + (tot ? ' / ' + tot.toLocaleString() : ''), 'Game achievements')}${stat(done, 'Games completed')}${stat(ARC.filter(a => got[a[0]]).length + ' / ' + ARC.length, 'Arcade badges')}</div>`;
+  const unl = ag.reduce((n, i) => n + i.ach.u, 0), done = ag.filter(i => i.ach.u >= i.ach.t).length;
+  const got = S.settings.arcAch || {}, s = S.settings, prof = curProfile(), name = v21Name();
   const have = [s.steamId ? 'Steam' : '', s.raKey ? 'RetroAchievements' : '', s.xblKey ? 'Xbox' : ''].filter(Boolean);
-  h += `<div class="toolbar"><button class="btn primary" data-v21="ach-all">${ag.length ? 'Refresh all' : 'Find my achievements'}</button><button class="btn" data-act="gsettings">Set up accounts</button><span class="hint">${have.length ? 'Connected: ' + have.join(', ') + achAgo() : 'No accounts connected yet'}</span></div>`;
-  if (!ag.length) h += `<div class="welcome"><h2>Your trophy room</h2><p>Connect an account in Settings and press Find my achievements. Steam games work with just your Steam ID if your profile is public, retro games use a free RetroAchievements account, and Xbox titles use an OpenXBL key. Achievements for each game also show up in its info card.</p></div>`;
-  else h += '<h2 class="row-title">Your games</h2><div class="grid">' + ag.map(it => `<button class="tile game achg" data-v21="ach-open" data-id="${esc(it.id)}">${artHTML(it, ring(it.ach.u, it.ach.t))}<div class="cap"><b>${esc(it.name)}</b><small>${it.ach.u} / ${it.ach.t}${it.ach.p ? ' · ' + esc(it.ach.p) : ''}</small></div></button>`).join('') + '</div>';
-  h += '<h2 class="row-title">Arcade badges</h2><div class="abadges">' + ARC.map(([id, n, d, p]) => `<div class="abadge${got[id] ? ' on' : ''}"><span class="aico">${got[id] ? '\u{1F3C6}' : '\u{1F512}'}</span><div><b>${esc(n)}</b><small>${esc(d)}</small></div><em>${p}</em></div>`).join('') + '</div>';
-  return h;
+  const tab = (k, l) => `<button class="ptab${profTab === k ? ' on' : ''}" data-v45="ptab" data-v="${k}">${l}</button>`;
+  const side = (k, l) => `<button class="pside${profSide === k ? ' on' : ''}" data-v45="pside" data-v="${k}">${l}</button>`;
+  const stat = (n, l) => `<div class="astat"><b>${n}</b><small>${l}</small></div>`;
+  const tools = `<div class="toolbar"><button class="btn primary" data-v21="ach-all">${ag.length ? 'Refresh all' : 'Find my achievements'}</button><button class="btn" data-act="gsettings">Set up accounts</button><span class="hint">${have.length ? 'Connected: ' + have.join(', ') : 'No accounts connected yet'}</span></div>`;
+  let body;
+  if (profTab === 'social') body = '<div class="pcoming"><h2>Social</h2><p>Coming soon</p></div>';
+  else if (profTab === 'welcome') body = `<div class="pbody">${stat(arcScore().toLocaleString(), 'Arcade score')}${stat(unl.toLocaleString(), 'Achievements unlocked')}${stat(done, 'Games completed')}${stat(ag.length, 'Games tracked')}</div><div class="pbody">${tools}</div>`;
+  else {
+    const list = !ag.length ? `<div class="welcome"><h2>Your trophy room</h2><p>Connect an account in Settings and press Find my achievements. Steam works with just your Steam ID if your profile is public, retro games use a free RetroAchievements key.</p></div>` + tools
+      : tools + ag.map(it => { const p = Math.round(100 * it.ach.u / Math.max(1, it.ach.t)), sc = it.ach.u * 5 + (it.ach.u >= it.ach.t ? 100 : 0);
+        return `<button class="prow" data-v21="ach-open" data-id="${esc(it.id)}"><span class="pra">${phHTML(it)}${artImgHTML(it)}</span><span class="prm"><b>${esc(it.name)}</b><span class="prs"><span>\u{1F3C6} ${it.ach.u}/${it.ach.t}</span><span>★ ${sc}</span></span><i class="pbar"><u style="width:${p}%"></u></i></span><span class="ppct">${p}%</span></button>`; }).join('');
+    const badges = '<div class="abadges">' + ARC.map(([id, n, d, p]) => `<div class="abadge${got[id] ? ' on' : ''}"><span class="aico">${got[id] ? '\u{1F3C6}' : '\u{1F512}'}</span><div><b>${esc(n)}</b><small>${esc(d)}</small></div><em>${p}</em></div>`).join('') + '</div>';
+    body = `<div class="pgame"><div class="pnav">${side('ach', 'Achievements')}${side('badges', 'Arcade badges')}</div><div class="plist">${profSide === 'badges' ? badges : list}</div></div>`;
+  }
+  return `<div class="profile"><div class="phead"><span class="pav">${typeof avatarSVG === 'function' && !(s.badge === 'pic') ? avatarSVG(null, 'pavs', true) : v21Avatar(prof, 'pimg')}</span><div class="pwho"><b>${esc(name)}</b><small>★ ${arcScore().toLocaleString()}</small></div><nav class="ptabs">${tab('welcome', 'Welcome')}${tab('social', 'Social')}${tab('gaming', 'Gaming')}</nav></div>${body}</div>`;
 }
 function achDetail(it, filter) {
   const r = achMem[it.id];
@@ -223,7 +232,7 @@ async function achOpen(id, force) {
   achDetail(it);
   const r = await achRefresh(it, 'announce');
   if (!r || !r.ok) { v21show(`<h2>${esc(it.name)}</h2><p class="hint">${esc((r && r.error) || 'No achievements found.')}</p>`, [{ label: 'Set up accounts', fn: () => { if (gdlg.open) gdlg.close(); view = 'settings'; render(); } }, { label: 'Close' }]); return; }
-  achDetail(it); if (view === 'ach') render();
+  achDetail(it); if (view === 'profile') render();
 }
 
 // ================= Streaming hub (Watch) =================
@@ -420,7 +429,6 @@ document.getElementById('gach').addEventListener('click', () => { if (typeof inf
   const [a, b] = (go || '').split(/:(.*)/s);
   if (a === 'profile') { document.querySelectorAll('dialog[open]').forEach(d => d.close()); return v21switch(b); }
   if (a === 'ambient') { return setTimeout(ambientStart, 250); }
-  if (a === 'ach') { view = 'ach'; render(); return; }
   return _hn(go);
 }; }
 // remember the last launched game and check its achievements when you come back
@@ -435,7 +443,7 @@ window.addEventListener('focus', () => {
 function achAfterGame(it) {
   if (!it || it.category !== 'game' || !achWays(it).some(w => !w.need)) return;
   delete it.achMiss;
-  setTimeout(() => achRefresh(it, 'announce').then(() => { if (view === 'ach' || view === 'home') render(); }), 4000);
+  setTimeout(() => achRefresh(it, 'announce').then(() => { if (view === 'profile' || view === 'home') render(); }), 4000);
 }
 { const _es = endSession; endSession = function () { const id = v2session && v2session.id; _es(); if (id) { if (v21last === id) v21last = null; achAfterGame(S.items.find(i => i.id === id)); } }; }
 const achAgo = () => { const t = (S.settings || {}).achAt; if (!t) return ''; const m = Math.round((Date.now() - t) / 60000); return ' \u00b7 last checked ' + (m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'); };

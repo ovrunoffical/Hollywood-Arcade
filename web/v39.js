@@ -2,7 +2,7 @@
 //   left / right : move along the row     down : round buttons     up : your profile     A : open     B : back
 let ns = -1, nsR = 0, nsPrev = '', nsZone = 't';
 const isShelf = () => uiStyle() === 'nsw';
-const NS_ROUND = [['ach', 'Achievements', 'ach', '#e4483f'], ['store', 'Store', 'store', '#f2a000'], ['apps', 'Apps', 'apps', '#2e6fe0'], ['music', 'Music', 'music', '#8a5ad8'], ['watch', 'Watch', 'watch', '#2aa89a'], ['discord', 'Discord', 'discord', '#5865f2']];
+const NS_ROUND = [['store', 'Store', 'store', '#f2a000'], ['apps', 'Apps', 'apps', '#2e6fe0'], ['music', 'Music', 'music', '#8a5ad8'], ['watch', 'Watch', 'watch', '#2aa89a'], ['discord', 'Discord', 'discord', '#5865f2']];
 
 function nsEntries() {
   const e = [], run = window.__running;
@@ -29,7 +29,7 @@ function shelfHome() {
   const es = nsEntries(); if (ns < 0 || ns >= es.length) ns = 0;
   const name = typeof v21Name === 'function' ? v21Name() : 'Hollywood';
   return `<div class="shelf" style="--j:${Math.max(0, ns - 2)}">
-    <button class="nsme" data-act="goto" data-v="ach" aria-label="${esc(name)}">${avatarSVG(null, 'nsav', true)}</button>
+    <button class="nsme" data-act="goto" data-v="profile" aria-label="${esc(name)}">${avatarSVG(null, 'nsav', true)}</button>
     <span class="nsclock" id="xclock">${clockText()}</span>
     <div class="nstitle" id="nstitle">${esc(es[ns].label)}</div>
     <div class="nsrow" id="nsrow">${es.map(nsTile).join('')}</div>
