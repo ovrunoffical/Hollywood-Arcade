@@ -102,6 +102,7 @@ function nPane(tab) {
   return xmbItems(tab).map((e, i) => nCover(e, i === 0 ? 'first' : '')).join('');
 }
 function nHome() {
+  nTabPend = null; clearTimeout(nTabT);
   const tabs = nTabs();
   if (!tabs.find(t => t.id === ntab)) ntab = 'home';
   const name = typeof v21Name === 'function' ? v21Name() : 'Hollywood';
@@ -113,11 +114,20 @@ function nHome() {
     <div class="nhint"><i>A</i> Select<i>B</i> Back</div>
   </div>`;
 }
+// the tab highlight follows instantly; the pane below is rebuilt once the selection settles, so holding left/right stays smooth
+let nTabT = 0, nTabPend = null;
+function nBuildPane() {
+  clearTimeout(nTabT); if (nTabPend === null) return;
+  const id = nTabPend; nTabPend = null;
+  const p = $('#npane'); if (!p) return;
+  p.className = 'npane swap ' + (id === 'home' ? 'is-home' : 'is-list'); p.innerHTML = nPane(id); p.scrollTop = 0;
+  if (typeof arFit === 'function') { document.querySelectorAll('#npane img.cv').forEach(arApply); arFit(); }
+}
 function nSelectTab(id) {
   if (id === ntab) return;
   ntab = id;
   $$('.nt').forEach(b => b.classList.toggle('sel', b.dataset.tab === id));
-  const p = $('#npane'); if (p) { p.className = 'npane swap ' + (id === 'home' ? 'is-home' : 'is-list'); p.innerHTML = nPane(id); }
+  nTabPend = id; clearTimeout(nTabT); nTabT = setTimeout(nBuildPane, 120);
 }
 
 // ================= wiring =================
@@ -149,6 +159,7 @@ document.addEventListener('focusin', (e) => {
       if (nb) { bSelectBlade(nb.id); $('.bcards .bc')?.focus({ preventScroll: true }); } else if (dir === 'down') return _m.apply(this, arguments);
       return;
     }
+    nBuildPane();
     const tabs = $$('.ntabs .nt'), tiles = $$('.npane .nti:not([hidden])');
     const onTab = a && a.classList && a.classList.contains('nt');
     if (onTab) {
@@ -171,7 +182,7 @@ document.addEventListener('focusin', (e) => {
 document.addEventListener('click', (e) => {
   if (view !== 'home' || !is360n()) return;
   const t = e.target.closest('.nt'); if (!t) return;
-  e.stopPropagation(); t.focus({ preventScroll: true });
+  e.stopPropagation(); t.focus({ preventScroll: true }); nBuildPane();
   if (e.detail === 0) $('.npane .nti')?.focus({ preventScroll: true });
 }, true);
 

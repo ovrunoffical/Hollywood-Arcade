@@ -67,7 +67,17 @@ document.addEventListener('error', (e) => {
 {
   const _r = render;
   render = function () {
+    // a background refresh (new cover arrived, game info found) must not throw the Tiles list back to the top or drop the selected tile
+    const np = document.getElementById('npane'), keep = np && np.classList.contains('is-list') ? { top: np.scrollTop, tab: typeof ntab !== 'undefined' ? ntab : '', key: (() => { const a = document.activeElement; return a && a.closest && a.closest('#npane') ? (a.getAttribute('data-id') || a.getAttribute('data-v') || a.getAttribute('data-act')) : null; })() } : null;
     const r = _r.apply(this, arguments);
+    try {
+      const n2 = document.getElementById('npane');
+      if (keep && n2 && n2.classList.contains('is-list') && typeof ntab !== 'undefined' && ntab === keep.tab) {
+        n2.style.scrollBehavior = 'auto'; n2.scrollTop = keep.top;
+        if (keep.key) { const el = [...n2.querySelectorAll('.nti')].find(e => (e.getAttribute('data-id') || e.getAttribute('data-v') || e.getAttribute('data-act')) === keep.key); if (el) el.focus({ preventScroll: true }); }
+        requestAnimationFrame(() => { n2.style.scrollBehavior = ''; });
+      }
+    } catch { /* cosmetic */ }
     try { document.querySelectorAll('img.cv').forEach(arApply); arFit(); } catch { /* cosmetic */ }
     return r;
   };
