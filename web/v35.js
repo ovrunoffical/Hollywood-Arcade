@@ -1,12 +1,20 @@
-// Hollywood Arcade 3.2: two Xbox 360 styles (look-alikes with our own artwork, no avatars or Microsoft art).
-//   x360  : the 2005 "blades" dashboard. Up/down changes blade, left/right moves through its panels.
-//   x360n : the 2011 tiled dashboard. A row of tabs on top, a grid of tiles below.
-// They reuse the icons and item lists from the PS3 style (v34.js).
+// Hollywood Arcade 3.2: "Blades" and "Tiles" (our own artwork).
+//   x360  : stacked blades with panels. Up/down changes blade, left/right moves through its panels.
+//   x360n : tabs on top with a grid of tiles. A row of tabs on top, a grid of tiles below.
+// They reuse the icons and item lists from Waves (v34.js).
 
 let bld = 'games', bpan = 0, bPrev = '', ntab = 'home', nOnTile = false, nPrev = '';
 const is360 = () => uiStyle() === 'x360', is360n = () => uiStyle() === 'x360n';
 const attrsOf = (e) => e.style ? `data-v33="style" data-v="${e.style}"` : e.act ? `data-act="${e.act}"${e.id ? ` data-id="${esc(e.id)}"` : ''}` : `data-act="goto" data-v="${e.v}"${e.plug ? ` data-plug="${esc(e.plug)}"` : ''}`;
 const coverOf = (it) => { const isIco = it.category === 'app' && !it.art && !it.cover && it.icon; return isIco ? '' : it.cover ? toURL(it.cover) : it.art ? toURL(it.art) : it.appid ? `https://cdn.akamai.steamstatic.com/steam/apps/${it.appid}/library_600x900_2x.jpg` : ''; };
+
+// Artwork that fits: landscape art (hero) fills a wide tile; a tall cover is shown whole over a blurred copy of itself instead of being cropped.
+function artImgHTML(it, wide) {
+  const hero = it.hero ? toURL(it.hero) : (typeof steamId === 'function' && steamId(it)) ? `https://cdn.akamai.steamstatic.com/steam/apps/${steamId(it)}/library_hero.jpg` : '';
+  if (wide && hero) return `<img class="hr" src="${esc(hero)}" alt="" loading="lazy">`;
+  const c = coverOf(it); if (!c) return '';
+  return `<img class="bk" src="${esc(c)}" alt="" loading="lazy"><img class="ct" src="${esc(c)}" alt="" loading="lazy">`;
+}
 const logoSVG = '<svg class="x3logo" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="50"/><g><rect x="25" y="20" width="12" height="60" rx="3"/><rect x="63" y="20" width="12" height="60" rx="3"/><rect x="33" y="44" width="34" height="12"/></g></svg>';
 
 // ================= 2005 blades =================
@@ -22,7 +30,7 @@ function bPanelHTML(e, i) {
     return `<button class="bc profile" data-i="${i}" ${attrsOf(e)}><span class="bpf"><b class="bn">${esc(name)}</b><span class="bsc">${sc.toLocaleString()} <i>★</i></span><small>Latest games</small><span class="bth">${last.map(g => xmbThumb(g)).join('')}</span><b class="bsi">Signed in</b><small>Hollywood Arcade</small></span></button>`;
   }
   const src = e.it ? coverOf(e.it) : '';
-  const body = e.it ? `<span class="bcv"><b>${esc((e.it.name[0] || '?').toUpperCase())}</b>${src ? `<img src="${esc(src)}" alt="" loading="lazy">` : ''}</span>` : `<span class="bic">${xsvg(e.ic)}</span>`;
+  const body = e.it ? `<span class="bcv"><b>${esc((e.it.name[0] || '?').toUpperCase())}</b>${artImgHTML(e.it, true)}</span>` : `<span class="bic">${xsvg(e.ic)}</span>`;
   return `<button class="bc" data-i="${i}" ${attrsOf(e)}>${body}<span class="bcl"><b>${esc(e.label)}</b>${e.sub ? `<small>${esc(e.sub)}</small>` : ''}</span></button>`;
 }
 function bHome() {
@@ -33,12 +41,14 @@ function bHome() {
   return `<div class="blades" style="--sel:${si}">
     <nav class="bl" aria-label="Blades">${cats.map((c, i) => `<button class="bli${i === si ? ' sel' : ''}${i > si ? ' aft' : ''}" tabindex="-1" data-i="${i}" data-cat="${esc(c.id)}" style="--k:${i - si}">${esc(c.label)}</button>`).join('')}</nav>
     <div class="bcards" id="bcards" style="--p:${bpan}">${pans.map(bPanelHTML).join('')}</div>
+    <div class="bav${bld === 'games' && bpan === 0 ? ' show' : ''}">${typeof avatarSVG === 'function' ? avatarSVG() : ''}</div>
     <div class="bhint"><i>A</i> Select<i>B</i> Back</div>${logoSVG}
   </div>`;
 }
 function bSync() {
   const cs = $$('.bcards .bc'); cs.forEach((c, i) => { c.dataset.d = Math.max(-1, Math.min(7, i - bpan)); c.classList.toggle('sel', i === bpan); });
   const bx = $('#bcards'); if (bx) bx.style.setProperty('--p', bpan);
+  $('.bav')?.classList.toggle('show', bld === 'games' && bpan === 0);
 }
 function bSelectBlade(id) {
   if (id === bld) return;
@@ -53,7 +63,7 @@ function bSelectBlade(id) {
 // ================= 2011 tiles =================
 function nCover(e, cls, big) {
   const src = e.it ? coverOf(e.it) : '';
-  if (e.it) return `<button class="nti cv ${cls}" ${attrsOf(e)}><i class="nlt">${esc((e.it.name[0] || '?').toUpperCase())}</i>${src ? `<img src="${esc(src)}" alt="" loading="lazy">` : ''}<span class="nl">${esc(e.label)}</span></button>`;
+  if (e.it) return `<button class="nti cv ${cls}" ${attrsOf(e)}><i class="nlt">${esc((e.it.name[0] || '?').toUpperCase())}</i>${artImgHTML(e.it, true)}<span class="nl">${esc(e.label)}</span></button>`;
   return `<button class="nti gr ${cls}" ${attrsOf(e)}><span class="ng">${xsvg(e.ic)}</span><span class="nl">${esc(e.label)}</span></button>`;
 }
 function nTabs() { return [{ id: 'home', label: 'home' }, ...xmbCats().map(c => ({ id: c.id, label: c.label.toLowerCase() }))]; }
@@ -76,7 +86,7 @@ function nHome() {
   if (!tabs.find(t => t.id === ntab)) ntab = 'home';
   const name = typeof v21Name === 'function' ? v21Name() : 'Hollywood';
   return `<div class="ntiles">
-    <div class="nwho"><span>${esc(name)}</span><b>${(typeof arcScore === 'function' ? arcScore() : 0).toLocaleString()} ★</b></div>
+    <div class="nwho">${typeof avatarSVG === 'function' ? avatarSVG(null, 'nav', true) : ''}<span>${esc(name)}</span><b>${(typeof arcScore === 'function' ? arcScore() : 0).toLocaleString()} ★</b></div>
     <nav class="ntabs" aria-label="Tabs">${tabs.map(t => `<button class="nt${t.id === ntab ? ' sel' : ''}" data-tab="${esc(t.id)}">${esc(t.label)}</button>`).join('')}</nav>
     <button class="nsearch" data-act="gsearch" aria-label="Search"><svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">${XI.search}</svg></button>
     <div class="npane ${ntab === 'home' ? 'is-home' : 'is-list'}" id="npane">${nPane(ntab)}</div>

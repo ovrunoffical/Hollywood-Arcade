@@ -1,4 +1,4 @@
-/* Interface style: Original Xbox (green orb menu). Everything here only applies when body has .ui-og.
+/* Interface style: Orb (glowing orb menu). Everything here only applies when body has .ui-og.
    Colours come from the same settings as every style: --xg / --xg2 / --xhi (accent) and --bg (background). */
 
 body.ui-og {

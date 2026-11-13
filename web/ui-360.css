@@ -1,4 +1,4 @@
-/* Interface styles: Xbox 360 "blades" (2005) and Xbox 360 tiles (2011). Look-alikes with our own artwork.
+/* Interface styles: Blades and Tiles (our own artwork).
    The accent colour is the panel / tile colour. The background colour is the base of the scene. */
 
 body.ui-x360, body.ui-x360n { --x3font: 'Segoe UI', 'Segoe UI Variable Text', 'Helvetica Neue', Arial, sans-serif; font-family: var(--x3font); background: var(--bg); }
@@ -19,7 +19,7 @@ body.ui-x360 .og-ttl, body.ui-x360n .og-ttl { font-size: clamp(24px, 3.6vh, 36px
 body.ui-x360 .btn.primary, body.ui-x360 .chip.on, body.ui-x360n .btn.primary, body.ui-x360n .chip.on { background: var(--xg); color: #fff; }
 body.ui-x360 .tile .art, body.ui-x360n .tile .art { border-radius: 3px; }
 
-/* ================= 2005 blades ================= */
+/* ================= Blades ================= */
 body.ui-x360::before { content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background:
     radial-gradient(ellipse 130% 100% at 50% 134%, #d9dce0 0 54%, transparent 54.4%),
@@ -72,7 +72,7 @@ body.ui-x360::after { content: ''; position: fixed; right: 4vw; bottom: 3vh; wid
 .x3logo { position: absolute; right: 6.5vw; bottom: 5vh; width: 9vh; filter: drop-shadow(0 .6vh 1vh rgba(0, 0, 0, .35)); }
 .x3logo circle { fill: var(--xg); } .x3logo rect { fill: #fff; }
 
-/* ================= 2011 tiles ================= */
+/* ================= Tiles ================= */
 body.ui-x360n::before { content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none; background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 92%, #000 8%) 0, var(--bg) 30%, color-mix(in srgb, var(--bg) 55%, #fff 45%) 100%); }
 .ntiles { position: fixed; inset: 0 0 96px 0; z-index: 2; font-family: var(--x3font); color: #fff; --tw: 12.2vw; --th: 8.9vw; }
 .nwho { position: absolute; top: 3.6vh; right: 4vw; display: flex; gap: 1vw; align-items: baseline; font-size: 2.2vh; } .nwho b { font-weight: 400; opacity: .85; }
@@ -102,3 +102,11 @@ body.ui-x360n::before { content: ''; position: fixed; inset: 0; z-index: 0; poin
 .nhint i { font-style: normal; display: inline-grid; place-items: center; width: 3.4vh; height: 3.4vh; border-radius: 50%; background: var(--xg); color: #fff; font-weight: 700; font-size: 2vh; margin-left: 1.4vw; } .nhint i:first-child { margin-left: 0; }
 
 @media (prefers-reduced-motion: reduce) { .bc, .bli, .bcards, .npane, .nti { transition: none; animation: none; } }
+
+/* artwork fitting */
+.bcv img.hr, .nti img.hr { object-fit: cover; }
+.bcv img.bk, .nti img.bk, .dka img.bk { position: absolute; inset: -8%; width: 116%; height: 116%; object-fit: cover; filter: blur(14px) brightness(.62); }
+.bcv img.ct, .nti img.ct, .dka img.ct { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.bav { position: absolute; left: 24.5vw; top: 24vh; height: 59vh; z-index: 4; pointer-events: none; opacity: 0; transform: translateY(2vh); transition: opacity .35s, transform .35s; filter: drop-shadow(0 1.6vh 1.6vh rgba(0, 0, 0, .35)); }
+.bav.show { opacity: 1; transform: none; } .bav svg { height: 100%; width: auto; }
+.nwho .nav { width: 4.6vh; height: 4.2vh; border-radius: 3px; background: color-mix(in srgb, var(--xg) 60%, #fff 10%); align-self: center; }

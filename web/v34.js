@@ -1,4 +1,4 @@
-// Hollywood Arcade 3.2: the PS3-style "cross" menu (XMB look-alike with our own icons and artwork).
+// Hollywood Arcade 3.2: "Waves": a cross-shaped menu with soft ribbons (our own icons and artwork).
 // A row of categories runs across the screen. The one you are on opens a column of things underneath it.
 //   left / right : change category     up / down : pick something     A / Enter : open it     B / Esc : back
 

@@ -3,15 +3,15 @@
 // background colour in Settings still apply to every style.
 //
 //   arcade : the current layout
-//   og     : the green orb menu of the original Xbox, with the Arcade logo in the middle
+//   og     : a glowing orb menu with the Arcade logo in the middle
 
-const UI_STYLES = [['arcade', 'Arcade'], ['og', 'Original Xbox'], ['xmb', 'PS3 (XMB)'], ['x360', 'Xbox 360 blades'], ['x360n', 'Xbox 360 tiles']];
-const STYLE_BG = { og: '#0a140c', xmb: '#2b2358', x360: '#2a1008', x360n: '#7b7b7b' };
+const UI_STYLES = [['arcade', 'Arcade'], ['og', 'Orb'], ['xmb', 'Waves'], ['x360', 'Blades'], ['x360n', 'Tiles'], ['ps4', 'Deck']];
+const STYLE_BG = { og: '#0a140c', xmb: '#2b2358', x360: '#2a1008', x360n: '#7b7b7b', ps4: '#0f3fa8' };
 const uiStyle = () => ((S.settings && S.settings.uiStyle) || 'arcade');
 const UI_TITLES = { games: 'Games', apps: 'Apps', store: 'Store', watch: 'Watch', ach: 'Achievements', music: 'Music', discord: 'Discord', settings: 'Settings', app: 'App', plug: 'Plugin' };
 let ogLast = 'games'; // the entry you came from, so coming back lands on it
 
-// ---- the original-Xbox style: orb menu ----
+// ---- Orb: the glowing orb menu ----
 function ogEntries() {
   const e = [];
   const run = window.__running;
@@ -91,7 +91,7 @@ function setStyle(k) {
   }
   S.settings.uiStyle = k;
   save(); view = k !== 'arcade' ? 'home' : view; render();
-  toast(k === 'og' ? 'Original Xbox style. Press B or Esc to go back to the menu.' : k === 'xmb' ? 'PS3 style. Left and right change category, up and down pick, B goes back.' : k === 'x360' ? 'Xbox 360 blades. Up and down change blade, left and right pick a panel, B goes back.' : k === 'x360n' ? 'Xbox 360 style. Left and right change the tab, then move down into the tiles. B goes back.' : 'Arcade style');
+  toast(({ og: 'Orb style. Press B or Esc to go back to the menu.', xmb: 'Waves style. Left and right change category, up and down pick, B goes back.', x360: 'Blades style. Up and down change blade, left and right pick a panel, B goes back.', x360n: 'Tiles style. Left and right change the tab, then move down into the tiles. B goes back.', ps4: 'Deck style. Left and right pick, up goes to the top bar, B goes back.' })[k] || 'Arcade style');
 }
 document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-v33="style"]'); if (!b) return;
