@@ -1,0 +1,97 @@
+/* Interface style: Original Xbox (green orb menu). Everything here only applies when body has .ui-og.
+   Colours come from the same settings as every style: --xg / --xg2 / --xhi (accent) and --bg (background). */
+
+body.ui-og {
+  --tr: 0px;
+  --ogfont: 'Bahnschrift', 'Segoe UI Variable Display', 'Segoe UI', 'Trebuchet MS', Arial, sans-serif;
+  --oglite: color-mix(in srgb, var(--xhi) 85%, transparent);
+  --ogdeep: color-mix(in srgb, #00140a 72%, var(--xg) 28%);
+  background: var(--bg);
+}
+body.ui-og .mesh, body.ui-og #homebg { display: none !important; }
+
+/* the glowing wire mesh behind everything */
+body.ui-og::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 70% at 24% 50%, color-mix(in srgb, var(--xg2) 46%, transparent), transparent 70%),
+    radial-gradient(ellipse 80% 60% at 80% 100%, color-mix(in srgb, var(--xg) 30%, transparent), transparent 70%),
+    repeating-linear-gradient(60deg, transparent 0 58px, color-mix(in srgb, var(--xg2) 26%, transparent) 58px 59px),
+    repeating-linear-gradient(-60deg, transparent 0 58px, color-mix(in srgb, var(--xg2) 20%, transparent) 58px 59px),
+    repeating-linear-gradient(0deg, transparent 0 104px, color-mix(in srgb, var(--xg2) 14%, transparent) 104px 105px),
+    var(--bg);
+  background-size: auto, auto, 100% 100%, 100% 100%, 100% 100%, auto;
+  animation: ogdrift 60s linear infinite;
+}
+@keyframes ogdrift { to { background-position: 0 0, 0 0, 240px 140px, -240px 140px, 0 210px, 0 0; } }
+body.ui-og .shell, body.ui-og .player { position: relative; z-index: 1; }
+body.ui-og .player { position: fixed; z-index: 5; }
+
+/* no sidebar: the orb menu is the way around */
+body.ui-og .side { display: none !important; }
+body.ui-og .shell { grid-template-columns: 1fr; }
+body.ui-og .stage { padding-left: 4vw; padding-right: 4vw; }
+body.ui-og.onhome main { padding: 0; }
+
+/* ---------- the menu screen ---------- */
+.og { position: fixed; inset: 0 0 96px 0; z-index: 2; font-family: var(--ogfont); }
+.og-top { position: absolute; top: 26px; left: 38px; right: 38px; display: flex; justify-content: space-between; align-items: center; text-transform: uppercase; letter-spacing: .14em; color: var(--xhi); text-shadow: 0 0 12px color-mix(in srgb, var(--xhi) 60%, transparent); font-size: 17px; }
+.og-who b { font-weight: 700; }
+.og-who em { font-style: normal; margin-left: 14px; opacity: .85; }
+.og-foot { position: absolute; left: 38px; bottom: 18px; color: color-mix(in srgb, var(--xhi) 55%, transparent); letter-spacing: .3em; text-transform: uppercase; font-size: 12px; }
+
+/* the big orb with the Arcade logo in the middle */
+.og-orb { --os: min(54vh, 40vw); position: absolute; left: 6vw; top: 50%; width: var(--os); height: var(--os); transform: translateY(-52%); }
+.og-orb::after { content: ''; position: absolute; inset: 1%; border-radius: 50%; border: 5px solid color-mix(in srgb, var(--xhi) 38%, transparent); box-shadow: 0 0 40px color-mix(in srgb, var(--xg2) 60%, transparent), inset 0 0 50px color-mix(in srgb, var(--xg2) 45%, transparent); pointer-events: none; }
+.og-core { position: absolute; inset: 9%; border-radius: 50%;
+  background: radial-gradient(circle at 42% 38%, #f6ffa6 0, var(--xhi) 28%, var(--xg2) 64%, color-mix(in srgb, var(--xg) 78%, #000) 100%);
+  box-shadow: 0 0 90px color-mix(in srgb, var(--xhi) 42%, transparent), inset -24px -34px 64px rgba(0, 50, 0, .6), inset 16px 16px 44px rgba(255, 255, 255, .26); }
+.og-orb .p { position: absolute; inset: 0; border-radius: 47% 53% 56% 44% / 52% 44% 56% 48%; mix-blend-mode: screen; filter: blur(9px); opacity: .85;
+  background: conic-gradient(from 0deg, transparent 0 8%, color-mix(in srgb, var(--xhi) 62%, transparent) 20%, transparent 38%, color-mix(in srgb, var(--xg2) 70%, transparent) 62%, transparent 82%);
+  animation: ogspin 20s linear infinite; }
+.og-orb .p2 { inset: -5%; animation-duration: 29s; animation-direction: reverse; opacity: .6; }
+.og-orb .p3 { inset: 5%; animation-duration: 37s; opacity: .7; }
+@keyframes ogspin { to { transform: rotate(360deg); } }
+.og-logo { position: absolute; left: 50%; top: 50%; width: 50%; transform: translate(-50%, -50%); animation: ogfloat 6s ease-in-out infinite alternate; }
+.og-logo circle { fill: var(--xhi); }
+.og-logo rect { fill: #07140a; }
+@keyframes ogfloat { from { transform: translate(-50%, -52%); } to { transform: translate(-50%, -48%); } }
+
+/* the list of entries, each with a glass bead and an angular bar */
+.og-menu { --h: clamp(38px, 5.6vh, 60px); position: absolute; right: 5vw; top: 50%; transform: translateY(-50%); width: min(46vw, 720px); display: flex; flex-direction: column; gap: clamp(6px, 1vh, 12px); max-height: calc(100% - 90px); overflow-y: auto; padding: 6px 4px; scrollbar-width: none; }
+.og-menu::-webkit-scrollbar { display: none; }
+.ogi { display: flex; align-items: center; gap: 16px; height: var(--h); flex: 0 0 var(--h); background: none; border: 0; padding: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.ogi:nth-child(even) { margin-left: clamp(18px, 3vw, 46px); }
+.ogo { flex: 0 0 auto; width: calc(var(--h) * .92); height: calc(var(--h) * .92); border-radius: 50%; position: relative;
+  background: radial-gradient(circle at 36% 30%, rgba(255, 255, 255, .6), transparent 24%), radial-gradient(circle, var(--xg2) 0 30%, transparent 32%), radial-gradient(circle, rgba(0, 12, 0, .8) 0 58%, transparent 60%);
+  box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--xhi) 72%, transparent), 0 0 16px color-mix(in srgb, var(--xg2) 70%, transparent); transition: box-shadow .15s, transform .15s; }
+.ogo.sm { width: 26px; height: 26px; display: inline-block; vertical-align: -6px; margin-right: 14px; }
+.ogl { position: relative; flex: 1; height: 100%; display: flex; align-items: center; padding: 0 clamp(14px, 1.6vw, 26px); background: var(--oglite);
+  clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px)); transition: background .12s; }
+.ogl::before { content: ''; position: absolute; inset: 2px; background: var(--ogdeep); clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px)); transition: background .12s; }
+.ogl > span { position: relative; z-index: 1; font-weight: 700; font-size: clamp(16px, 2.6vh, 26px); letter-spacing: .1em; text-transform: uppercase; color: var(--xhi); text-shadow: 0 0 10px color-mix(in srgb, var(--xhi) 50%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ogi:hover .ogl::before, .ogi:focus .ogl::before { background: var(--xhi); }
+.ogi:hover .ogl > span, .ogi:focus .ogl > span { color: #0b1a02; text-shadow: none; }
+.ogi:hover .ogo, .ogi:focus .ogo { box-shadow: inset 0 0 0 3px var(--xhi), 0 0 26px var(--xhi); transform: scale(1.06); background: radial-gradient(circle at 36% 30%, rgba(255, 255, 255, .7), transparent 24%), radial-gradient(circle, var(--xhi) 0 34%, transparent 36%), radial-gradient(circle, rgba(0, 12, 0, .8) 0 58%, transparent 60%); }
+body.ui-og .ogi:focus-visible, body.ui-og.pad .ogi:focus-visible { outline: none; box-shadow: none; }
+
+/* ---------- every other screen ---------- */
+.og-head { display: flex; align-items: center; gap: 28px; margin: 6px 0 24px; font-family: var(--ogfont); text-transform: uppercase; }
+.ogback { position: relative; display: inline-flex; align-items: center; gap: 12px; height: 44px; padding: 0 24px; border: 0; background: var(--oglite); color: var(--xhi); font: 700 15px var(--ogfont); letter-spacing: .12em; cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px)); isolation: isolate; }
+.ogback::before { content: ''; position: absolute; inset: 2px; z-index: -1; background: var(--ogdeep); clip-path: polygon(0 0, calc(100% - 11px) 0, 100% 11px, 100% 100%, 11px 100%, 0 calc(100% - 11px)); }
+.ogback:hover, .ogback:focus { color: #0b1a02; } .ogback:hover::before, .ogback:focus::before { background: var(--xhi); }
+.ogback:focus-visible { outline: none; box-shadow: none; }
+.og-ttl { font-size: clamp(26px, 4vh, 40px); font-weight: 700; letter-spacing: .14em; color: var(--xhi); text-shadow: 0 0 18px color-mix(in srgb, var(--xhi) 55%, transparent); }
+
+body.ui-og #main > h1.title { display: none; }
+body.ui-og .xtitle, body.ui-og .mixh { font-family: var(--ogfont); text-transform: uppercase; letter-spacing: .12em; color: var(--xhi); text-shadow: 0 0 12px color-mix(in srgb, var(--xhi) 40%, transparent); }
+body.ui-og .tile:hover .art, body.ui-og .tile:focus-visible .art { box-shadow: 0 0 0 3px var(--xhi), 0 0 36px color-mix(in srgb, var(--xhi) 60%, transparent), 0 22px 40px rgba(0, 0, 0, .5); }
+body.ui-og .btn, body.ui-og .chip, body.ui-og .setting, body.ui-og .plrow, body.ui-og .pstats > div { border-color: color-mix(in srgb, var(--xg2) 70%, transparent); }
+body.ui-og .btn, body.ui-og .chip { text-transform: uppercase; letter-spacing: .06em; font-family: var(--ogfont); }
+body.ui-og .btn.primary, body.ui-og .chip.on { background: var(--xhi); color: #0b1a02; }
+body.ui-og .player { border-radius: 0; border: 1px solid color-mix(in srgb, var(--xg2) 70%, transparent); background: color-mix(in srgb, #00140a 80%, transparent); }
+body.ui-og .top input, body.ui-og #q { border-radius: 0; border-color: color-mix(in srgb, var(--xg2) 70%, transparent); }
+body.ui-og .lp { border-radius: 0; border-color: color-mix(in srgb, var(--xg2) 60%, transparent); }
+
+@media (prefers-reduced-motion: reduce) { .og-orb .p, .og-logo, body.ui-og::before { animation: none; } }

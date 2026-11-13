@@ -776,7 +776,7 @@ document.addEventListener('visibilitychange', () => { padResync = true; });
     const once = (i, fn) => { if (b(i)) { any = true; if (!padHeld[i]) { padHeld[i] = 1; setPadMode(true); fn(); } } else padHeld[i] = 0; };
     const dlg = () => document.querySelector('dialog[open]');
     once(0, () => { padClick(); rumble(p); });
-    once(1, () => { if (dlg()) dlg().close(); else if (view === 'home') { document.body.classList.toggle('guide'); if (document.body.classList.contains('guide')) $('.nav.on, .nav')?.focus(); else padFocusContent(); } else $('.nav.on')?.focus(); });
+    once(1, () => { if (dlg()) dlg().close(); else if (view === 'home' && document.body.classList.contains('ui-og')) { /* the menu is already the main menu */ } else if (view === 'home') { document.body.classList.toggle('guide'); if (document.body.classList.contains('guide')) $('.nav.on, .nav')?.focus(); else padFocusContent(); } else if (document.body.classList.contains('ui-og')) { view = 'home'; render(); } else $('.nav.on')?.focus(); });
     once(2, () => { if (!dlg()) infoFocused(); });
     once(3, () => { if (!dlg()) editFocused(); });
     once(4, () => { if (!dlg()) padSection(-1); });

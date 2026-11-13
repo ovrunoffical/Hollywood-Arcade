@@ -175,7 +175,7 @@ function plugView() {
 }
 
 document.addEventListener('click', (e) => {
-  const n = e.target.closest('.nav[data-plug]'); if (n) { PLUG.cur = n.dataset.plug; return; }
+  const n = e.target.closest('.nav[data-plug], .ogi[data-plug]'); if (n) { PLUG.cur = n.dataset.plug; return; }
   const c = e.target.closest('[data-plug-item]');
   if (c && c.dataset.plugItem && S.items.some(i => i.id === c.dataset.plugItem)) { e.stopPropagation(); openInfo(c.dataset.plugItem); }
 }, true);
@@ -208,7 +208,7 @@ function v32Brand() {
       v32Brand(); v32Icons();
       if (view !== lastV) { lastV = view; if (view === 'home' || view === 'plug') for (const id of Object.keys(PLUG.run)) { try { PLUG.run[id].frame.contentWindow.postMessage({ ha: 1, t: 'event', n: 'view', d: view }, '*'); } catch { /* ignore */ } } }
       document.querySelectorAll('.nav[data-plug]').forEach(n => n.classList.toggle('on', view === 'plug' && n.dataset.plug === PLUG.cur));
-      if (view === 'home') { const h = plugShelvesHTML(); if (h) document.getElementById('main').insertAdjacentHTML('beforeend', h); }
+      if (view === 'home' && !(typeof uiStyle === 'function' && uiStyle() === 'og')) { const h = plugShelvesHTML(); if (h) document.getElementById('main').insertAdjacentHTML('beforeend', h); }
     } catch { /* a plugin problem must never break the page */ }
     return r;
   };
