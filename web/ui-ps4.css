@@ -1,18 +1,5 @@
 /* Interface style: Deck (a row of square tiles, big selected tile, details under it) + avatar editor styles. */
 
-/* ---- avatar editor (all styles) ---- */
-.avedit { display: flex; gap: 24px; flex-wrap: wrap; }
-.avbig { width: 170px; padding: 10px; border-radius: 12px; background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, .16), rgba(255, 255, 255, .04)); }
-.avbig svg { width: 100%; height: auto; display: block; }
-.avopts { flex: 1; min-width: 280px; }
-.avr { margin-bottom: 12px; }
-.avr > b { display: block; font-size: 12px; opacity: .7; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
-.avr .chip { margin: 0 6px 6px 0; }
-.avsw { width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .3); margin: 0 6px 6px 0; cursor: pointer; padding: 0; }
-.avsw.on { border-color: #fff; box-shadow: 0 0 0 2px var(--xg); }
-.avprev { display: inline-block; width: 52px; height: 46px; border-radius: 8px; background: rgba(255, 255, 255, .1); margin-right: 12px; vertical-align: middle; overflow: hidden; }
-.avprev svg { width: 100%; height: 100%; }
-
 /* ---- Deck ---- */
 body.ui-ps4 { --dkfont: 'Segoe UI', 'Segoe UI Variable Text', 'Helvetica Neue', Arial, sans-serif; font-family: var(--dkfont); background: var(--bg); }
 body.ui-ps4::before { content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
@@ -73,16 +60,3 @@ body.ui-ps4 .setting, body.ui-ps4 .plrow, body.ui-ps4 .lp { background: rgba(255
 
 @media (prefers-reduced-motion: reduce) { .dkrow, .dkt, .dka { transition: none; } }
 
-/* the avatar moves */
-.av { overflow: visible; }
-.av .av-sway { animation: avsway 4.2s ease-in-out infinite; transform-origin: 100px 316px; }
-.av .av-head { animation: avhead 6s ease-in-out infinite; transform-origin: 100px 136px; }
-.av .av-wave { animation: avwave 1s ease-in-out infinite alternate; transform-origin: 160px 176px; }
-.av .av-larm { animation: avlarm 4.2s ease-in-out infinite; transform-origin: 66px 150px; }
-.av .av-eyes { animation: avblink 5s infinite; transform-origin: 100px 87px; }
-@keyframes avsway { 0%, 100% { transform: translateX(-2.5px) rotate(-.7deg); } 50% { transform: translateX(2.5px) rotate(.7deg); } }
-@keyframes avhead { 0%, 100% { transform: rotate(-2.6deg); } 50% { transform: rotate(2.6deg); } }
-@keyframes avwave { from { transform: rotate(-17deg); } to { transform: rotate(13deg); } }
-@keyframes avlarm { 0%, 100% { transform: rotate(2deg); } 50% { transform: rotate(-3deg); } }
-@keyframes avblink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.08); } }
-@media (prefers-reduced-motion: reduce) { .av * { animation: none !important; } }
